@@ -7,8 +7,8 @@ class GameRound extends EventEmitter {
     #roundMaxLength = mainRoundLength; // milliseconds
     #hasEnded = false;
     #baskets;
-    #scores = [0, 0];
-    #fouls = [0, 0];
+    #scores = [[], []];
+    #fouls = [[], []];
 
     get hasEnded() {
         return this.#hasEnded;
@@ -63,12 +63,12 @@ class GameRound extends EventEmitter {
             this.#runtimeCheckInterval = setInterval(() => {
                 const runtime = this.getRuntime();
 
-                console.log('Round runtime', runtime);
+                //console.log('Round runtime', runtime);
 
                 if (runtime >= this.#roundMaxLength) {
                     this.end();
                 }
-            }, 1000);
+            }, 100);
         }
     };
 
@@ -98,13 +98,13 @@ class GameRound extends EventEmitter {
         const basketIndex = this.#baskets.indexOf(basket);
 
         if (basketIndex === 0 || basketIndex === 1) {
-            this.#scores[basketIndex]++;
+            this.#scores[basketIndex].push({time: Date.now(), isValid: true});
         }
     }
 
     incrementFouls(robotIndex) {
         if (robotIndex === 0 || robotIndex === 1) {
-            this.#fouls[robotIndex]++;
+            this.#fouls[robotIndex].push({time: Date.now()});
         }
     }
 
@@ -112,12 +112,30 @@ class GameRound extends EventEmitter {
         return this.#scores;
     }
 
+    getValidScoreCounts() {
+        const validScoreCounts = [];
+
+        for (const robotScores of this.#scores) {
+            let validCount = 0;
+
+            for (const score of robotScores) {
+                if (score.isValid) {
+                    validCount++;
+                }
+            }
+
+            validScoreCounts.push(validCount);
+        }
+
+        return validScoreCounts;
+    }
+
     getWinnerIndex() {
         if (!this.hasEnded) {
             return -1;
         }
 
-        const [score1, score2] = this.#scores;
+        const [score1, score2] = this.getValidScoreCounts();
 
         if (score1 > score2) {
             return 0;
@@ -128,6 +146,15 @@ class GameRound extends EventEmitter {
         return -1;
     }
 
+    isRunning() {
+        const lastRun = this.#getLastRun();
+
+        if (!lastRun) {
+            return false;
+        }
+
+        return !lastRun.endTime;
+    }
     getInfo() {
         return {
             scores: this.#scores,
@@ -141,15 +168,33 @@ class GameRound extends EventEmitter {
         }
     }
 
-    isRunning() {
-        const lastRun = this.#getLastRun();
-
-        if (!lastRun) {
-            return false;
+    getState() {
+        return {
+            scores: this.#scores,
+            fouls: this.#fouls,
+            baskets: this.#baskets,
+            hasEnded: this.#hasEnded,
+            roundMaxLength: this.#roundMaxLength,
+            runs: this.#runs,
         }
+    }
 
-        return !lastRun.endTime;
+    setState(state) {
+        this.#scores = state.scores;
+        this.#fouls = state.fouls;
+        this.#baskets = state.baskets;
+        this.#hasEnded = state.hasEnded;
+        this.#roundMaxLength = state.roundMaxLength;
+        this.#runs = state.runs;
     }
 }
+
+GameRound.fromState = function (state) {
+    const round = new GameRound(state.roundMaxLength, state.baskets);
+
+    round.setState(state);
+
+    return round;
+};
 
 module.exports = GameRound;

@@ -64,19 +64,14 @@ function renderState(state) {
         leftFoulsElement.innerText = '';
         rightFoulsElement.innerText = '';
     } else {
-        leftScoreElement.innerText = lastRound.scores[0];
-        rightScoreElement.innerText = lastRound.scores[1];
+        const validScoreCounts = getValidScoreCounts(lastRound.scores);
+        leftScoreElement.innerText = validScoreCounts[0];
+        rightScoreElement.innerText = validScoreCounts[1];
 
-        if (lastRound.fouls[0]) {
-            leftFoulsElement.innerText = `Fouls: ${lastRound.fouls[0]}`;
-        } else {
-            leftFoulsElement.innerText = '';
-        }
+        for (const [index, element] of [leftFoulsElement, rightFoulsElement].entries()) {
+            const foulCount = lastRound.fouls[index].length;
 
-        if (lastRound.fouls[1]) {
-            rightFoulsElement.innerText = `Fouls: ${lastRound.fouls[1]}`;
-        } else {
-            rightFoulsElement.innerText = '';
+            element.innerText = foulCount > 0 ? `Fouls: ${foulCount}` : '';
         }
     }
 
@@ -92,7 +87,8 @@ function renderState(state) {
             element.classList.add('active');
 
             if (rounds[i] !== lastRound || state.freeThrows) {
-                element.innerText = `${rounds[i].scores[0]}-${rounds[i].scores[1]}`;
+                const validScoreCounts = getValidScoreCounts(rounds[i].scores);
+                element.innerText = `${validScoreCounts[0]}-${validScoreCounts[1]}`;
             } else {
                 element.innerText = `${i + 1}.`;
             }
@@ -129,7 +125,7 @@ function renderState(state) {
             }
         }
 
-        messageElement.innerText = `Freethrows round ${nextRoundNumber}: ${robots[robotIndex]}`;
+        messageElement.innerText = `Freethrows round ${nextRoundNumber}: ${robots[robotIndex].name}`;
     } else {
         messageElement.innerText = '';
     }
@@ -184,4 +180,22 @@ function getRuntime(runs) {
     }
 
     return runtime;
+}
+
+function getValidScoreCounts(roundScores) {
+    const validScoreCounts = [];
+
+    for (const robotScores of roundScores) {
+        let validCount = 0;
+
+        for (const score of robotScores) {
+            if (score.isValid) {
+                validCount++;
+            }
+        }
+
+        validScoreCounts.push(validCount);
+    }
+
+    return validScoreCounts;
 }

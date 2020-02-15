@@ -29,7 +29,7 @@ class Game extends EventEmitter {
         this.#oppositeBaskets = startingBaskets.slice().reverse();
         this.#isTieAllowed = isTieAllowed;
 
-        this.#proceed();
+        //this.#proceed();
     }
 
     start() {
@@ -102,40 +102,52 @@ class Game extends EventEmitter {
         }
     }
 
-    #createNewRound = () => {
+    #addNewRound = () => {
         const completedRoundCount = this.#rounds.length;
+        const maxDuration = completedRoundCount >= 3 ? extraRoundLength : mainRoundLength;
+        const baskets = completedRoundCount % 2 === 0 ? this.#startingBaskets : this.#oppositeBaskets;
 
-        if (completedRoundCount < 6) {
-            const maxDuration = completedRoundCount >= 3 ? extraRoundLength : mainRoundLength;
-            const baskets = completedRoundCount % 2 === 0 ? this.#startingBaskets : this.#oppositeBaskets;
-            const round = new GameRound(maxDuration, baskets);
+        this.#addRound(new GameRound(maxDuration, baskets));
+    };
 
-            this.#rounds.push(round);
+    #addRoundFromState = (state) => {
+        this.#addRound(GameRound.fromState(state));
+    };
 
-            round.on('ended', () => {
-                console.log(`Round ${this.#rounds.length} ended`);
+    #addRound = (round) => {
+        this.#rounds.push(round);
 
-                this.#proceed();
+        round.on('ended', () => {
+            console.log(`Round ${this.#rounds.length} ended`);
+            this.#proceed();
+            this.emit('changed', 'roundEnded');
+        });
+    };
 
-                this.emit('changed', 'roundEnded');
-            });
-        } else if (!this.#freeThrows) {
-            this.#freeThrows = new FreeThrows(this.#robots, 3, freeThrowAttemptRoundLength);
+    #addNewFreeThrows = () => {
+        this.#addFreeThrows(new FreeThrows(this.#robots, 3, freeThrowAttemptRoundLength));
+    };
 
-            this.#freeThrows.on('attemptEnded', () => {
-                console.log('Free throw attempt ended');
-                this.#proceed();
-                this.emit('changed', 'freeThrowAttemptEnded');
-            });
+    #addFreeThrowsFromState = (state) => {
+        this.#addFreeThrows(FreeThrows.fromState(state));
+    };
 
-            this.#freeThrows.on('ended', () => {
-                console.log('Free throws ended');
-                this.#proceed();
-                this.emit('changed', 'freeThrowsEnded');
-            });
+    #addFreeThrows = (freeThrows) => {
+        this.#freeThrows = freeThrows;
 
-            this.emit('change', 'freeThrowsStarted');
-        }
+        this.#freeThrows.on('attemptEnded', () => {
+            console.log('Free throw attempt ended');
+            this.#proceed();
+            this.emit('changed', 'freeThrowAttemptEnded');
+        });
+
+        this.#freeThrows.on('ended', () => {
+            console.log('Free throws ended');
+            this.#proceed();
+            this.emit('changed', 'freeThrowsEnded');
+        });
+
+        this.emit('change', 'freeThrowsStarted');
     };
 
     #proceed = () => {
@@ -156,13 +168,12 @@ class Game extends EventEmitter {
 
         const lastRound = this.#getLastRound();
 
-        if (!lastRound) {
-            this.#createNewRound();
-            return;
-        }
-
-        if (lastRound.hasEnded) {
-            this.#createNewRound();
+        if (!lastRound || lastRound.hasEnded) {
+            if (this.#rounds.length < 6) {
+                this.#addNewRound();
+            } else if (!this.#freeThrows) {
+                this.#addNewFreeThrows();
+            }
         }
     };
 
@@ -171,13 +182,14 @@ class Game extends EventEmitter {
     };
 
     getStatus() {
-        const roundCount = this.#rounds.length;
+        const completedRounds = this.#rounds.filter(round => round.hasEnded);
+        const roundCount = completedRounds.length;
 
         if (roundCount < 2) {
             return {result: GameResult.unknown};
         }
 
-        const winnerIndices = this.#rounds.map(round => round.getWinnerIndex());
+        const winnerIndices = completedRounds.map(round => round.getWinnerIndex());
         const indexCounts = {'-1': 0, 0: 0, 1: 0};
 
         // Main rounds
@@ -258,6 +270,45 @@ class Game extends EventEmitter {
     getRobotIds() {
         return this.#robots.map(robot => robot.id);
     }
+
+    getState() {
+        const state = {
+            robots: this.#robots,
+            startingBaskets: this.#startingBaskets,
+            isTieAllowed: this.#isTieAllowed,
+            hasEnded: this.#hasEnded,
+            rounds: this.#rounds.map(round => round.getState()),
+        };
+
+        if (this.#freeThrows) {
+            state.freeThrows = this.#freeThrows.getState();
+        }
+
+        return state;
+    }
+
+    setState(state) {
+        this.#robots = state.robots;
+        this.#startingBaskets = state.startingBaskets;
+        this.#isTieAllowed = state.isTieAllowed;
+        this.#hasEnded = state.hasEnded;
+
+        for (const roundState of state.rounds) {
+            this.#addRoundFromState(roundState);
+        }
+
+        if (state.freeThrows) {
+            this.#addFreeThrowsFromState(state.freeThrows);
+        }
+    }
 }
+
+Game.fromState = function (state) {
+    const game = new Game(state.robots, state.startingBaskets, state.isTieAllowed);
+
+    game.setState(state);
+
+    return game;
+};
 
 module.exports = Game;

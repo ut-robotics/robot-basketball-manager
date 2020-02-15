@@ -2,6 +2,7 @@ const http = require('http');
 const express = require('express');
 const WebSocket = require('ws');
 const util = require('util');
+const fs = require('fs');
 
 const Game = require('./game');
 const {Basket} = require('./constants');
@@ -28,7 +29,7 @@ const robotsApi = new RobotsApi(8111, (method, params) => {
 
 const participants = {
     'io': {id: 'io', name: 'Io'},
-    'trt001': {id: 'trt001', name: 'TRT001'},
+    '001trt': {id: '001trt', name: '001TRT'},
     'robot3': {id: 'robot3', name: 'Robot 3'},
     'robot4': {id: 'robot4', name: 'Robot 4'},
     'robot5': {id: 'robot5', name: 'Robot 5'},
@@ -92,14 +93,45 @@ server.listen(8101, function listening() {
 
 let activeGame = null;
 
-/*setInterval(() => {
-    //console.log(util.inspect(activeGame.getInfo(), {showHidden: true, depth: null}));
-    wss.broadcast(JSON.stringify({event: 'game_state', params: activeGame && activeGame.getInfo()}));
-}, 1000);*/
+loadActiveGame();
 
 function broadcastGameState() {
     console.log('broadcastGameState');
     wsServerBroadcast(wss, getActiveGameStateJSON());
+}
+
+function saveActiveGame() {
+    const state = activeGame.getState();
+
+    fs.writeFile('active_game.json', JSON.stringify(state, null, 2), 'utf8', (error) => {
+        if (error) {
+            console.error('Failed to save active game', error);
+        } else {
+            console.log('Active game saved');
+        }
+    });
+}
+
+function loadActiveGame() {
+    fs.readFile('active_game.json', 'utf8', (error, stateJSON) => {
+        if (error) {
+            console.error('Failed to read game state file', error);
+        } else {
+            console.log('Active game state loaded');
+
+            try {
+                const state = JSON.parse(stateJSON);
+                activeGame = Game.fromState(state);
+
+                activeGame.on('changed', () => {
+                    broadcastGameState();
+                    saveActiveGame();
+                });
+            } catch (e) {
+                console.error('Failed to parse game state from file', error);
+            }
+        }
+    });
 }
 
 function getActiveGameStateJSON() {
@@ -147,13 +179,15 @@ function createNewGame() {
         return;
     }
 
-    activeGame = new Game([participants.io, participants.trt001], [Basket.blue, Basket.magenta], false);
+    activeGame = new Game([participants.io, participants['001trt']], [Basket.blue, Basket.magenta], false);
 
     activeGame.on('changed', () => {
         broadcastGameState();
+        saveActiveGame();
     });
 
     broadcastGameState();
+    saveActiveGame();
 }
 
 function startGame() {

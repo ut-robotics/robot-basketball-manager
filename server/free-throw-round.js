@@ -8,7 +8,7 @@ class FreeThrows extends EventEmitter {
     #robots;
     #robotIndex = 0;
     #hasEnded = false;
-    #timeCheckInterval;
+    #timeCheckTimeout;
 
     get hasEnded() {
         return this.#hasEnded;
@@ -52,8 +52,8 @@ class FreeThrows extends EventEmitter {
     }
 
     stop(didScore) {
-        clearInterval(this.#timeCheckInterval);
-        this.#timeCheckInterval = null;
+        clearTimeout(this.#timeCheckTimeout);
+        this.#timeCheckTimeout = null;
 
         const time = Date.now();
         const lastRound = this.#getLastRound();
@@ -83,8 +83,8 @@ class FreeThrows extends EventEmitter {
     };
 
     #startTimeCheck = () => {
-        if (!this.#timeCheckInterval) {
-            this.#timeCheckInterval = setInterval(() => {
+        if (!this.#timeCheckTimeout) {
+            this.#timeCheckTimeout = setTimeout(() => {
                 this.stop(false);
             }, this.#timeLimit);
         }
@@ -186,6 +186,16 @@ class FreeThrows extends EventEmitter {
         return info;
     };
 
+    isRunning() {
+        const lastRound = this.#getLastRound();
+
+        if (!lastRound) {
+            return false;
+        }
+
+        return !lastRound.endTime;
+    }
+
     getInfo() {
         return {
             hasEnded: this.#hasEnded,
@@ -197,15 +207,33 @@ class FreeThrows extends EventEmitter {
         }
     }
 
-    isRunning() {
-        const lastRound = this.#getLastRound();
-
-        if (!lastRound) {
-            return false;
+    getState() {
+        return {
+            hasEnded: this.#hasEnded,
+            robots: this.#robots,
+            minRounds: this.#minRounds,
+            timeLimit: this.#timeLimit,
+            rounds: this.#rounds,
+            robotIndex: this.#robotIndex,
         }
+    }
 
-        return !lastRound.endTime;
+    setState(state) {
+        this.#hasEnded = state.hasEnded;
+        this.#robots = state.robots;
+        this.#minRounds = state.minRounds;
+        this.#timeLimit = state.timeLimit;
+        this.#rounds = state.rounds;
+        this.#robotIndex = state.robotIndex;
     }
 }
+
+FreeThrows.fromState = function (state) {
+    const freeThrows = new FreeThrows(state.robots, state.minRounds, state.timeLimit);
+
+    freeThrows.setState(state);
+
+    return freeThrows;
+};
 
 module.exports = FreeThrows;
