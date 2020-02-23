@@ -17,6 +17,7 @@ unsigned long debounceDelay = 5;
 const int blueLedPin = 25;
 const int orangeLedPin = 26;
 const int greenLedPin = 27;
+const int basketSelectionPin = 32;
 
 WebsocketsClient client;
 
@@ -64,6 +65,7 @@ void setup() {
     pinMode(blueLedPin, OUTPUT);
     pinMode(orangeLedPin, OUTPUT);
     pinMode(greenLedPin, OUTPUT);
+    pinMode(basketSelectionPin, INPUT);
 
     digitalWrite(blueLedPin, HIGH);
     digitalWrite(orangeLedPin, HIGH);
@@ -115,8 +117,14 @@ void loop() {
       if (currentSensorState != sensorState) {
         sensorState = currentSensorState;
 
+        int currentBasketSelection = digitalRead(basketSelectionPin);
+
         if (sensorState == HIGH) {
-          client.send("blue");
+          if (currentBasketSelection == HIGH) {
+            client.send("magenta");
+          } else {
+            client.send("blue");
+          }
         }
        }
     }
