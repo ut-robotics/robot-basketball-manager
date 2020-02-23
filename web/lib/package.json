@@ -1,0 +1,18 @@
+{
+  "name": "lib",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "npm run build-lit-element && npm run build-luxon",
+    "build-lit-element": "rollup -c rollup.lit-element.js",
+    "build-luxon": "rollup -c rollup.luxon.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "lit-element": "^2.2.1",
+    "luxon": "^1.22.0",
+    "rollup-plugin-includepaths": "^0.2.3",
+    "rollup-plugin-node-resolve": "^5.2.0"
+  }
+}

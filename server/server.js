@@ -11,6 +11,23 @@ const RobotsApi = require('./robots-api');
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({server});
+const wssBaskets = new WebSocket.Server({port: 8112}, () => {
+    log('Opened baskets websocket');
+});
+
+function time() {
+    const date = new Date();
+
+    return `${('0' + date.getMinutes()).slice(-2)}:${('0' + date.getSeconds()).slice(-2)}.${('00' + date.getMilliseconds()).slice(-3)}`;
+}
+
+function log(...parts) {
+    console.log.apply(console, [time(), ...parts]);
+}
+
+function logError(...parts) {
+    console.error.apply(console, [time(), ...parts]);
+}
 
 app.use(express.static('../web'));
 
@@ -36,42 +53,32 @@ const participants = {
     'robot6': {id: 'robot6', name: 'Robot 6'},
     'robot7': {id: 'robot7', name: 'Robot 7'},
 };
-/*
-let tcpSocket;
 
-const tcpServer = net.createServer((socket) => {
-    tcpSocket = socket;
-
-    socket.on('error', (err) => {
-        console.error('TCP socket error', err);
-    });
-
-    socket.on('data', (data) => {
-        console.error('TCP socket data', data.toString());
-
-        socket.write('start');
-    });
-});
-
-tcpServer.on('error', (err) => {
-    console.error('TCP server error', err);
-});
-
-tcpServer.on('connection', (socket) => {
-    console.error('TCP server connection', socket.remoteAddress, socket.remotePort);
-});
-
-tcpServer.listen(8111, 'localhost', () => {
-    console.log('opened TCP server on', tcpServer.address());
-});
-*/
 wss.on('connection', function connection(ws, req) {
+    log('websocket connection', req.connection.remoteAddress, req.connection.remotePort);
+
     ws.on('message', function incoming(message) {
-        console.log('received: %s', message);
+        log('received:', message);
         try {
             handleWsMessage(JSON.parse(message));
         } catch (error) {
-            console.info(error);
+            logError(error);
+        }
+    });
+
+    ws.send(getActiveGameStateJSON());
+});
+
+wssBaskets.on('connection', function connection(ws, req) {
+    log('basket websocket connection', req.connection.remoteAddress, req.connection.remotePort);
+
+    ws.on('message', function incoming(message) {
+        log('basket sent:', message);
+
+        if (message === 'blue') {
+            incrementScore(Basket.blue);
+        } else if (message === 'magenta') {
+            incrementScore(Basket.magenta);
         }
     });
 
@@ -86,9 +93,9 @@ function wsServerBroadcast(wss, data) {
     });
 }
 
-server.listen(8101, function listening() {
-    console.log('Listening on %d', server.address().port);
-    console.log('http://localhost:' + server.address().port);
+server.listen(8110, function listening() {
+    log('Listening on %d', server.address().port);
+    log('http://localhost:' + server.address().port);
 });
 
 let activeGame = null;
@@ -96,18 +103,50 @@ let activeGame = null;
 loadActiveGame();
 
 function broadcastGameState() {
-    console.log('broadcastGameState');
+    log('broadcastGameState');
     wsServerBroadcast(wss, getActiveGameStateJSON());
 }
 
+function handleChangeType(changeType) {
+    log('handleChangeType', changeType);
+
+    if (changeType === 'roundStarted' || changeType === 'freeThrowAttemptStarted') {
+        robotsApi.start(activeGame.getRobotIds());
+    } else if (changeType === 'roundStopped' || changeType === 'freeThrowAttemptEnded') {
+        robotsApi.stop(activeGame.getRobotIds());
+    }
+}
+
+let isSaving = false;
+let saveAgain = false;
+
 function saveActiveGame() {
+    log('saveActiveGame');
+
+    if (isSaving) {
+        log('is already saving');
+        saveAgain = true;
+    }
+
+    isSaving = true;
+
     const state = activeGame.getState();
 
     fs.writeFile('active_game.json', JSON.stringify(state, null, 2), 'utf8', (error) => {
         if (error) {
-            console.error('Failed to save active game', error);
+            logError('Failed to save active game', error);
         } else {
-            console.log('Active game saved');
+            log('Active game saved');
+        }
+
+        isSaving = false;
+
+        if (saveAgain) {
+            saveAgain = false;
+
+            setImmediate(() => {
+                saveActiveGame();
+            });
         }
     });
 }
@@ -115,20 +154,21 @@ function saveActiveGame() {
 function loadActiveGame() {
     fs.readFile('active_game.json', 'utf8', (error, stateJSON) => {
         if (error) {
-            console.error('Failed to read game state file', error);
+            logError('Failed to read game state file', error);
         } else {
-            console.log('Active game state loaded');
+            log('Active game state loaded');
 
             try {
                 const state = JSON.parse(stateJSON);
                 activeGame = Game.fromState(state);
 
-                activeGame.on('changed', () => {
+                activeGame.on('changed', (changeType) => {
+                    handleChangeType(changeType);
                     broadcastGameState();
                     saveActiveGame();
                 });
             } catch (e) {
-                console.error('Failed to parse game state from file', error);
+                log('Failed to parse game state from file', e);
             }
         }
     });
@@ -139,7 +179,7 @@ function getActiveGameStateJSON() {
 }
 
 function handleWsMessage(message) {
-    console.log('handleWsMessage', message);
+    log('handleWsMessage', message);
 
     switch (message.method) {
         case 'create_game':
@@ -163,6 +203,13 @@ function handleWsMessage(message) {
         case 'increment_fouls_right':
             incrementFouls(1);
             break;
+        case 'confirm_game':
+            confirmGame();
+            break;
+        case 'set_score_validity':
+            const {sideIndex, scoreIndex, isValid} = message.params;
+            setScoreValidity(sideIndex, scoreIndex, isValid);
+            break;
     }
 }
 
@@ -181,7 +228,8 @@ function createNewGame() {
 
     activeGame = new Game([participants.io, participants['001trt']], [Basket.blue, Basket.magenta], false);
 
-    activeGame.on('changed', () => {
+    activeGame.on('changed', (changeType) => {
+        handleChangeType(changeType);
         broadcastGameState();
         saveActiveGame();
     });
@@ -191,25 +239,23 @@ function createNewGame() {
 }
 
 function startGame() {
-    if (!activeGame) {
+    if (!activeGame || activeGame.hasEnded) {
         return;
     }
 
     activeGame.start();
-    robotsApi.start(activeGame.getRobotIds());
 }
 
 function stopGame() {
-    if (!activeGame) {
+    if (!activeGame || activeGame.hasEnded) {
         return;
     }
 
     activeGame.stop();
-    robotsApi.stop(activeGame.getRobotIds());
 }
 
 function incrementScore(basket) {
-    if (!activeGame) {
+    if (!activeGame || activeGame.hasEnded) {
         return;
     }
 
@@ -217,9 +263,25 @@ function incrementScore(basket) {
 }
 
 function incrementFouls(robotIndex) {
-    if (!activeGame) {
+    if (!activeGame || activeGame.hasEnded) {
         return;
     }
 
     activeGame.incrementFouls(robotIndex);
+}
+
+function confirmGame() {
+    if (!activeGame || activeGame.hasEnded) {
+        return;
+    }
+
+    activeGame.confirm();
+}
+
+function setScoreValidity(sideIndex, scoreIndex, isValid) {
+    if (!activeGame || activeGame.hasEnded) {
+        return;
+    }
+
+    activeGame.setScoreValidity(sideIndex, scoreIndex, isValid);
 }

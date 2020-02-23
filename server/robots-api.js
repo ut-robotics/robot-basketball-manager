@@ -17,8 +17,6 @@ class RobotsApi {
                 console.log('received', message);
 
                 this.#handleMessage(message, ws);
-
-                ws.send('start');
             });
         });
     }

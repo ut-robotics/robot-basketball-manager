@@ -1,4 +1,6 @@
-import WebsocketManager from "../util/websocket-manager.js";
+import WebsocketManager from "../js/util/websocket-manager.js";
+import getRoundRuntime from "../js/util/get-round-runtime.js";
+import getValidScoreCounts from "../js/util/get-valid-score-counts.js";
 
 let socketManager = new WebsocketManager(onSocketMessage);
 
@@ -38,6 +40,10 @@ function renderState(state) {
 
     const {rounds, robots} = state;
     const lastRound = rounds[rounds.length - 1];
+
+    if (!lastRound) {
+        return;
+    }
 
     if (state.freeThrows) {
         leftScoreElement.classList.remove('blue-basket');
@@ -151,51 +157,20 @@ function updateTime() {
             const lastRound = rounds[rounds.length - 1];
             const lastAttempt = lastRound[lastRound.length -1];
             const runTime = (lastAttempt.endTime || Date.now()) - lastAttempt.startTime;
-            const time = Math.max(activeGameState.freeThrows.timeLimit - runTime, 0);
+            const time = Math.max(activeGameState.freeThrows.timeLimit - runTime, 0) / 1000;
 
-            timeElement.innerText = (time / 1000).toFixed(1);
+            timeElement.innerText = time >= 100 ? time.toFixed(0) : time.toPrecision(2);
         }
     } else {
         const lastRound = activeGameState.rounds[activeGameState.rounds.length - 1];
-        const runtime = getRuntime(lastRound.runs);
-        const time = Math.max(lastRound.timeLimit - runtime, 0);
 
-        timeElement.innerText = (time / 1000).toFixed(1);
-    }
-}
+        if (lastRound) {
+            const runtime = getRoundRuntime(lastRound.runs);
+            const time = Math.max(lastRound.timeLimit - runtime, 0) / 1000;
 
-function getRuntime(runs) {
-    const time = Date.now();
-    const lastRun = runs[runs.length - 1];
-    let runtime = 0;
-
-    for  (const run of runs) {
-        const {startTime, endTime} = run;
-
-        if (startTime && endTime) {
-            runtime += endTime - startTime;
-        } else if (startTime && run === lastRun) {
-            runtime += time - startTime;
+            timeElement.innerText = time >= 100 ? time.toFixed(0) : time.toPrecision(2);
+        } else {
+            timeElement.innerText = '';
         }
     }
-
-    return runtime;
-}
-
-function getValidScoreCounts(roundScores) {
-    const validScoreCounts = [];
-
-    for (const robotScores of roundScores) {
-        let validCount = 0;
-
-        for (const score of robotScores) {
-            if (score.isValid) {
-                validCount++;
-            }
-        }
-
-        validScoreCounts.push(validCount);
-    }
-
-    return validScoreCounts;
 }

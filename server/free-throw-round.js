@@ -48,6 +48,8 @@ class FreeThrows extends EventEmitter {
         lastRound = this.#getLastRound();
         lastRound.push({startTime: time, didScore: false, robot: this.#robots[this.#robotIndex]});
 
+        this.emit('attemptStarted');
+
         this.#startTimeCheck();
     }
 
@@ -67,6 +69,26 @@ class FreeThrows extends EventEmitter {
         this.#checkStatus();
 
         this.emit('attemptEnded');
+    }
+
+    confirm() {
+        const lastAttempt = this.#getLastAttempt();
+
+        if (lastAttempt) {
+            lastAttempt.isConfirmed = true;
+
+            this.emit('isConfirmedChanged');
+        }
+    }
+
+    unconfirm() {
+        const lastAttempt = this.#getLastAttempt();
+
+        if (lastAttempt) {
+            lastAttempt.isConfirmed = false;
+
+            this.emit('isConfirmedChanged');
+        }
     }
 
     #end = () => {
@@ -181,6 +203,7 @@ class FreeThrows extends EventEmitter {
         if (attempt.endTime) {
             info.endTime = attempt.endTime;
             info.didScore = attempt.didScore;
+            info.isConfirmed = attempt.isConfirmed;
         }
 
         return info;

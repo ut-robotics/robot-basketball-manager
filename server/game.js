@@ -29,13 +29,12 @@ class Game extends EventEmitter {
         this.#oppositeBaskets = startingBaskets.slice().reverse();
         this.#isTieAllowed = isTieAllowed;
 
-        //this.#proceed();
+        this.#proceed();
     }
 
     start() {
         if (this.#freeThrows) {
             this.#freeThrows.start();
-            this.emit('changed', 'freeThrowStarted');
             return;
         }
 
@@ -43,13 +42,13 @@ class Game extends EventEmitter {
 
         if (lastRound && !lastRound.hasEnded) {
             lastRound.start();
-            this.emit('changed', 'roundStarted');
+        } else {
+            this.#proceed();
         }
     }
 
     stop() {
         if (this.#freeThrows) {
-            //this.#freeThrows.stop();
             return;
         }
 
@@ -57,7 +56,6 @@ class Game extends EventEmitter {
 
         if (lastRound) {
             lastRound.stop();
-            this.emit('changed', 'roundStopped');
         }
     }
 
@@ -102,12 +100,50 @@ class Game extends EventEmitter {
         }
     }
 
+    confirm() {
+        if (this.#freeThrows) {
+            this.#freeThrows.confirm();
+            this.#proceed();
+            return;
+        }
+
+        const lastRound = this.#getLastRound();
+
+        if (lastRound) {
+            lastRound.confirm();
+            this.#proceed();
+        }
+    }
+
+    unconfirm() {
+        if (this.#freeThrows) {
+            this.#freeThrows.confirm();
+            return;
+        }
+
+        const lastRound = this.#getLastRound();
+
+        if (lastRound) {
+            lastRound.unconfirm();
+        }
+    }
+
+    setScoreValidity(sideIndex, scoreIndex, isValid) {
+        const lastRound = this.#getLastRound();
+
+        if (lastRound) {
+            lastRound.setScoreValidity(sideIndex, scoreIndex, isValid);
+        }
+    }
+
     #addNewRound = () => {
         const completedRoundCount = this.#rounds.length;
         const maxDuration = completedRoundCount >= 3 ? extraRoundLength : mainRoundLength;
         const baskets = completedRoundCount % 2 === 0 ? this.#startingBaskets : this.#oppositeBaskets;
 
         this.#addRound(new GameRound(maxDuration, baskets));
+
+        this.emit('changed', 'roundAdded');
     };
 
     #addRoundFromState = (state) => {
@@ -117,15 +153,32 @@ class Game extends EventEmitter {
     #addRound = (round) => {
         this.#rounds.push(round);
 
+        round.on('started', () => {
+            this.emit('changed', 'roundStarted');
+        });
+
+        round.on('stopped', () => {
+            this.emit('changed', 'roundStopped');
+        });
+
         round.on('ended', () => {
             console.log(`Round ${this.#rounds.length} ended`);
-            this.#proceed();
             this.emit('changed', 'roundEnded');
+        });
+
+        round.on('isConfirmedChanged', () => {
+            this.emit('changed', 'roundIsConfirmedChanged');
+        });
+
+        round.on('scoreValidityChanged', () => {
+            this.emit('changed', 'roundScoreValidityChanged');
         });
     };
 
     #addNewFreeThrows = () => {
         this.#addFreeThrows(new FreeThrows(this.#robots, 3, freeThrowAttemptRoundLength));
+
+        this.emit('changed', 'freeThrowsAdded');
     };
 
     #addFreeThrowsFromState = (state) => {
@@ -135,19 +188,27 @@ class Game extends EventEmitter {
     #addFreeThrows = (freeThrows) => {
         this.#freeThrows = freeThrows;
 
+        this.#freeThrows.on('attemptStarted', () => {
+            console.log('Free throw attempt started');
+            this.emit('changed', 'freeThrowAttemptStarted');
+        });
+
         this.#freeThrows.on('attemptEnded', () => {
             console.log('Free throw attempt ended');
-            this.#proceed();
             this.emit('changed', 'freeThrowAttemptEnded');
         });
 
         this.#freeThrows.on('ended', () => {
             console.log('Free throws ended');
-            this.#proceed();
             this.emit('changed', 'freeThrowsEnded');
         });
 
         this.emit('change', 'freeThrowsStarted');
+
+        this.#freeThrows.on('isConfirmedChanged', () => {
+            console.log('Free throw attempt isConfirmed changed');
+            this.emit('changed', 'freeThrowAttemptIsConfirmedChanged');
+        });
     };
 
     #proceed = () => {
@@ -168,7 +229,7 @@ class Game extends EventEmitter {
 
         const lastRound = this.#getLastRound();
 
-        if (!lastRound || lastRound.hasEnded) {
+        if (!lastRound || lastRound.isConfirmed) {
             if (this.#rounds.length < 6) {
                 this.#addNewRound();
             } else if (!this.#freeThrows) {
@@ -293,6 +354,8 @@ class Game extends EventEmitter {
         this.#isTieAllowed = state.isTieAllowed;
         this.#hasEnded = state.hasEnded;
 
+        this.#rounds = [];
+
         for (const roundState of state.rounds) {
             this.#addRoundFromState(roundState);
         }
@@ -300,6 +363,8 @@ class Game extends EventEmitter {
         if (state.freeThrows) {
             this.#addFreeThrowsFromState(state.freeThrows);
         }
+
+        this.#proceed();
     }
 }
 

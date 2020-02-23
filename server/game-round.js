@@ -6,9 +6,25 @@ class GameRound extends EventEmitter {
     #runtimeCheckInterval;
     #roundMaxLength = mainRoundLength; // milliseconds
     #hasEnded = false;
+    #isConfirmed = false;
     #baskets;
     #scores = [[], []];
     #fouls = [[], []];
+
+    get isConfirmed() {
+        return this.#isConfirmed;
+    }
+
+    set isConfirmed(value) {
+        if (this.#hasEnded) {
+            const oldValue = this.#isConfirmed;
+            this.#isConfirmed = value;
+
+            if (oldValue !== value) {
+                this.emit('isConfirmedChanged');
+            }
+        }
+    }
 
     get hasEnded() {
         return this.#hasEnded;
@@ -31,6 +47,7 @@ class GameRound extends EventEmitter {
 
         if (lastRun && lastRun.endTime || !lastRun) {
             this.#runs.push({startTime: time, endTime: null});
+            this.emit('started');
         }
 
         if (!this.#runtimeCheckInterval) {
@@ -44,6 +61,7 @@ class GameRound extends EventEmitter {
 
         if (lastRun && !lastRun.endTime) {
             lastRun.endTime = time;
+            this.emit('stopped');
         }
     }
 
@@ -108,6 +126,28 @@ class GameRound extends EventEmitter {
         }
     }
 
+    confirm() {
+        this.isConfirmed = true;
+    }
+
+    unconfirm() {
+        this.isConfirmed = false;
+    }
+
+    setScoreValidity(sideIndex, scoreIndex, isValid) {
+        const sideScores = this.#scores[sideIndex];
+        const score = sideScores[scoreIndex];
+
+        if (score) {
+            const oldValue = score.isValid;
+            score.isValid = isValid;
+
+            if (oldValue !== isValid) {
+                this.emit('scoreValidityChanged');
+            }
+        }
+    }
+
     getScores() {
         return this.#scores;
     }
@@ -131,7 +171,7 @@ class GameRound extends EventEmitter {
     }
 
     getWinnerIndex() {
-        if (!this.hasEnded) {
+        if (!this.hasEnded || !this.isConfirmed) {
             return -1;
         }
 
@@ -161,6 +201,7 @@ class GameRound extends EventEmitter {
             fouls: this.#fouls,
             baskets: this.#baskets,
             hasEnded: this.#hasEnded,
+            isConfirmed: this.#isConfirmed,
             duration: this.getRuntime(),
             timeLimit: this.#roundMaxLength,
             winnerIndex: this.getWinnerIndex(),
@@ -174,6 +215,7 @@ class GameRound extends EventEmitter {
             fouls: this.#fouls,
             baskets: this.#baskets,
             hasEnded: this.#hasEnded,
+            isConfirmed: this.#isConfirmed,
             roundMaxLength: this.#roundMaxLength,
             runs: this.#runs,
         }
@@ -183,7 +225,8 @@ class GameRound extends EventEmitter {
         this.#scores = state.scores;
         this.#fouls = state.fouls;
         this.#baskets = state.baskets;
-        this.#hasEnded = state.hasEnded;
+        this.#hasEnded = state.hasEnded || false;
+        this.#isConfirmed = state.isConfirmed || false;
         this.#roundMaxLength = state.roundMaxLength;
         this.#runs = state.runs;
     }
