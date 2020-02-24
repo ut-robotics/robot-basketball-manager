@@ -61,9 +61,13 @@ class Game extends EventEmitter {
     }
 
     endRound() {
+        if (this.#freeThrows) {
+            return;
+        }
+
         const lastRound = this.#getLastRound();
 
-        if (lastRound) {
+        if (lastRound && !lastRound.hasEnded) {
             lastRound.end();
         }
     }

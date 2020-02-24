@@ -66,8 +66,6 @@ class FreeThrows extends EventEmitter {
             attempt.didScore = didScore;
         }
 
-        this.#checkStatus();
-
         this.emit('attemptEnded');
     }
 
@@ -78,6 +76,8 @@ class FreeThrows extends EventEmitter {
             lastAttempt.isConfirmed = true;
 
             this.emit('isConfirmedChanged');
+
+            this.#checkStatus();
         }
     }
 
@@ -150,9 +150,10 @@ class FreeThrows extends EventEmitter {
         }
 
         const lastRound = this.#getLastRound();
+        const lastAttempt = lastRound[lastRound.length - 1];
 
         // Round not finished
-        if (lastRound.length !== this.#robots.length || !lastRound[lastRound.length - 1].endTime) {
+        if (lastRound.length !== this.#robots.length || !lastAttempt.endTime || !lastAttempt.isConfirmed) {
             return {result: FreeThrowsResult.unknown};
         }
 
