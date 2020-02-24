@@ -126,6 +126,10 @@ class FreeThrows extends EventEmitter {
         return lastRound[lastRound.length - 1];
     };
 
+    getCurrentRobotId() {
+        return this.#robots[this.#robotIndex].id;
+    }
+
     getScores() {
         const scores = [0, 0];
 

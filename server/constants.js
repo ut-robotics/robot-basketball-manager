@@ -15,4 +15,6 @@ module.exports = {
     mainRoundLength: 10000, // milliseconds
     extraRoundLength: 5000, // milliseconds
     freeThrowAttemptRoundLength: 3000, // milliseconds
+    backToCornerFoulCount: 1,
+    outOfRoundFoulCount: 2
 };

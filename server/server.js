@@ -111,7 +111,7 @@ function handleChangeType(changeType) {
     log('handleChangeType', changeType);
 
     if (changeType === 'roundStarted' || changeType === 'freeThrowAttemptStarted') {
-        robotsApi.start(activeGame.getRobotIds());
+        robotsApi.start(activeGame.getInGameRobotIds());
     } else if (changeType === 'roundStopped' || changeType === 'freeThrowAttemptEnded') {
         robotsApi.stop(activeGame.getRobotIds());
     }

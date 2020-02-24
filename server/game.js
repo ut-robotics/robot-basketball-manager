@@ -5,6 +5,7 @@ const {
     mainRoundLength,
     extraRoundLength,
     freeThrowAttemptRoundLength,
+    outOfRoundFoulCount,
     GameResult,
     FreeThrowsResult
 } = require('./constants');
@@ -330,6 +331,23 @@ class Game extends EventEmitter {
 
     getRobotIds() {
         return this.#robots.map(robot => robot.id);
+    }
+
+    getInGameRobotIds() {
+        const robotIds = this.getRobotIds();
+        const lastRound = this.#getLastRound();
+
+        if (this.#freeThrows) {
+            return [this.#freeThrows.getCurrentRobotId()];
+        }
+
+        if (!lastRound || lastRound.hasEnded) {
+            return robotIds;
+        }
+
+        const fouls = lastRound.getFouls();
+
+        return robotIds.filter((robot, index) => fouls[index].length < outOfRoundFoulCount);
     }
 
     getState() {
