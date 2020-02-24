@@ -64,6 +64,23 @@ class FreeThrows extends LitElement {
         return lastRound[lastRound.length - 1]
     }
 
+    getRoundNumber() {
+        const {rounds} = this.state;
+
+        if (rounds.length === 0) {
+            return 1;
+        }
+
+        const lastRound = rounds[rounds.length - 1];
+        const lastAttempt = lastRound[lastRound.length - 1];
+
+        if (lastRound.length < 2 || !lastAttempt.isConfirmed) {
+            return rounds.length;
+        }
+
+        return rounds.length + 1;
+    }
+
     isRunning() {
         const lastAttempt = this.getLastAttempt();
 
@@ -107,7 +124,7 @@ class FreeThrows extends LitElement {
         const {scores, rounds} = this.state;
 
         return html`<header>
-            <span>Free throws | Round ${rounds.length} | Scores: [${scores[0]} - ${scores[1]}]</span>
+            <span>Free throws | Round ${this.getRoundNumber()} | Scores: [${scores[0]} - ${scores[1]}]</span>
             <span>${this.renderControls()}</span>
             <span>${this.renderRuntime()}</span>
             </header>`;
