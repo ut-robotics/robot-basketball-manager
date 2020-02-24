@@ -81,8 +81,6 @@ wssBaskets.on('connection', function connection(ws, req) {
             incrementScore(Basket.magenta);
         }
     });
-
-    ws.send(getActiveGameStateJSON());
 });
 
 function wsServerBroadcast(wss, data) {
