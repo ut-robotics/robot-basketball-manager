@@ -22,6 +22,7 @@ body {
     justify-content: space-between;
     background-color: black;
     color: #EEE;
+    overflow: hidden;
 }
 
 body > * {

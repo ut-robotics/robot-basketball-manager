@@ -157,18 +157,18 @@ function updateTime() {
             const lastRound = rounds[rounds.length - 1];
             const lastAttempt = lastRound[lastRound.length -1];
             const runTime = (lastAttempt.endTime || Date.now()) - lastAttempt.startTime;
-            const time = Math.max(activeGameState.freeThrows.timeLimit - runTime, 0) / 1000;
+            const time = (Math.max(activeGameState.freeThrows.timeLimit - runTime, 0) / 1000).toFixed(1);
 
-            timeElement.innerText = time >= 100 ? time.toFixed(0) : time.toPrecision(2);
+            timeElement.innerText = time.length > 3 ? time.slice(0, -2) : time;
         }
     } else {
         const lastRound = activeGameState.rounds[activeGameState.rounds.length - 1];
 
         if (lastRound) {
             const runtime = getRoundRuntime(lastRound.runs);
-            const time = Math.max(lastRound.timeLimit - runtime, 0) / 1000;
+            const time = (Math.max(lastRound.timeLimit - runtime, 0) / 1000).toFixed(1);
 
-            timeElement.innerText = time >= 100 ? time.toFixed(0) : time.toPrecision(2);
+            timeElement.innerText = time.length > 3 ? time.slice(0, -2) : time;
         } else {
             timeElement.innerText = '';
         }
