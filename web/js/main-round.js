@@ -65,6 +65,10 @@ class MainRound extends LitElement {
         serverApi.stop();
     }
 
+    handleEnd() {
+        serverApi.endRound();
+    }
+
     handleConfirm() {
         serverApi.confirm();
     }
@@ -114,7 +118,7 @@ class MainRound extends LitElement {
     }
 
     renderControls() {
-        return html`${this.renderStartStopButton()}${this.renderConfirmButton()}`;
+        return html`${this.renderStartStopButton()}${this.renderEndButton()}${this.renderConfirmButton()}`;
     }
 
     renderStartStopButton() {
@@ -130,6 +134,14 @@ class MainRound extends LitElement {
         } else {
             return html`<button @click=${this.handleStart}>Start</button>`;
         }
+    }
+
+    renderEndButton() {
+        if (this.state.hasEnded || this.state.runs.length === 0) {
+            return null;
+        }
+
+        return html`<button @click=${this.handleEnd}>End</button>`;
     }
 
     renderConfirmButton() {

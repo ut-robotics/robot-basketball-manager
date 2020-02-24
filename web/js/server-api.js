@@ -34,6 +34,10 @@ class ServerApi {
         this.socketManager.send({method: 'stop_game'});
     }
 
+    endRound() {
+        this.socketManager.send({method: 'end_round'});
+    }
+
     confirm() {
         this.socketManager.send({method: 'confirm_game'});
     }

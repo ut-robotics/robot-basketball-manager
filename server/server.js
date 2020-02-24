@@ -191,6 +191,9 @@ function handleWsMessage(message) {
         case 'stop_game':
             stopGame();
             break;
+        case 'end_round':
+            endRound();
+            break;
         case 'increment_blue':
             incrementScore(Basket.blue);
             break;
@@ -252,6 +255,14 @@ function stopGame() {
     }
 
     activeGame.stop();
+}
+
+function endRound() {
+    if (!activeGame || activeGame.hasEnded) {
+        return;
+    }
+
+    activeGame.endRound();
 }
 
 function incrementScore(basket) {
