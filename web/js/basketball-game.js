@@ -40,8 +40,8 @@ class BasketballGame extends LitElement {
         const {robots} = this.state;
 
         return html`<header>${robots[0].name} vs ${robots[1].name}${this.renderWinner()}</header>
-            ${this.renderRounds(this.state.rounds)}
-            ${this.renderFreeThrows()}`;
+            ${this.renderFreeThrows()}
+            ${this.renderRounds(this.state.rounds)}`;
     }
 
     renderWinner() {
@@ -59,7 +59,8 @@ class BasketballGame extends LitElement {
     }
 
     renderRounds(rounds) {
-        return html`${rounds.map(this.renderRound)}`;
+        const reverseRounds = rounds.slice().reverse();
+        return html`${reverseRounds.map((round, index) => this.renderRound(round, rounds.length - 1 - index))}`;
     }
 
     renderRound(round, index) {
