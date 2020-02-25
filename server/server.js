@@ -37,9 +37,12 @@ const robotsApi = new RobotsApi(8111, (method, params) => {
             return null;
         }
 
+        const robotsIds = activeGame.getRobotIds();
+
         return {
             is_running: activeGame.isRunning(),
-            targets: activeGame.getRobotIds(),
+            targets: robotsIds,
+            baskets: activeGame.getBasketsForRobots(robotsIds),
         }
     }
 });
@@ -109,7 +112,9 @@ function handleChangeType(changeType) {
     log('handleChangeType', changeType);
 
     if (changeType === 'roundStarted' || changeType === 'freeThrowAttemptStarted') {
-        robotsApi.start(activeGame.getInGameRobotIds());
+        const targets = activeGame.getInGameRobotIds();
+
+        robotsApi.start(targets, activeGame.getBasketsForRobots(targets));
     } else if (changeType === 'roundStopped' || changeType === 'freeThrowAttemptEnded') {
         robotsApi.stop(activeGame.getRobotIds());
     }

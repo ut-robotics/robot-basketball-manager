@@ -6,6 +6,7 @@ class FreeThrows extends EventEmitter {
     #timeLimit = 10000;
     #rounds = [];
     #robots;
+    #baskets;
     #robotIndex = 0;
     #hasEnded = false;
     #timeCheckTimeout;
@@ -14,9 +15,10 @@ class FreeThrows extends EventEmitter {
         return this.#hasEnded;
     }
 
-    constructor(robots, minRounds, timeLimit) {
+    constructor(robots, baskets, minRounds, timeLimit) {
         super();
         this.#robots = robots;
+        this.#baskets = baskets;
         this.#minRounds = minRounds;
         this.#timeLimit = timeLimit;
     }
@@ -130,6 +132,10 @@ class FreeThrows extends EventEmitter {
         return this.#robots[this.#robotIndex].id;
     }
 
+    getBaskets() {
+        return this.#baskets;
+    }
+
     getScores() {
         const scores = [0, 0];
 
@@ -228,6 +234,7 @@ class FreeThrows extends EventEmitter {
         return {
             hasEnded: this.#hasEnded,
             robots: this.#robots,
+            baskets: this.#baskets,
             scores: this.getScores(),
             timeLimit: this.#timeLimit,
             rounds: this.#rounds.map(round => round.map(attempt => this.#getAttemptInfo(attempt))),
@@ -239,6 +246,7 @@ class FreeThrows extends EventEmitter {
         return {
             hasEnded: this.#hasEnded,
             robots: this.#robots,
+            baskets: this.#baskets,
             minRounds: this.#minRounds,
             timeLimit: this.#timeLimit,
             rounds: this.#rounds,
@@ -249,6 +257,7 @@ class FreeThrows extends EventEmitter {
     setState(state) {
         this.#hasEnded = state.hasEnded;
         this.#robots = state.robots;
+        this.#baskets = state.baskets;
         this.#minRounds = state.minRounds;
         this.#timeLimit = state.timeLimit;
         this.#rounds = state.rounds;
@@ -257,7 +266,7 @@ class FreeThrows extends EventEmitter {
 }
 
 FreeThrows.fromState = function (state) {
-    const freeThrows = new FreeThrows(state.robots, state.minRounds, state.timeLimit);
+    const freeThrows = new FreeThrows(state.robots, state.baskets, state.minRounds, state.timeLimit);
 
     freeThrows.setState(state);
 

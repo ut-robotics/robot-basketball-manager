@@ -21,16 +21,16 @@ class RobotsApi {
         });
     }
 
-    start(targets) {
-        this.#send('start', targets);
+    start(targets, baskets) {
+        this.#send('start', targets, baskets);
     }
 
     stop(targets) {
         this.#send('stop', targets);
     }
 
-    #send = (signal, targets) => {
-        const message = JSON.stringify({signal, targets});
+    #send = (signal, targets, baskets) => {
+        const message = JSON.stringify({signal, targets, baskets});
 
         for (const client of this.#wss.clients) {
             client.send(message);

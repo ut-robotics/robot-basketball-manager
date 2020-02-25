@@ -156,6 +156,10 @@ class GameRound extends EventEmitter {
         return this.#fouls;
     }
 
+    getBaskets() {
+        return this.#baskets;
+    }
+
     getValidScoreCounts() {
         const validScoreCounts = [];
 

@@ -7,7 +7,8 @@ const {
     freeThrowAttemptRoundLength,
     outOfRoundFoulCount,
     GameResult,
-    FreeThrowsResult
+    FreeThrowsResult,
+    Basket
 } = require('./constants');
 
 class Game extends EventEmitter {
@@ -181,7 +182,9 @@ class Game extends EventEmitter {
     };
 
     #addNewFreeThrows = () => {
-        this.#addFreeThrows(new FreeThrows(this.#robots, 3, freeThrowAttemptRoundLength));
+        const basket = Math.random() < 0.5 ? Basket.blue : Basket.magenta;
+
+        this.#addFreeThrows(new FreeThrows(this.#robots, [basket, basket],3, freeThrowAttemptRoundLength));
 
         this.emit('changed', 'freeThrowsAdded');
     };
@@ -352,6 +355,20 @@ class Game extends EventEmitter {
         const fouls = lastRound.getFouls();
 
         return robotIds.filter((robot, index) => fouls[index].length < outOfRoundFoulCount);
+    }
+
+    getBasketsForRobots(robotIds) {
+        const robotIdsInGame = this.getRobotIds();
+        const lastRound = this.#getLastRound();
+        let baskets = this.#startingBaskets;
+
+        if (this.#freeThrows) {
+            baskets = this.#freeThrows.getBaskets();
+        } else if (lastRound) {
+            baskets = lastRound.getBaskets();
+        }
+
+        return robotIds.map(id => baskets[robotIdsInGame.indexOf(id)] || null);
     }
 
     getState() {
