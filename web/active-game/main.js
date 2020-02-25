@@ -45,12 +45,7 @@ function renderState(state) {
         return;
     }
 
-    if (state.freeThrows) {
-        leftScoreElement.classList.remove('blue-basket');
-        leftScoreElement.classList.remove('magenta-basket');
-        rightScoreElement.classList.remove('magenta-basket');
-        rightScoreElement.classList.remove('blue-basket');
-    } else {
+    if (!state.freeThrows) {
         if (lastRound.baskets[0] === 'blue') {
             leftScoreElement.classList.add('blue-basket');
             leftScoreElement.classList.remove('magenta-basket');
@@ -114,6 +109,7 @@ function renderState(state) {
     if (state.freeThrows) {
         const rounds = state.freeThrows.rounds;
         const robots = state.freeThrows.robots;
+        const baskets = state.freeThrows.baskets;
         const lastRound = rounds[rounds.length - 1];
         let nextRoundNumber = rounds.length + 1;
         let robotIndex = 0;
@@ -132,8 +128,23 @@ function renderState(state) {
         }
 
         messageElement.innerText = `Freethrows round ${nextRoundNumber}: ${robots[robotIndex].name}`;
+
+        const scoreElements = [leftScoreElement, rightScoreElement];
+        const opposingRobotIndex = 1 - robotIndex;
+
+        setBasketClass(scoreElements[robotIndex], baskets[robotIndex]);
+        setBasketClass(scoreElements[opposingRobotIndex]);
     } else {
         messageElement.innerText = '';
+    }
+}
+
+function setBasketClass(element, color) {
+    element.classList.remove('blue-basket');
+    element.classList.remove('magenta-basket');
+
+    if (color) {
+        element.classList.add(color + '-basket');
     }
 }
 
