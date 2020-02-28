@@ -26,10 +26,74 @@ class BasketballManager extends LitElement {
         super();
         serverApi.onMessage(this.onSocketMessage.bind(this));
         this._activeGameState = {};
+
+        document.addEventListener('keydown', this.handleKeyDown.bind(this));
     }
 
     createRenderRoot() {
         return this;
+    }
+
+    handleKeyDown(event) {
+        console.log(event.code);
+
+        switch (event.code) {
+            case 'Space':
+                event.preventDefault();
+                this.handleStartStop();
+                break;
+        }
+    }
+
+    handleStartStop() {
+        if (this.activeGameState.freeThrows) {
+            const rounds = this.activeGameState.freeThrows.rounds;
+            const lastRound = rounds[rounds.length - 1];
+
+            if (!lastRound) {
+                serverApi.start();
+                return;
+            }
+
+            const lastAttempt = lastRound[lastRound.length - 1];
+
+            if (lastAttempt.isConfirmed) {
+                serverApi.start();
+            }
+
+            return;
+        }
+
+        const {hasEnded, isConfirmed} = this.activeGameState;
+        const isRunning = this.isRunning();
+
+        if (hasEnded || isConfirmed) {
+            return;
+        }
+
+        if (isRunning) {
+            serverApi.stop();
+        } else {
+            serverApi.start();
+        }
+    }
+
+    isRunning() {
+        if (this.activeGameState.freeThrows) {
+            return false;
+        }
+
+        const {rounds} = this.activeGameState;
+        const lastRound = rounds[rounds.length - 1];
+
+        if (!lastRound) {
+            return;
+        }
+
+        const {runs} = lastRound;
+        const lastRun = runs[runs.length - 1];
+
+        return !!(lastRun && !lastRun.endTime);
     }
 
     onSocketMessage(message) {
