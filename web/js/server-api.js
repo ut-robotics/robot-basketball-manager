@@ -22,8 +22,8 @@ class ServerApi {
         this.messageListeners.forEach((listener) => listener(message));
     }
 
-    createGame() {
-        this.socketManager.send({method: 'create_game'});
+    createGame(robotIDs) {
+        this.socketManager.send({method: 'create_game', params: {robotIDs}});
     }
 
     start() {
@@ -76,6 +76,10 @@ class ServerApi {
 
     setScoreValidity(sideIndex, scoreIndex, isValid) {
         this.socketManager.send({method: 'set_score_validity', params: {sideIndex, scoreIndex, isValid}});
+    }
+
+    async getRobots() {
+        return fetch('/api/robots').then(response => response.json());
     }
 }
 

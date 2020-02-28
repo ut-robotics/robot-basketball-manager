@@ -15,6 +15,14 @@ const wssBaskets = new WebSocket.Server({port: 8112}, () => {
     log('Opened baskets websocket');
 });
 
+const robots = require('./robots');
+const robotsMap = robots.reduce((object, robot) => {
+    object[robot.id] = robot;
+    return object;
+}, {});
+
+console.log('robotsMap', robotsMap);
+
 function time() {
     const date = new Date();
 
@@ -31,6 +39,10 @@ function logError(...parts) {
 
 app.use(express.static('../web'));
 
+app.get('/api/robots', (req, res) => {
+    res.send(robots);
+});
+
 const robotsApi = new RobotsApi(8111, (method, params) => {
     if (method === 'get_active_game_state') {
         if (!activeGame) {
@@ -46,16 +58,6 @@ const robotsApi = new RobotsApi(8111, (method, params) => {
         }
     }
 });
-
-const participants = {
-    'io': {id: 'io', name: 'Io'},
-    '001trt': {id: '001trt', name: '001TRT'},
-    'robot3': {id: 'robot3', name: 'Robot 3'},
-    'robot4': {id: 'robot4', name: 'Robot 4'},
-    'robot5': {id: 'robot5', name: 'Robot 5'},
-    'robot6': {id: 'robot6', name: 'Robot 6'},
-    'robot7': {id: 'robot7', name: 'Robot 7'},
-};
 
 wss.on('connection', function connection(ws, req) {
     log('websocket connection', req.connection.remoteAddress, req.connection.remotePort);
@@ -95,11 +97,12 @@ function wsServerBroadcast(wss, data) {
 }
 
 server.listen(8110, function listening() {
-    log('Listening on %d', server.address().port);
+    log('Listening on', server.address().port);
     log('http://localhost:' + server.address().port);
 });
 
 let activeGame = null;
+let activeGameFileName = null;
 
 loadActiveGame();
 
@@ -133,9 +136,9 @@ function saveActiveGame() {
 
     isSaving = true;
 
-    const state = activeGame.getState();
+    const data = JSON.stringify(activeGame.getState(), null, 2);
 
-    fs.writeFile('active_game.json', JSON.stringify(state, null, 2), 'utf8', (error) => {
+    fs.writeFile('games/' + activeGameFileName, data, 'utf8', (error) => {
         if (error) {
             logError('Failed to save active game', error);
         } else {
@@ -155,24 +158,39 @@ function saveActiveGame() {
 }
 
 function loadActiveGame() {
-    fs.readFile('active_game.json', 'utf8', (error, stateJSON) => {
-        if (error) {
-            logError('Failed to read game state file', error);
+    fs.readdir('games', (err, files) => {
+        if (err) {
+            console.error(err);
         } else {
-            log('Active game state loaded');
+            console.log(files);
 
-            try {
-                const state = JSON.parse(stateJSON);
-                activeGame = Game.fromState(state);
+            const lastFile = files.sort()[files.length - 1];
 
-                activeGame.on('changed', (changeType) => {
-                    handleChangeType(changeType);
-                    broadcastGameState();
-                    saveActiveGame();
-                });
-            } catch (e) {
-                log('Failed to parse game state from file', e);
+            if (!lastFile) {
+                return;
             }
+
+            fs.readFile('games/' + lastFile, 'utf8', (error, stateJSON) => {
+                if (error) {
+                    logError('Failed to read game state file', error);
+                } else {
+                    log('Active game state loaded');
+
+                    try {
+                        const state = JSON.parse(stateJSON);
+                        activeGame = Game.fromState(state);
+                        activeGameFileName = lastFile;
+
+                        activeGame.on('changed', (changeType) => {
+                            handleChangeType(changeType);
+                            broadcastGameState();
+                            saveActiveGame();
+                        });
+                    } catch (e) {
+                        log('Failed to parse game state from file', e);
+                    }
+                }
+            });
         }
     });
 }
@@ -186,7 +204,7 @@ function handleWsMessage(message) {
 
     switch (message.method) {
         case 'create_game':
-            createNewGame();
+            createNewGame(message.params && message.params.robotIDs);
             break;
         case 'start_game':
             startGame();
@@ -227,12 +245,43 @@ async function wait(duration) {
     });
 }
 
-function createNewGame() {
+async function createNewGame(robotIDs) {
     if (activeGame && !activeGame.hasEnded) {
         return;
     }
 
-    activeGame = new Game([participants.io, participants['001trt']], [Basket.blue, Basket.magenta], false);
+    if (!Array.isArray(robotIDs) || robotIDs.length !== 2) {
+        return;
+    }
+
+    await new Promise((resolve, reject) => {
+        fs.mkdir('games', (err) => {
+            if (err) {
+                console.error(err);
+            }
+
+            if (err && err.code !== 'EEXIST') {
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+    });
+
+    const newGameRobots = [];
+
+    for (const id of robotIDs) {
+        if (!robotsMap[id]) {
+            return;
+        }
+
+        newGameRobots.push(robotsMap[id]);
+    }
+
+    const baskets = Math.random() < 0.5 ? [Basket.blue, Basket.magenta] : [Basket.magenta, Basket.blue];
+
+    activeGame = new Game(newGameRobots, baskets, false);
+    activeGameFileName = `game_${Date.now()}.json`;
 
     activeGame.on('changed', (changeType) => {
         handleChangeType(changeType);

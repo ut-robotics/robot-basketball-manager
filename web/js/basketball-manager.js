@@ -7,7 +7,8 @@ import serverApi from "./server-api.js";
 class BasketballManager extends LitElement {
     static get properties() {
         return {
-            activeGameState: {type: Object}
+            activeGameState: {type: Object},
+            allRobots: {type: Array}
         };
     }
 
@@ -45,9 +46,50 @@ class BasketballManager extends LitElement {
         }
     }
 
+    handleCreateGame(event) {
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+        const robotIDs = [
+            formData.get('robot1'),
+            formData.get('robot2'),
+        ];
+
+        serverApi.createGame(robotIDs);
+    }
+
     render() {
-        return html`<basketball-game state=${JSON.stringify(this.activeGameState)}></basketball-game>
+        return html`<div>${this.renderCreateGame()}</div>
+            <basketball-game state=${JSON.stringify(this.activeGameState)}></basketball-game>
             <div class="raw-state">${stringify(this.activeGameState, {maxLength: 120})}</div>`;
+    }
+
+    renderCreateGame() {
+        if (this.activeGameState?.status?.result === 'unknown') {
+            return null;
+        }
+
+        if (!Array.isArray(this.allRobots) || this.allRobots.length === 0) {
+            serverApi.getRobots().then(allRobots => {
+                this.allRobots = allRobots;
+            });
+
+            return null;
+        }
+
+        const robots = this.allRobots;
+
+        return html`<form @submit=${this.handleCreateGame}>
+            ${this.renderRobotSelection('robot1', robots, robots[0])}
+            ${this.renderRobotSelection('robot2', robots, robots[1] || robots[0])}
+            <button type="submit">Create game</button>
+            </form>`;
+    }
+
+    renderRobotSelection(name, robots, selectedRobot) {
+        return html`<select name=${name}>
+            ${robots.map(robot => html`<option ?selected=${robot === selectedRobot} value=${robot.id}>${robot.name}</option>`)}
+            </select>`;
     }
 }
 

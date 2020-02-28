@@ -12,9 +12,9 @@ module.exports = {
         unknown: 'unknown',
         won: 'won',
     },
-    mainRoundLength: 10000, // milliseconds
-    extraRoundLength: 5000, // milliseconds
-    freeThrowAttemptRoundLength: 3000, // milliseconds
+    mainRoundLength: 60000, // milliseconds
+    extraRoundLength: 30000, // milliseconds
+    freeThrowAttemptRoundLength: 10000, // milliseconds
     backToCornerFoulCount: 1,
     outOfRoundFoulCount: 2
 };

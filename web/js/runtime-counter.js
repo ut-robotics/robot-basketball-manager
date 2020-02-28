@@ -31,8 +31,6 @@ class RuntimeCounter extends LitElement {
     }
 
     render() {
-        console.log('this.laststarttime', this.laststarttime);
-        
         if (this.running) {
             setTimeout(() => {
                 this.performUpdate();
