@@ -3,6 +3,7 @@ const express = require('express');
 const WebSocket = require('ws');
 const util = require('util');
 const fs = require('fs');
+const {exec} = require('child_process');
 
 const Game = require('./game');
 const {Basket} = require('./constants');
@@ -115,12 +116,22 @@ function handleChangeType(changeType) {
     log('handleChangeType', changeType);
 
     if (changeType === 'roundStarted' || changeType === 'freeThrowAttemptStarted') {
-        const targets = activeGame.getInGameRobotIds();
+        playAudio('audio/whistle_blow_short.mp3');
 
+        const targets = activeGame.getInGameRobotIds();
         robotsApi.start(targets, activeGame.getBasketsForRobots(targets));
+
     } else if (changeType === 'roundStopped' || changeType === 'freeThrowAttemptEnded') {
+        playAudio('audio/whistle_blow_long.mp3');
         robotsApi.stop(activeGame.getRobotIds());
+
+    } else if (changeType === 'roundEnded') {
+        playAudio('audio/basketball_buzzer.mp3');
     }
+}
+
+function playAudio(filename) {
+    exec('ffplay -autoexit -nodisp ' + filename);
 }
 
 let isSaving = false;
