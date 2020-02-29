@@ -172,12 +172,10 @@ body > * {
 
 #left-robot-image {
     left: 0;
-    background-image: url("io.png");
     background-position: left center;
 }
 
 #right-robot-image {
     right: 0;
-    background-image: url("001trt.png");
     background-position: right center;
 }

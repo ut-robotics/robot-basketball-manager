@@ -30,6 +30,8 @@ const titleElement = document.getElementById('title-row');
 const messageElement = document.getElementById('message');
 const leftFoulsElement = document.getElementById('left-fouls');
 const rightFoulsElement = document.getElementById('right-fouls');
+const leftRobotImageElement = document.getElementById('left-robot-image');
+const rightRobotImageElement = document.getElementById('right-robot-image');
 
 let activeGameState = null;
 
@@ -78,6 +80,9 @@ function renderState(state) {
 
     leftNameElement.innerText = robots[0].name;
     rightNameElement.innerText = robots[1].name;
+
+    leftRobotImageElement.style.backgroundImage = `url(images/${robots[0].id}_left.png)`;
+    rightRobotImageElement.style.backgroundImage = `url(images/${robots[1].id}_right.png)`;
 
     const gameRoundElements = document.querySelectorAll('.game-round');
 
