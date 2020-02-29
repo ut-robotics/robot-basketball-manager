@@ -116,18 +116,20 @@ function handleChangeType(changeType) {
     log('handleChangeType', changeType);
 
     if (changeType === 'roundStarted' || changeType === 'freeThrowAttemptStarted') {
-        playAudio('audio/whistle_blow_short.mp3');
+        //playAudio('audio/whistle_blow_short.mp3');
 
         const targets = activeGame.getInGameRobotIds();
         robotsApi.start(targets, activeGame.getBasketsForRobots(targets));
 
     } else if (changeType === 'roundStopped' || changeType === 'freeThrowAttemptEnded') {
-        playAudio('audio/whistle_blow_long.mp3');
+        //playAudio('audio/whistle_blow_long.mp3');
         robotsApi.stop(activeGame.getRobotIds());
 
-    } else if (changeType === 'roundEnded') {
+    }/* else if (changeType === 'roundEnded') {
         playAudio('audio/basketball_buzzer.mp3');
-    }
+    }*/
+
+    wsServerBroadcast(wss, JSON.stringify({event: 'game_state_change', params: {type: changeType}}));
 }
 
 function playAudio(filename) {

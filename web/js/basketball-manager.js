@@ -3,6 +3,7 @@ import './basketball-game.js';
 import WebsocketManager from "./util/websocket-manager.js";
 import {stringify} from '../lib/json-stringify-compact.js';
 import serverApi from "./server-api.js";
+import AudioPlayer from "./audio-player.js";
 
 class BasketballManager extends LitElement {
     static get properties() {
@@ -26,6 +27,7 @@ class BasketballManager extends LitElement {
         super();
         serverApi.onMessage(this.onSocketMessage.bind(this));
         this._activeGameState = {};
+        this.audioPlayer = new AudioPlayer();
 
         document.addEventListener('keydown', this.handleKeyDown.bind(this));
     }
@@ -104,9 +106,25 @@ class BasketballManager extends LitElement {
                 case 'game_state':
                     this.activeGameState = info.params;
                     break;
+                case 'game_state_change':
+                    this.handleGameStateChange(info.params.type);
+                    break;
             }
         } catch (error) {
             console.info(error);
+        }
+    }
+
+    handleGameStateChange(type) {
+        console.log('handleGameStateChange', type);
+
+        if (type === 'roundStarted' || type === 'freeThrowAttemptStarted') {
+            this.audioPlayer.whistleShort();
+        } else if (type === 'roundStopped' || type === 'freeThrowAttemptEnded') {
+            this.audioPlayer.whistleLong();
+        } else if (type === 'roundEnded') {
+            this.audioPlayer.stopAll();
+            this.audioPlayer.buzzer();
         }
     }
 
