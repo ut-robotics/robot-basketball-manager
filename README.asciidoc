@@ -1,0 +1,51 @@
+= Robot basketball manager
+:source-highlighter: highlightjs
+
+https://github.com/ut-robotics/robot-basketball-rules[Competition rules]
+
+== Referee's signals
+
+Robots can connect to basketball manager software over WiFi using WebSocket protocol.
+Messages use JSON format.
+
+=== Start
+
+|===
+|*Parameter* |*Type* |*Description*
+|signal |String constant |`start` for start signal.
+|targets |String array |List of Robot IDs.
+|baskets |String array |List of basket colors.
+First item is the basket, in which the first target/robot should throw the balls.
+Second item is the basket for the second robot and so on.
+|===
+
+*Examples*
+
+Start signal. First robot (`Io`) should throw into `magenta` basket and second robot (`001TRT`) into `blue` basket.
+[source,json]
+----
+{
+  "signal": "start",
+  "targets":  ["Io", "001TRT"],
+  "baskets": ["magenta", "blue"]
+}
+----
+
+=== Stop
+
+|===
+|*Parameter* |*Type* |*Description*
+|signal |String constant |`stop` for stop signal.
+|targets |String array |List of Robot IDs.
+|===
+
+*Examples*
+
+Stop signal for robots with IDs of `Io` and `001TRT`.
+[source,json]
+----
+{
+  "signal": "stop",
+  "targets":  ["Io", "001TRT"]
+}
+----
