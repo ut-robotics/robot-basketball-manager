@@ -1,5 +1,7 @@
 const WebSocket = require('ws');
 
+const {log, logError} = require('./util');
+
 class RobotsApi {
     #port;
     #methodHandler;
@@ -9,12 +11,14 @@ class RobotsApi {
         this.#port = port;
         this.#methodHandler = methodHandler;
         this.#wss = new WebSocket.Server({port}, () => {
-            console.log('Opened robots websocket');
+            log('Opened robots websocket');
         });
 
-        this.#wss.on('connection', (ws) => {
+        this.#wss.on('connection', (ws, req) => {
+            log('robot connection', req.connection.remoteAddress, req.connection.remotePort);
+
             ws.on('message', (message) => {
-                console.log('received', message);
+                log('received', message);
 
                 this.#handleMessage(message, ws);
             });

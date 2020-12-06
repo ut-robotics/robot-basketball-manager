@@ -5,6 +5,7 @@ const util = require('util');
 const fs = require('fs');
 const {exec} = require('child_process');
 
+const {log, logError} = require('./util');
 const Game = require('./game');
 const {Basket} = require('./constants');
 const RobotsApi = require('./robots-api');
@@ -23,20 +24,6 @@ const robotsMap = robots.reduce((object, robot) => {
 }, {});
 
 console.log('robotsMap', robotsMap);
-
-function time() {
-    const date = new Date();
-
-    return `${('0' + date.getMinutes()).slice(-2)}:${('0' + date.getSeconds()).slice(-2)}.${('00' + date.getMilliseconds()).slice(-3)}`;
-}
-
-function log(...parts) {
-    console.log.apply(console, [time(), ...parts]);
-}
-
-function logError(...parts) {
-    console.error.apply(console, [time(), ...parts]);
-}
 
 app.use(express.static('../web'));
 
