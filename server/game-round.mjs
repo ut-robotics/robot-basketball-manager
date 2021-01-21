@@ -1,7 +1,7 @@
-const EventEmitter = require('events');
-const {mainRoundLength} = require('./constants');
+import EventEmitter from 'events';
+import {mainRoundLength} from './constants.mjs';
 
-class GameRound extends EventEmitter {
+export default class GameRound extends EventEmitter {
     #runs = [];
     #runtimeCheckInterval;
     #roundMaxLength = mainRoundLength; // milliseconds
@@ -247,5 +247,3 @@ GameRound.fromState = function (state) {
 
     return round;
 };
-
-module.exports = GameRound;

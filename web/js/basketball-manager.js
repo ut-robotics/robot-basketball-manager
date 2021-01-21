@@ -1,8 +1,8 @@
 import {css, html, LitElement} from "../lib/lit-element.mjs";
 import './basketball-game.js';
-import WebsocketManager from "./util/websocket-manager.js";
 import {stringify} from '../lib/json-stringify-compact.js';
 import serverApi from "./server-api.js";
+import ServerWebsocketApi from "./server-websocket-api.js";
 import AudioPlayer from "./audio-player.js";
 
 class BasketballManager extends LitElement {
@@ -25,7 +25,7 @@ class BasketballManager extends LitElement {
 
     constructor() {
         super();
-        serverApi.onMessage(this.onSocketMessage.bind(this));
+        serverWebsocketApi.onMessage(this.onSocketMessage.bind(this));
         this._activeGameState = {};
         this.audioPlayer = new AudioPlayer();
 
@@ -53,14 +53,14 @@ class BasketballManager extends LitElement {
             const lastRound = rounds[rounds.length - 1];
 
             if (!lastRound) {
-                serverApi.start();
+                serverWebsocketApi.start();
                 return;
             }
 
             const lastAttempt = lastRound[lastRound.length - 1];
 
             if (lastAttempt.isConfirmed) {
-                serverApi.start();
+                serverWebsocketApi.start();
             }
 
             return;
@@ -74,9 +74,9 @@ class BasketballManager extends LitElement {
         }
 
         if (isRunning) {
-            serverApi.stop();
+            serverWebsocketApi.stop();
         } else {
-            serverApi.start();
+            serverWebsocketApi.start();
         }
     }
 
@@ -137,7 +137,7 @@ class BasketballManager extends LitElement {
             formData.get('robot2'),
         ];
 
-        serverApi.createGame(robotIDs);
+        serverWebsocketApi.createGame(robotIDs);
     }
 
     render() {

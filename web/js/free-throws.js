@@ -1,11 +1,11 @@
 import {css, html, LitElement} from "../lib/lit-element.mjs";
-import serverApi from "./server-api.js";
 import './runtime-counter.js'
 
 class FreeThrows extends LitElement {
     static get properties() {
         return {
-            state: {type: Object}
+            state: {type: Object},
+            serverWebsocketApi: {attribute: false},
         };
     }
 
@@ -94,19 +94,19 @@ class FreeThrows extends LitElement {
     }
 
     handleStart() {
-        serverApi.start();
+        this.serverWebsocketApi.start();
     }
 
     handleEndWithScore() {
-        serverApi.incrementScore('blue');
+        this.serverWebsocketApi.incrementScore('blue');
     }
 
     handleEndWithFoul() {
-        serverApi.incrementFouls(0);
+        this.serverWebsocketApi.incrementFouls(0);
     }
 
     handleConfirm() {
-        serverApi.confirm();
+        this.serverWebsocketApi.confirm();
     }
 
     render() {

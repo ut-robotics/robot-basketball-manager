@@ -1,12 +1,12 @@
 import {css, html, LitElement} from "../lib/lit-element.mjs";
 import getValidScoreCounts from "./util/get-valid-score-counts.js";
-import serverApi from "./server-api.js";
 import './runtime-counter.js'
 
 class MainRound extends LitElement {
     static get properties() {
         return {
-            state: {type: Object}
+            state: {type: Object},
+            serverWebsocketApi: {attribute: false},
         };
     }
 
@@ -58,32 +58,32 @@ class MainRound extends LitElement {
     }
 
     handleStart() {
-        serverApi.start();
+        this.serverWebsocketApi.start();
     }
 
     handleStop() {
-        serverApi.stop();
+        this.serverWebsocketApi.stop();
     }
 
     handleEnd() {
-        serverApi.endRound();
+        this.serverWebsocketApi.endRound();
     }
 
     handleConfirm() {
-        serverApi.confirm();
+        this.serverWebsocketApi.confirm();
     }
 
     handleAddScore(sideIndex) {
-        serverApi.incrementScore(this.state.baskets[sideIndex]);
+        this.serverWebsocketApi.incrementScore(this.state.baskets[sideIndex]);
     }
 
     handleAddFoul(sideIndex) {
-        serverApi.incrementFouls(sideIndex);
+        this.serverWebsocketApi.incrementFouls(sideIndex);
     }
 
     handleScoreIsValidChange(sideIndex, scoreIndex, event) {
         console.log('handleScoreIsValidChange', event.target.checked);
-        serverApi.setScoreValidity(sideIndex, scoreIndex, event.target.checked);
+        this.serverWebsocketApi.setScoreValidity(sideIndex, scoreIndex, event.target.checked);
     }
 
     render() {

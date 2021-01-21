@@ -5,7 +5,8 @@ import './free-throws.js';
 class BasketballGame extends LitElement {
     static get properties() {
         return {
-            state: {type: Object}
+            state: {type: Object},
+            serverWebsocketApi: {attribute: false},
         };
     }
 
@@ -32,6 +33,10 @@ class BasketballGame extends LitElement {
         this.state = {};
     }
 
+    handleSetActive() {
+        this.serverWebsocketApi.setActive();
+    }
+
     render() {
         if (!this.state || !this.state.rounds) {
             return null;
@@ -39,7 +44,11 @@ class BasketballGame extends LitElement {
 
         const {robots} = this.state;
 
-        return html`<header>${robots[0].name} vs ${robots[1].name}${this.renderWinner()}</header>
+        return html`<header>
+                ${robots[0].name} vs ${robots[1].name}
+                ${this.renderWinner()}
+                ${this.renderSetActiveButton()}
+            </header>
             ${this.renderFreeThrows()}
             ${this.renderRounds(this.state.rounds)}`;
     }
@@ -58,13 +67,21 @@ class BasketballGame extends LitElement {
         return html` | <b>TIE</b>`;
     }
 
+    renderSetActiveButton() {
+        if (this.state.hasEnded) {
+            return null;
+        }
+
+        return html`<button @click=${this.handleSetActive}>Set active</button>`;
+    }
+
     renderRounds(rounds) {
         const reverseRounds = rounds.slice().reverse();
         return html`${reverseRounds.map((round, index) => this.renderRound(round, rounds.length - 1 - index))}`;
     }
 
     renderRound(round, index) {
-        return html`<main-round state=${JSON.stringify({roundIndex: index, ...round})}>`;
+        return html`<main-round .serverWebsocketApi=${this.serverWebsocketApi} state=${JSON.stringify({roundIndex: index, ...round})}>`;
     }
 
     renderFreeThrows() {
@@ -74,7 +91,7 @@ class BasketballGame extends LitElement {
             return null;
         }
 
-        return html`<free-throws state=${JSON.stringify(freeThrows)}></free-throws>`
+        return html`<free-throws .serverWebsocketApi=${this.serverWebsocketApi} state=${JSON.stringify(freeThrows)}></free-throws>`
     }
 }
 

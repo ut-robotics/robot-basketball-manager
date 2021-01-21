@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Time</title>
+    <style>
+        #time {
+            font-family: monospace;
+            font-size: 60px;
+        }
+    </style>
+</head>
+<body>
+<div id="time"></div>
+<script>
+    const timeElement = document.getElementById('time');
+
+    function updateTime() {
+        timeElement.innerText = Date.now().toString();
+        requestAnimationFrame(updateTime);
+    }
+
+    requestAnimationFrame(updateTime);
+</script>
+</body>
+</html>

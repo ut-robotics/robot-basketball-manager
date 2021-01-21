@@ -1,8 +1,8 @@
 export default class AudioPlayer {
     constructor() {
-        this.whistleShortTrack = new Audio('audio/whistle_blow_short.mp3');
-        this.whistleLongTrack = new Audio('audio/whistle_blow_long.mp3');
-        this.buzzerTrack = new Audio('audio/basketball_buzzer.mp3');
+        this.whistleShortTrack = new Audio('/audio/whistle_blow_short.mp3');
+        this.whistleLongTrack = new Audio('/audio/whistle_blow_long.mp3');
+        this.buzzerTrack = new Audio('/audio/basketball_buzzer.mp3');
     }
 
     async whistleShort() {

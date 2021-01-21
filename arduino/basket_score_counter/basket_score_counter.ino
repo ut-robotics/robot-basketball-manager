@@ -7,12 +7,12 @@ using namespace websockets;
 unsigned long reconnectDelay = 1000;
 unsigned long lastReconnectTime = 0;
 
-const int sensorPin = 23;
-int sensorState = LOW;
-int lastSensorState = LOW;
+const int sensorPin = 22;
+int sensorState = HIGH;
+int lastSensorState = HIGH;
 
 unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
-unsigned long debounceDelay = 5;
+unsigned long debounceDelay = 10;
 
 const int blueLedPin = 25;
 const int orangeLedPin = 26;
@@ -61,7 +61,7 @@ void onEventsCallback(WebsocketsEvent event, String data) {
 void setup() {
     Serial.begin(115200);
 
-    pinMode(sensorPin, INPUT);
+    pinMode(sensorPin, INPUT_PULLUP);
     pinMode(blueLedPin, OUTPUT);
     pinMode(orangeLedPin, OUTPUT);
     pinMode(greenLedPin, OUTPUT);
@@ -120,11 +120,7 @@ void loop() {
         int currentBasketSelection = digitalRead(basketSelectionPin);
 
         if (sensorState == HIGH) {
-          if (currentBasketSelection == HIGH) {
-            client.send("magenta");
-          } else {
-            client.send("blue");
-          }
+          client.send("start_stop");
         }
        }
     }

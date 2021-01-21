@@ -1,7 +1,7 @@
-const EventEmitter = require('events');
-const {FreeThrowsResult} = require('./constants');
+import EventEmitter from 'events';
+import {FreeThrowsResult}  from './constants.mjs';
 
-class FreeThrows extends EventEmitter {
+export default class FreeThrows extends EventEmitter {
     #minRounds = 3;
     #timeLimit = 10000;
     #rounds = [];
@@ -272,5 +272,3 @@ FreeThrows.fromState = function (state) {
 
     return freeThrows;
 };
-
-module.exports = FreeThrows;

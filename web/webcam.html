@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Time</title>
+    <style>
+        #time {
+            font-family: monospace;
+            font-size: 60px;
+        }
+    </style>
+</head>
+<body>
+<video id="cam-video"></video>
+<script>
+    async function startVideo() {
+        const camVideo = document.querySelector('#cam-video');
+        camVideo.style.border = "1px solid red";
+        const videoStream = await navigator.mediaDevices.getUserMedia({video: {width: 1280, height: 720}});
+        camVideo.srcObject = videoStream;
+        await camVideo.play();
+    }
+
+    startVideo()
+</script>
+</body>
+</html>

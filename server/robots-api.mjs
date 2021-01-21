@@ -1,8 +1,8 @@
-const WebSocket = require('ws');
+import WebSocket from 'ws';
 
-const {log, logError} = require('./util');
+import {log} from './util.mjs';
 
-class RobotsApi {
+export default class RobotsApi {
     #port;
     #methodHandler;
     #wss;
@@ -61,5 +61,3 @@ class RobotsApi {
         }
     }
 }
-
-module.exports = RobotsApi;

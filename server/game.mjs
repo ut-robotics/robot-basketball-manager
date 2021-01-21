@@ -1,7 +1,7 @@
-const EventEmitter = require('events');
-const GameRound = require('./game-round');
-const FreeThrows = require('./free-throw-round');
-const {
+import EventEmitter from 'events';
+import GameRound from './game-round.mjs';
+import  FreeThrows from './free-throw-round.mjs';
+import {
     mainRoundLength,
     extraRoundLength,
     freeThrowAttemptRoundLength,
@@ -9,29 +9,57 @@ const {
     GameResult,
     FreeThrowsResult,
     Basket
-} = require('./constants');
+} from './constants.mjs';
+import {generateBallPlacement} from "./util.mjs";
 
-class Game extends EventEmitter {
+export default class Game extends EventEmitter {
+    #id;
     #robots;
     #startingBaskets;
     #oppositeBaskets;
+    /** @type {GameRound[]}*/
     #rounds = [];
+    /** @type {FreeThrows}*/
     #freeThrows;
+    #ballPlacement;
     #hasEnded = false;
     #isTieAllowed = false;
+
+    get id() {
+        return this.#id;
+    }
 
     get hasEnded() {
         return this.#hasEnded;
     }
 
-    constructor(robots, startingBaskets, isTieAllowed = true) {
+    get robots() {
+        return this.#robots;
+    }
+
+    get startingBaskets() {
+        return this.#startingBaskets;
+    }
+
+    constructor(id, robots, startingBaskets, isTieAllowed = true, ballPlacement = null) {
         super();
+        this.#id = id;
         this.#robots = robots;
         this.#startingBaskets = startingBaskets.slice();
         this.#oppositeBaskets = startingBaskets.slice().reverse();
         this.#isTieAllowed = isTieAllowed;
 
+        if (Array.isArray(ballPlacement)) {
+            this.#ballPlacement = ballPlacement;
+        } else {
+            this.#ballPlacement = generateBallPlacement();
+        }
+
         this.#proceed();
+    }
+
+    getRoundCount() {
+        return this.#rounds.length;
     }
 
     start() {
@@ -246,9 +274,20 @@ class Game extends EventEmitter {
         }
     };
 
+    /**
+     * @returns {GameRound|null}
+     */
     #getLastRound = () => {
         return this.#rounds[this.#rounds.length - 1] || null;
     };
+
+    #composeStatusRoundInfo(indexCounts, winnerIndex) {
+        return {
+            roundWinCount: indexCounts[winnerIndex],
+            roundLossCount: [indexCounts[1 - winnerIndex]],
+            roundTieCount: [indexCounts[-1]]
+        }
+    }
 
     getStatus() {
         const completedRounds = this.#rounds.filter(round => round.hasEnded);
@@ -266,7 +305,11 @@ class Game extends EventEmitter {
             indexCounts[index]++;
 
             if (indexCounts[index] === 2 && index >= 0) {
-                return {result: GameResult.won, winner: this.#robots[index]};
+                return {
+                    result: GameResult.won,
+                    winner: this.#robots[index],
+                    ...this.#composeStatusRoundInfo(indexCounts, index)
+                };
             }
         }
 
@@ -275,11 +318,19 @@ class Game extends EventEmitter {
         }
 
         if (indexCounts[0] > indexCounts[1]) {
-            return {result: GameResult.won, winner: this.#robots[0]};
+            return {
+                result: GameResult.won,
+                winner: this.#robots[0],
+                ...this.#composeStatusRoundInfo(indexCounts, 0)
+            };
         }
 
         if (indexCounts[0] < indexCounts[1]) {
-            return {result: GameResult.won, winner: this.#robots[1]};
+            return {
+                result: GameResult.won,
+                winner: this.#robots[1],
+                ...this.#composeStatusRoundInfo(indexCounts, 1)
+            };
         }
 
         if (this.#isTieAllowed) {
@@ -289,7 +340,11 @@ class Game extends EventEmitter {
         // Extra rounds
         for (const index of winnerIndices.slice(3, 6)) {
             if (index !== -1) {
-                return {result: GameResult.won, winner: this.#robots[index]};
+                return {
+                    result: GameResult.won,
+                    winner: this.#robots[index],
+                    ...this.#composeStatusRoundInfo(indexCounts, index)
+                };
             }
         }
 
@@ -298,7 +353,11 @@ class Game extends EventEmitter {
             const freeThrowStatus = this.#freeThrows.getStatus();
 
             if (freeThrowStatus.result === FreeThrowsResult.won) {
-                return {result: GameResult.won, winner: this.#robots[freeThrowStatus.winner]};
+                return {
+                    result: GameResult.won,
+                    winner: this.#robots[freeThrowStatus.winner],
+                    ...this.#composeStatusRoundInfo(indexCounts, freeThrowStatus.winner)
+                };
             }
         }
 
@@ -307,12 +366,14 @@ class Game extends EventEmitter {
 
     getInfo() {
         const info = {
+            id: this.#id,
             robots: this.#robots,
             startingBaskets: this.#startingBaskets,
             isTieAllowed: this.#isTieAllowed,
             hasEnded: this.#hasEnded,
             rounds: this.#rounds.map(round => round.getInfo()),
             status: this.getStatus(),
+            ballPlacement: this.#ballPlacement,
         };
 
         if (this.#freeThrows) {
@@ -371,13 +432,19 @@ class Game extends EventEmitter {
         return robotIds.map(id => baskets[robotIdsInGame.indexOf(id)] || null);
     }
 
+    getOpponent(robot) {
+        return this.#robots[0].id === robot.id ? this.#robots[1] : this.#robots[0];
+    }
+
     getState() {
         const state = {
+            id: this.#id,
             robots: this.#robots,
             startingBaskets: this.#startingBaskets,
             isTieAllowed: this.#isTieAllowed,
             hasEnded: this.#hasEnded,
             rounds: this.#rounds.map(round => round.getState()),
+            ballPlacement: this.#ballPlacement,
         };
 
         if (this.#freeThrows) {
@@ -392,6 +459,7 @@ class Game extends EventEmitter {
         this.#startingBaskets = state.startingBaskets;
         this.#isTieAllowed = state.isTieAllowed;
         this.#hasEnded = state.hasEnded;
+        this.#ballPlacement = state.ballPlacement;
 
         this.#rounds = [];
 
@@ -408,11 +476,9 @@ class Game extends EventEmitter {
 }
 
 Game.fromState = function (state) {
-    const game = new Game(state.robots, state.startingBaskets, state.isTieAllowed);
+    const game = new Game(state.id, state.robots, state.startingBaskets, state.isTieAllowed, state.ballPlacement);
 
     game.setState(state);
 
     return game;
 };
-
-module.exports = Game;

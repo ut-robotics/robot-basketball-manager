@@ -1,8 +1,8 @@
-const http = require('http');
-const express = require('express');
+import http from 'http';
+import express from 'express';
 
-const {log, logError} = require('./util');
-const RobotsApi = require('./robots-api');
+import {log} from './util.mjs';
+import RobotsApi from './robots-api.mjs';
 
 const robotsApi = new RobotsApi(8222, (method, params) => {
     if (method === 'get_active_game_state') {
