@@ -3,3 +3,4 @@ server/node_modules/
 test-robot/node_modules/
 arduino/basket_score_counter/secrets.h
 web/lib/node_modules/
+arduino/referee_remote/secrets.h
