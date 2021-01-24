@@ -83,10 +83,14 @@ function renderState(state) {
 
     if (state.status.result === 'won') {
         messageElement.innerText = `${state.status.winner.name} WON`;
+        messageElement.classList.add('active');
         return;
     } else if (state.status.result === 'tied') {
         messageElement.innerText = `TIE`;
+        messageElement.classList.add('active');
         return;
+    } else {
+        messageElement.classList.remove('active');
     }
 
     if (state.freeThrows) {
