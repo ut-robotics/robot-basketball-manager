@@ -1,0 +1,1835 @@
+{
+  "id": "test5",
+  "name": "Test5",
+  "robots": [
+    {
+      "id": "r1",
+      "name": "R1"
+    },
+    {
+      "id": "r2",
+      "name": "R2"
+    },
+    {
+      "id": "r3",
+      "name": "R3"
+    },
+    {
+      "id": "r4",
+      "name": "R4"
+    },
+    {
+      "id": "r5",
+      "name": "R5"
+    },
+    {
+      "id": "r6",
+      "name": "R6"
+    },
+    {
+      "id": "r7",
+      "name": "R7"
+    }
+  ],
+  "tournament": {
+    "swissEnabled": true,
+    "numberOfSwissRounds": 3,
+    "doubleEliminationEnabled": true
+  },
+  "swissSystemTournament": {
+    "robots": [
+      {
+        "id": "r1",
+        "name": "R1"
+      },
+      {
+        "id": "r2",
+        "name": "R2"
+      },
+      {
+        "id": "r3",
+        "name": "R3"
+      },
+      {
+        "id": "r4",
+        "name": "R4"
+      },
+      {
+        "id": "r5",
+        "name": "R5"
+      },
+      {
+        "id": "r6",
+        "name": "R6"
+      },
+      {
+        "id": "r7",
+        "name": "R7"
+      }
+    ],
+    "roundCount": 3,
+    "games": [
+      {
+        "id": 1,
+        "robots": [
+          {
+            "id": "r2",
+            "name": "R2"
+          },
+          {
+            "id": "r3",
+            "name": "R3"
+          }
+        ],
+        "startingBaskets": [
+          "magenta",
+          "blue"
+        ],
+        "isTieAllowed": true,
+        "hasEnded": true,
+        "rounds": [
+          {
+            "scores": [
+              [],
+              []
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "magenta",
+              "blue"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 3277,
+            "timeLimit": 60000,
+            "winnerIndex": -1,
+            "runs": [
+              {
+                "startTime": 1611089282460,
+                "endTime": 1611089285737
+              }
+            ]
+          },
+          {
+            "scores": [
+              [],
+              []
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "blue",
+              "magenta"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 464,
+            "timeLimit": 60000,
+            "winnerIndex": -1,
+            "runs": [
+              {
+                "startTime": 1611089287011,
+                "endTime": 1611089287475
+              }
+            ]
+          },
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611089289259,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "magenta",
+              "blue"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 2240,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611089288007,
+                "endTime": 1611089290247
+              }
+            ]
+          }
+        ],
+        "status": {
+          "result": "won",
+          "winner": {
+            "id": "r3",
+            "name": "R3"
+          },
+          "roundWinCount": 1,
+          "roundLossCount": 0,
+          "roundTieCount": 2
+        }
+      },
+      {
+        "id": 2,
+        "robots": [
+          {
+            "id": "r4",
+            "name": "R4"
+          },
+          {
+            "id": "r5",
+            "name": "R5"
+          }
+        ],
+        "startingBaskets": [
+          "magenta",
+          "blue"
+        ],
+        "isTieAllowed": true,
+        "hasEnded": true,
+        "rounds": [
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611089300456,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "magenta",
+              "blue"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 4255,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611089297324,
+                "endTime": 1611089301579
+              }
+            ]
+          },
+          {
+            "scores": [
+              [
+                {
+                  "time": 1611089306999,
+                  "isValid": true
+                }
+              ],
+              [
+                {
+                  "time": 1611089303832,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "blue",
+              "magenta"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 6880,
+            "timeLimit": 60000,
+            "winnerIndex": -1,
+            "runs": [
+              {
+                "startTime": 1611089303315,
+                "endTime": 1611089310195
+              }
+            ]
+          },
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611089314141,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "magenta",
+              "blue"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 1788,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611089313073,
+                "endTime": 1611089314861
+              }
+            ]
+          }
+        ],
+        "status": {
+          "result": "won",
+          "winner": {
+            "id": "r5",
+            "name": "R5"
+          },
+          "roundWinCount": 2,
+          "roundLossCount": 0,
+          "roundTieCount": 1
+        }
+      },
+      {
+        "id": 3,
+        "robots": [
+          {
+            "id": "r6",
+            "name": "R6"
+          },
+          {
+            "id": "r7",
+            "name": "R7"
+          }
+        ],
+        "startingBaskets": [
+          "blue",
+          "magenta"
+        ],
+        "isTieAllowed": true,
+        "hasEnded": true,
+        "rounds": [
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611089320671,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "blue",
+              "magenta"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 1261,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611089320066,
+                "endTime": 1611089321327
+              }
+            ]
+          },
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611089323810,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "magenta",
+              "blue"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 988,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611089323315,
+                "endTime": 1611089324303
+              }
+            ]
+          }
+        ],
+        "status": {
+          "result": "won",
+          "winner": {
+            "id": "r7",
+            "name": "R7"
+          },
+          "roundWinCount": 2,
+          "roundLossCount": 0,
+          "roundTieCount": 0
+        }
+      },
+      {
+        "id": 4,
+        "robots": [
+          {
+            "id": "r2",
+            "name": "R2"
+          },
+          {
+            "id": "r4",
+            "name": "R4"
+          }
+        ],
+        "startingBaskets": [
+          "magenta",
+          "blue"
+        ],
+        "isTieAllowed": true,
+        "hasEnded": true,
+        "rounds": [
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611089382833,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "magenta",
+              "blue"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 1571,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611089382186,
+                "endTime": 1611089383757
+              }
+            ]
+          },
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611089385363,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "blue",
+              "magenta"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 897,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611089384877,
+                "endTime": 1611089385774
+              }
+            ]
+          }
+        ],
+        "status": {
+          "result": "won",
+          "winner": {
+            "id": "r4",
+            "name": "R4"
+          },
+          "roundWinCount": 2,
+          "roundLossCount": 0,
+          "roundTieCount": 0
+        }
+      },
+      {
+        "id": 5,
+        "robots": [
+          {
+            "id": "r6",
+            "name": "R6"
+          },
+          {
+            "id": "r3",
+            "name": "R3"
+          }
+        ],
+        "startingBaskets": [
+          "blue",
+          "magenta"
+        ],
+        "isTieAllowed": true,
+        "hasEnded": true,
+        "rounds": [
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611089392650,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "blue",
+              "magenta"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 873,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611089392200,
+                "endTime": 1611089393073
+              }
+            ]
+          },
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611089395416,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "magenta",
+              "blue"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 900,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611089394957,
+                "endTime": 1611089395857
+              }
+            ]
+          }
+        ],
+        "status": {
+          "result": "won",
+          "winner": {
+            "id": "r3",
+            "name": "R3"
+          },
+          "roundWinCount": 2,
+          "roundLossCount": 0,
+          "roundTieCount": 0
+        }
+      },
+      {
+        "id": 6,
+        "robots": [
+          {
+            "id": "r5",
+            "name": "R5"
+          },
+          {
+            "id": "r1",
+            "name": "R1"
+          }
+        ],
+        "startingBaskets": [
+          "magenta",
+          "blue"
+        ],
+        "isTieAllowed": true,
+        "hasEnded": true,
+        "rounds": [
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611089405150,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "magenta",
+              "blue"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 1026,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611089404572,
+                "endTime": 1611089405598
+              }
+            ]
+          },
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611089407325,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "blue",
+              "magenta"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 958,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611089406795,
+                "endTime": 1611089407753
+              }
+            ]
+          }
+        ],
+        "status": {
+          "result": "won",
+          "winner": {
+            "id": "r1",
+            "name": "R1"
+          },
+          "roundWinCount": 2,
+          "roundLossCount": 0,
+          "roundTieCount": 0
+        }
+      },
+      {
+        "id": 7,
+        "robots": [
+          {
+            "id": "r6",
+            "name": "R6"
+          },
+          {
+            "id": "r5",
+            "name": "R5"
+          }
+        ],
+        "startingBaskets": [
+          "magenta",
+          "blue"
+        ],
+        "isTieAllowed": true,
+        "hasEnded": true,
+        "rounds": [
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611089426745,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "magenta",
+              "blue"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 877,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611089426302,
+                "endTime": 1611089427179
+              }
+            ]
+          },
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611089428675,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "blue",
+              "magenta"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 840,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611089428244,
+                "endTime": 1611089429084
+              }
+            ]
+          }
+        ],
+        "status": {
+          "result": "won",
+          "winner": {
+            "id": "r5",
+            "name": "R5"
+          },
+          "roundWinCount": 2,
+          "roundLossCount": 0,
+          "roundTieCount": 0
+        }
+      },
+      {
+        "id": 8,
+        "robots": [
+          {
+            "id": "r4",
+            "name": "R4"
+          },
+          {
+            "id": "r3",
+            "name": "R3"
+          }
+        ],
+        "startingBaskets": [
+          "magenta",
+          "blue"
+        ],
+        "isTieAllowed": true,
+        "hasEnded": true,
+        "rounds": [
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611089435389,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "magenta",
+              "blue"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 1010,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611089434816,
+                "endTime": 1611089435826
+              }
+            ]
+          },
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611089437307,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "blue",
+              "magenta"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 799,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611089436893,
+                "endTime": 1611089437692
+              }
+            ]
+          }
+        ],
+        "status": {
+          "result": "won",
+          "winner": {
+            "id": "r3",
+            "name": "R3"
+          },
+          "roundWinCount": 2,
+          "roundLossCount": 0,
+          "roundTieCount": 0
+        }
+      },
+      {
+        "id": 9,
+        "robots": [
+          {
+            "id": "r7",
+            "name": "R7"
+          },
+          {
+            "id": "r1",
+            "name": "R1"
+          }
+        ],
+        "startingBaskets": [
+          "blue",
+          "magenta"
+        ],
+        "isTieAllowed": true,
+        "hasEnded": true,
+        "rounds": [
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611089442977,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "blue",
+              "magenta"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 917,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611089442472,
+                "endTime": 1611089443389
+              }
+            ]
+          },
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611089444967,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "magenta",
+              "blue"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 886,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611089444496,
+                "endTime": 1611089445382
+              }
+            ]
+          }
+        ],
+        "status": {
+          "result": "won",
+          "winner": {
+            "id": "r1",
+            "name": "R1"
+          },
+          "roundWinCount": 2,
+          "roundLossCount": 0,
+          "roundTieCount": 0
+        }
+      }
+    ],
+    "byes": [
+      {
+        "robotID": "r1"
+      },
+      {
+        "robotID": "r7"
+      },
+      {
+        "robotID": "r2"
+      }
+    ],
+    "robotScores": [
+      {
+        "robot": {
+          "id": "r6",
+          "name": "R6"
+        },
+        "score": 0,
+        "tieBreakScore": 6.699999999999999
+      },
+      {
+        "robot": {
+          "id": "r2",
+          "name": "R2"
+        },
+        "score": 1,
+        "tieBreakScore": 3.8
+      },
+      {
+        "robot": {
+          "id": "r4",
+          "name": "R4"
+        },
+        "score": 1,
+        "tieBreakScore": 5.699999999999999
+      },
+      {
+        "robot": {
+          "id": "r5",
+          "name": "R5"
+        },
+        "score": 1.9,
+        "tieBreakScore": 4
+      },
+      {
+        "robot": {
+          "id": "r7",
+          "name": "R7"
+        },
+        "score": 2,
+        "tieBreakScore": 3
+      },
+      {
+        "robot": {
+          "id": "r3",
+          "name": "R3"
+        },
+        "score": 2.8,
+        "tieBreakScore": 2
+      },
+      {
+        "robot": {
+          "id": "r1",
+          "name": "R1"
+        },
+        "score": 3,
+        "tieBreakScore": 3.9
+      }
+    ],
+    "robotStartingBaskets": {
+      "r1": [
+        "blue",
+        "magenta",
+        "blue"
+      ],
+      "r2": [
+        "magenta",
+        "magenta"
+      ],
+      "r3": [
+        "blue",
+        "magenta",
+        "blue",
+        "magenta"
+      ],
+      "r4": [
+        "magenta",
+        "blue",
+        "magenta"
+      ],
+      "r5": [
+        "blue",
+        "magenta",
+        "blue"
+      ],
+      "r6": [
+        "blue",
+        "blue",
+        "magenta"
+      ],
+      "r7": [
+        "magenta",
+        "blue"
+      ]
+    },
+    "hasEnded": true
+  },
+  "doubleEliminationTournament": {
+    "robots": [
+      {
+        "id": "r1",
+        "name": "R1"
+      },
+      {
+        "id": "r3",
+        "name": "R3"
+      },
+      {
+        "id": "r7",
+        "name": "R7"
+      },
+      {
+        "id": "r5",
+        "name": "R5"
+      }
+    ],
+    "games": [
+      {
+        "id": 1001,
+        "robots": [
+          {
+            "id": "r1",
+            "name": "R1"
+          },
+          {
+            "id": "r3",
+            "name": "R3"
+          }
+        ],
+        "startingBaskets": [
+          "magenta",
+          "blue"
+        ],
+        "isTieAllowed": false,
+        "hasEnded": true,
+        "rounds": [
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611091182810,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "magenta",
+              "blue"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 11967,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611091175629,
+                "endTime": 1611091187596
+              }
+            ]
+          },
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611091190098,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "blue",
+              "magenta"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 1227,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611091189419,
+                "endTime": 1611091190646
+              }
+            ]
+          }
+        ],
+        "status": {
+          "result": "won",
+          "winner": {
+            "id": "r3",
+            "name": "R3"
+          },
+          "roundWinCount": 2,
+          "roundLossCount": 0,
+          "roundTieCount": 0
+        }
+      },
+      {
+        "id": 1002,
+        "robots": [
+          {
+            "id": "r7",
+            "name": "R7"
+          },
+          {
+            "id": "r5",
+            "name": "R5"
+          }
+        ],
+        "startingBaskets": [
+          "blue",
+          "magenta"
+        ],
+        "isTieAllowed": false,
+        "hasEnded": true,
+        "rounds": [
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611091208340,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "blue",
+              "magenta"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 3245,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611091205646,
+                "endTime": 1611091208891
+              }
+            ]
+          },
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611091211401,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "magenta",
+              "blue"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 1177,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611091210817,
+                "endTime": 1611091211994
+              }
+            ]
+          }
+        ],
+        "status": {
+          "result": "won",
+          "winner": {
+            "id": "r5",
+            "name": "R5"
+          },
+          "roundWinCount": 2,
+          "roundLossCount": 0,
+          "roundTieCount": 0
+        }
+      },
+      {
+        "id": 1003,
+        "robots": [
+          {
+            "id": "r3",
+            "name": "R3"
+          },
+          {
+            "id": "r5",
+            "name": "R5"
+          }
+        ],
+        "startingBaskets": [
+          "magenta",
+          "blue"
+        ],
+        "isTieAllowed": false,
+        "hasEnded": true,
+        "rounds": [
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611091222699,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "magenta",
+              "blue"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 2197,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611091221516,
+                "endTime": 1611091223713
+              }
+            ]
+          },
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611091225413,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "blue",
+              "magenta"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 952,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611091224863,
+                "endTime": 1611091225815
+              }
+            ]
+          }
+        ],
+        "status": {
+          "result": "won",
+          "winner": {
+            "id": "r5",
+            "name": "R5"
+          },
+          "roundWinCount": 2,
+          "roundLossCount": 0,
+          "roundTieCount": 0
+        }
+      },
+      {
+        "id": 1004,
+        "robots": [
+          {
+            "id": "r1",
+            "name": "R1"
+          },
+          {
+            "id": "r7",
+            "name": "R7"
+          }
+        ],
+        "startingBaskets": [
+          "blue",
+          "magenta"
+        ],
+        "isTieAllowed": false,
+        "hasEnded": true,
+        "rounds": [
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611091236896,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "blue",
+              "magenta"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 2027,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611091235482,
+                "endTime": 1611091237509
+              }
+            ]
+          },
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611091239472,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "magenta",
+              "blue"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 1229,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611091238850,
+                "endTime": 1611091240079
+              }
+            ]
+          }
+        ],
+        "status": {
+          "result": "won",
+          "winner": {
+            "id": "r7",
+            "name": "R7"
+          },
+          "roundWinCount": 2,
+          "roundLossCount": 0,
+          "roundTieCount": 0
+        }
+      },
+      {
+        "id": 1005,
+        "robots": [
+          {
+            "id": "r3",
+            "name": "R3"
+          },
+          {
+            "id": "r7",
+            "name": "R7"
+          }
+        ],
+        "startingBaskets": [
+          "magenta",
+          "blue"
+        ],
+        "isTieAllowed": false,
+        "hasEnded": true,
+        "rounds": [
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611091251611,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "magenta",
+              "blue"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 1232,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611091250922,
+                "endTime": 1611091252154
+              }
+            ]
+          },
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611091253731,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "blue",
+              "magenta"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 885,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611091253245,
+                "endTime": 1611091254130
+              }
+            ]
+          }
+        ],
+        "status": {
+          "result": "won",
+          "winner": {
+            "id": "r7",
+            "name": "R7"
+          },
+          "roundWinCount": 2,
+          "roundLossCount": 0,
+          "roundTieCount": 0
+        }
+      },
+      {
+        "id": 1006,
+        "robots": [
+          {
+            "id": "r5",
+            "name": "R5"
+          },
+          {
+            "id": "r7",
+            "name": "R7"
+          }
+        ],
+        "startingBaskets": [
+          "magenta",
+          "blue"
+        ],
+        "isTieAllowed": false,
+        "hasEnded": true,
+        "rounds": [
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611091267791,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "magenta",
+              "blue"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 2343,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611091266848,
+                "endTime": 1611091269191
+              }
+            ]
+          },
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611091271455,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "blue",
+              "magenta"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 967,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611091270950,
+                "endTime": 1611091271917
+              }
+            ]
+          }
+        ],
+        "status": {
+          "result": "won",
+          "winner": {
+            "id": "r7",
+            "name": "R7"
+          },
+          "roundWinCount": 2,
+          "roundLossCount": 0,
+          "roundTieCount": 0
+        }
+      },
+      {
+        "id": 1007,
+        "robots": [
+          {
+            "id": "r5",
+            "name": "R5"
+          },
+          {
+            "id": "r7",
+            "name": "R7"
+          }
+        ],
+        "startingBaskets": [
+          "blue",
+          "magenta"
+        ],
+        "isTieAllowed": false,
+        "hasEnded": true,
+        "rounds": [
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611091340523,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "blue",
+              "magenta"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 1732,
+            "timeLimit": 60000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611091339445,
+                "endTime": 1611091341177
+              }
+            ]
+          },
+          {
+            "scores": [
+              [],
+              []
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "magenta",
+              "blue"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 696,
+            "timeLimit": 60000,
+            "winnerIndex": -1,
+            "runs": [
+              {
+                "startTime": 1611091342535,
+                "endTime": 1611091343231
+              }
+            ]
+          },
+          {
+            "scores": [
+              [
+                {
+                  "time": 1611091346263,
+                  "isValid": true
+                }
+              ],
+              []
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "blue",
+              "magenta"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 2586,
+            "timeLimit": 60000,
+            "winnerIndex": 0,
+            "runs": [
+              {
+                "startTime": 1611091344369,
+                "endTime": 1611091346955
+              }
+            ]
+          },
+          {
+            "scores": [
+              [],
+              [
+                {
+                  "time": 1611091348969,
+                  "isValid": true
+                }
+              ]
+            ],
+            "fouls": [
+              [],
+              []
+            ],
+            "baskets": [
+              "magenta",
+              "blue"
+            ],
+            "hasEnded": true,
+            "isConfirmed": true,
+            "duration": 1916,
+            "timeLimit": 30000,
+            "winnerIndex": 1,
+            "runs": [
+              {
+                "startTime": 1611091348057,
+                "endTime": 1611091349973
+              }
+            ]
+          }
+        ],
+        "status": {
+          "result": "won",
+          "winner": {
+            "id": "r7",
+            "name": "R7"
+          },
+          "roundWinCount": 1,
+          "roundLossCount": 1,
+          "roundTieCount": 1
+        }
+      }
+    ],
+    "gameTypes": {
+      "1001": "noLoss",
+      "1002": "noLoss",
+      "1003": "noLoss",
+      "1004": "oneLoss",
+      "1005": "oneLoss",
+      "1006": "firstFinal",
+      "1007": "secondFinal"
+    },
+    "noLossQueue": [],
+    "oneLossQueue": [
+      {
+        "id": "r7",
+        "name": "R7"
+      }
+    ],
+    "eliminatedRobots": [
+      {
+        "id": "r1",
+        "name": "R1"
+      },
+      {
+        "id": "r3",
+        "name": "R3"
+      },
+      {
+        "id": "r5",
+        "name": "R5"
+      }
+    ],
+    "robotStartingBaskets": {
+      "r1": [
+        "blue",
+        "magenta",
+        "blue",
+        "magenta",
+        "blue"
+      ],
+      "r3": [
+        "blue",
+        "magenta",
+        "blue",
+        "magenta",
+        "blue",
+        "magenta",
+        "magenta"
+      ],
+      "r7": [
+        "magenta",
+        "blue",
+        "blue",
+        "magenta",
+        "blue",
+        "blue",
+        "magenta"
+      ],
+      "r5": [
+        "blue",
+        "magenta",
+        "blue",
+        "magenta",
+        "blue",
+        "magenta",
+        "blue"
+      ]
+    },
+    "hasEnded": true
+  }
+}

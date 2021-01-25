@@ -1,0 +1,227 @@
+{
+  "id": "test5",
+  "name": "Test5",
+  "robots": [
+    {
+      "id": "r1",
+      "name": "R1"
+    },
+    {
+      "id": "r2",
+      "name": "R2"
+    },
+    {
+      "id": "r3",
+      "name": "R3"
+    },
+    {
+      "id": "r4",
+      "name": "R4"
+    },
+    {
+      "id": "r5",
+      "name": "R5"
+    },
+    {
+      "id": "r6",
+      "name": "R6"
+    },
+    {
+      "id": "r7",
+      "name": "R7"
+    }
+  ],
+  "tournament": {
+    "swissEnabled": true,
+    "numberOfSwissRounds": 3,
+    "doubleEliminationEnabled": true
+  },
+  "swissSystemTournament": {
+    "robots": [
+      {
+        "id": "r1",
+        "name": "R1"
+      },
+      {
+        "id": "r2",
+        "name": "R2"
+      },
+      {
+        "id": "r3",
+        "name": "R3"
+      },
+      {
+        "id": "r4",
+        "name": "R4"
+      },
+      {
+        "id": "r5",
+        "name": "R5"
+      },
+      {
+        "id": "r6",
+        "name": "R6"
+      },
+      {
+        "id": "r7",
+        "name": "R7"
+      }
+    ],
+    "roundCount": 3,
+    "gameIDs": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "byes": [
+      {
+        "robotID": "r1"
+      },
+      {
+        "robotID": "r7"
+      },
+      {
+        "robotID": "r2"
+      }
+    ],
+    "robotStartingBaskets": {
+      "r1": [
+        "blue",
+        "magenta",
+        "blue"
+      ],
+      "r2": [
+        "magenta",
+        "magenta"
+      ],
+      "r3": [
+        "blue",
+        "magenta",
+        "blue",
+        "magenta"
+      ],
+      "r4": [
+        "magenta",
+        "blue",
+        "magenta"
+      ],
+      "r5": [
+        "blue",
+        "magenta",
+        "blue"
+      ],
+      "r6": [
+        "blue",
+        "blue",
+        "magenta"
+      ],
+      "r7": [
+        "magenta",
+        "blue"
+      ]
+    },
+    "hasEnded": true
+  },
+  "doubleEliminationTournament": {
+    "robots": [
+      {
+        "id": "r1",
+        "name": "R1"
+      },
+      {
+        "id": "r3",
+        "name": "R3"
+      },
+      {
+        "id": "r7",
+        "name": "R7"
+      },
+      {
+        "id": "r5",
+        "name": "R5"
+      }
+    ],
+    "gameIDs": [
+      1001,
+      1002,
+      1003,
+      1004,
+      1005,
+      1006,
+      1007
+    ],
+    "gameTypes": {
+      "1001": "noLoss",
+      "1002": "noLoss",
+      "1003": "noLoss",
+      "1004": "oneLoss",
+      "1005": "oneLoss",
+      "1006": "firstFinal",
+      "1007": "secondFinal"
+    },
+    "noLossQueue": [],
+    "oneLossQueue": [
+      {
+        "id": "r7",
+        "name": "R7"
+      }
+    ],
+    "eliminatedRobots": [
+      {
+        "id": "r1",
+        "name": "R1"
+      },
+      {
+        "id": "r3",
+        "name": "R3"
+      },
+      {
+        "id": "r5",
+        "name": "R5"
+      }
+    ],
+    "robotStartingBaskets": {
+      "r1": [
+        "blue",
+        "magenta",
+        "blue",
+        "magenta",
+        "blue"
+      ],
+      "r3": [
+        "blue",
+        "magenta",
+        "blue",
+        "magenta",
+        "blue",
+        "magenta",
+        "magenta"
+      ],
+      "r7": [
+        "magenta",
+        "blue",
+        "blue",
+        "magenta",
+        "blue",
+        "blue",
+        "magenta"
+      ],
+      "r5": [
+        "blue",
+        "magenta",
+        "blue",
+        "magenta",
+        "blue",
+        "magenta",
+        "blue"
+      ]
+    },
+    "hasEnded": true
+  }
+}

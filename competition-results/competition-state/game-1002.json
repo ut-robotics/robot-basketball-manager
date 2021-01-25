@@ -1,0 +1,77 @@
+{
+  "id": 1002,
+  "robots": [
+    {
+      "id": "r7",
+      "name": "R7"
+    },
+    {
+      "id": "r5",
+      "name": "R5"
+    }
+  ],
+  "startingBaskets": [
+    "blue",
+    "magenta"
+  ],
+  "isTieAllowed": false,
+  "hasEnded": true,
+  "rounds": [
+    {
+      "scores": [
+        [],
+        [
+          {
+            "time": 1611091208340,
+            "isValid": true
+          }
+        ]
+      ],
+      "fouls": [
+        [],
+        []
+      ],
+      "baskets": [
+        "blue",
+        "magenta"
+      ],
+      "hasEnded": true,
+      "isConfirmed": true,
+      "roundMaxLength": 60000,
+      "runs": [
+        {
+          "startTime": 1611091205646,
+          "endTime": 1611091208891
+        }
+      ]
+    },
+    {
+      "scores": [
+        [],
+        [
+          {
+            "time": 1611091211401,
+            "isValid": true
+          }
+        ]
+      ],
+      "fouls": [
+        [],
+        []
+      ],
+      "baskets": [
+        "magenta",
+        "blue"
+      ],
+      "hasEnded": true,
+      "isConfirmed": true,
+      "roundMaxLength": 60000,
+      "runs": [
+        {
+          "startTime": 1611091210817,
+          "endTime": 1611091211994
+        }
+      ]
+    }
+  ]
+}

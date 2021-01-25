@@ -284,8 +284,8 @@ export default class Game extends EventEmitter {
     #composeStatusRoundInfo(indexCounts, winnerIndex) {
         return {
             roundWinCount: indexCounts[winnerIndex],
-            roundLossCount: [indexCounts[1 - winnerIndex]],
-            roundTieCount: [indexCounts[-1]]
+            roundLossCount: indexCounts[1 - winnerIndex],
+            roundTieCount: indexCounts[-1]
         }
     }
 

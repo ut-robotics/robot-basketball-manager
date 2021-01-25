@@ -235,6 +235,7 @@ export default class SwissSystemTournament extends EventEmitter {
             robots: this.#robots,
             roundCount: this.#roundCount,
             games: this.#games.map(g => g.getInfo()),
+            byes: this.#byes,
             robotScores: this.getRobotScores(this.#robots),
             robotStartingBaskets: this.#robotStartingBaskets,
             hasEnded: this.#hasEnded,
