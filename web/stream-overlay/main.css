@@ -2,6 +2,7 @@
 
 html {
     box-sizing: border-box;
+    background-color: #0F0;
 }
 
 *, *:before, *:after {
@@ -44,12 +45,17 @@ body > * {
 }
 
 #time {
+    opacity: 0;
     position: relative;
     width: 10vw;
     font-size: 8vh;
     line-height: 10vh;
     text-align: center;
     /*background-color: rgba(0, 0, 0, 0.2);*/
+}
+
+#time.active {
+    opacity: 1;
 }
 
 #time::before {
@@ -102,6 +108,7 @@ body > * {
 }
 
 #title-row {
+    opacity: 0;
     text-align: center;
     font-size: 6vh;
     height: 10vh;
@@ -109,6 +116,10 @@ body > * {
     width: 100vw;
     display: flex;
     justify-content: center;
+}
+
+#title-row.active {
+    opacity: 1;
 }
 
 #title-content {
@@ -161,12 +172,24 @@ body > * {
 #right-fouls {
     opacity: 0;
     background-color: rgba(0, 0, 0, 0.2);
-    display: none;
+    margin: 4vh 0;
+    width: 2vh;
+    border-radius: 100%;
 }
 
 #left-fouls.active,
 #right-fouls.active {
     opacity: 1;
+}
+
+#left-fouls.first,
+#right-fouls.first {
+    background-color: yellow;
+}
+
+#left-fouls.second,
+#right-fouls.second {
+    background-color: red;
 }
 
 #bottom-row {
@@ -184,7 +207,7 @@ body > * {
 
 .game-round {
     opacity: 0;
-    width: 15vw;
+    width: 12vw;
     text-align: center;
     position: relative;
     font-size: 8vh;

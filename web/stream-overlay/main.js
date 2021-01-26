@@ -22,6 +22,7 @@ function onSocketMessage(message) {
 }
 
 const timeElement = document.getElementById('time');
+const titleRowElement = document.getElementById('title-row');
 const titleElement = document.getElementById('title');
 const messageElement = document.getElementById('message');
 const leftFoulsElement = document.getElementById('left-fouls');
@@ -31,6 +32,8 @@ let activeGameState = null;
 
 function renderState(state) {
     if (!state) {
+        titleRowElement.classList.remove('active');
+        timeElement.classList.remove('active');
         return;
     }
 
@@ -41,17 +44,30 @@ function renderState(state) {
         return;
     }
 
+    titleRowElement.classList.add('active');
+    timeElement.classList.add('active');
+
     titleElement.innerText = `${robots[0].name} vs ${robots[1].name}`;
 
+    leftFoulsElement.classList.remove('first');
+    leftFoulsElement.classList.remove('second');
+    rightFoulsElement.classList.remove('first');
+    rightFoulsElement.classList.remove('second');
+
     if (state.freeThrows) {
-        leftFoulsElement.innerText = '';
-        rightFoulsElement.innerText = '';
+        leftFoulsElement.classList.remove('active');
+        leftFoulsElement.classList.remove('active');
     } else {
         for (const [index, element] of [leftFoulsElement, rightFoulsElement].entries()) {
             const foulCount = lastRound.fouls[index].length;
 
-            element.innerText = `(Fouls: ${foulCount})`;
             if (foulCount > 0) {
+                if (foulCount === 2) {
+                    element.classList.add('second');
+                } else {
+                    element.classList.add('first');
+                }
+
                 element.classList.add('active');
             } else {
                 element.classList.remove('active');
@@ -82,11 +98,11 @@ function renderState(state) {
     }
 
     if (state.status.result === 'won') {
-        messageElement.innerText = `${state.status.winner.name} WON`;
+        messageElement.innerText = `${state.status.winner.name} won`;
         messageElement.classList.add('active');
         return;
     } else if (state.status.result === 'tied') {
-        messageElement.innerText = `TIE`;
+        messageElement.innerText = `Tie`;
         messageElement.classList.add('active');
         return;
     } else {
