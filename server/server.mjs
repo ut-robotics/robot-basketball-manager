@@ -4,9 +4,11 @@ import {log} from './util.mjs';
 const app = express();
 const server = http.createServer(app);
 import webApiRouter from './web-api-router.mjs';
+import manualCommandRouter from './manual-command-router.mjs';
 import {initCompetitionManager} from "./data.mjs";
 
 app.use('/api', webApiRouter);
+app.use('/manual-command', manualCommandRouter);
 
 app.use(express.static('../web'));
 

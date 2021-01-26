@@ -34,6 +34,7 @@ export default class RobotsApi {
     }
 
     #send = (signal, targets, baskets) => {
+        log('send', signal, targets, baskets);
         const message = JSON.stringify({signal, targets, baskets});
 
         for (const client of this.#wss.clients) {

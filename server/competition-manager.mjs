@@ -281,4 +281,12 @@ export default class CompetitionManager extends EventEmitter {
 
         activeGame.incrementScore(basket);
     }
+
+    manualStart(targets, baskets) {
+        this.#robotsApi.start(targets, baskets);
+    }
+
+    manualStop(targets) {
+        this.#robotsApi.stop(targets);
+    }
 }
