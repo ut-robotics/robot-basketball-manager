@@ -290,7 +290,7 @@ export default class Game extends EventEmitter {
     }
 
     getStatus() {
-        const completedRounds = this.#rounds.filter(round => round.hasEnded);
+        const completedRounds = this.#rounds.filter(round => round.hasEnded && round.isConfirmed);
         const roundCount = completedRounds.length;
 
         if (roundCount < 2) {
