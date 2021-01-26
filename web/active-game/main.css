@@ -31,10 +31,12 @@ body > * {
 
 #top-row {
     display: flex;
-    height: 10vh;
+    height: 25vh;
     font-size: 10vh;
     text-align: center;
     justify-content: center;
+    align-items: flex-end;
+    line-height: 12vh;
 }
 
 .robot-name {
@@ -153,7 +155,7 @@ body > * {
     position: absolute;
     left: 0;
     top: 0;
-    transform: skew(30deg, 0deg);
+    transform: skew(26.6deg, 0deg);
     z-index: -1;
     padding: 0 40%;
     border-right: 3px solid black;

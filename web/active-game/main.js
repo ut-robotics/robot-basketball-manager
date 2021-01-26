@@ -104,10 +104,10 @@ function renderState(state) {
     }
 
     if (state.status.result === 'won') {
-        messageElement.innerText = `${state.status.winner.name} WON`;
+        messageElement.innerText = `${state.status.winner.name} won`;
         return;
     } else if (state.status.result === 'tied') {
-        messageElement.innerText = `TIE`;
+        messageElement.innerText = `Tie`;
         return;
     }
 
