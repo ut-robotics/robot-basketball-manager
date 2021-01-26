@@ -27,6 +27,7 @@ const titleElement = document.getElementById('title');
 const messageElement = document.getElementById('message');
 const leftFoulsElement = document.getElementById('left-fouls');
 const rightFoulsElement = document.getElementById('right-fouls');
+const freethrowsRoundElement = document.getElementById('freethrows-round');
 
 let activeGameState = null;
 
@@ -111,34 +112,27 @@ function renderState(state) {
 
     if (state.freeThrows) {
         const rounds = state.freeThrows.rounds;
-        const robots = state.freeThrows.robots;
-        const baskets = state.freeThrows.baskets;
-        const lastRound = rounds[rounds.length - 1];
-        let nextRoundNumber = rounds.length + 1;
-        let robotIndex = 0;
 
-        if (lastRound) {
-            const firstAttempt = lastRound[0];
-            const secondAttempt = lastRound[1];
-
-            if (firstAttempt.endTime && !secondAttempt || secondAttempt && !secondAttempt.endTime) {
-                robotIndex = 1;
+        const winnerIndices = rounds.map(([attempt1, attempt2]) => {
+            if (attempt1.didScore && !attempt2.didScore) {
+                return 0;
+            } else if (!attempt1.didScore && attempt2.didScore) {
+                return 1;
             }
 
-            if (lastRound.length < 2 || !secondAttempt.endTime) {
-                nextRoundNumber--;
-            }
+            return -1;
+        });
+
+        const indexCounts = {'-1': 0, 0: 0, 1: 0};
+
+        for (const index of winnerIndices) {
+            indexCounts[index]++;
         }
 
-        messageElement.innerText = `Freethrows round ${nextRoundNumber}: ${robots[robotIndex].name}`;
-
-        const scoreElements = [leftScoreElement, rightScoreElement];
-        const opposingRobotIndex = 1 - robotIndex;
-
-        setBasketClass(scoreElements[robotIndex], baskets[robotIndex]);
-        setBasketClass(scoreElements[opposingRobotIndex]);
+        freethrowsRoundElement.innerHTML = `${indexCounts[0]}-${indexCounts[1]}`;
+        freethrowsRoundElement.classList.add('active');
     } else {
-        messageElement.innerText = '';
+        freethrowsRoundElement.classList.remove('active');
     }
 }
 

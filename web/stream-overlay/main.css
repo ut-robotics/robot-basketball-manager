@@ -66,7 +66,7 @@ body > * {
     position: absolute;
     left: 0;
     top: 0;
-    transform: skew(-30deg, 0deg);
+    transform: skew(-26.6deg, 0deg);
     z-index: -1;
     padding: 0 80%;
 }
@@ -124,34 +124,34 @@ body > * {
 
 #title-content {
     display: flex;
-    padding: 0 2vw;
+    padding: 0 3vw;
     position: relative;
 }
 
 #title-content::before {
     content: "";
-    background-color: rgba(0, 0, 0, 0.2);
     width: 100%;
     height: 100%;
     position: absolute;
     left: 0;
     top: 0;
-    transform: perspective(200px) rotateX(-17deg);
     z-index: -1;
-    padding: 0 40%;
-
+    padding: 0 20%;
+    border-top: 10vh solid rgba(0, 0, 0, 0.2);
+    border-left: 5vh solid transparent;
+    border-right: 5vh solid transparent;
 }
 
 #title {
-    padding: 0 2vw;
+    padding: 0 1vw;
     /*background-color: rgba(0, 0, 0, 0.2);*/
 }
 
 #message-row {
     text-align: center;
-    font-size: 8vh;
-    line-height: 15vh;
-    height: 15vh;
+    font-size: 6vh;
+    line-height: 10vh;
+    height: 10vh;
     width: 100vw;
     position: relative;
     display: flex;
@@ -205,7 +205,8 @@ body > * {
     display: flex;
 }
 
-.game-round {
+.game-round,
+#freethrows-round {
     opacity: 0;
     width: 12vw;
     text-align: center;
@@ -216,11 +217,13 @@ body > * {
     margin-right: 3px;
 }
 
-.game-round.active {
+.game-round.active,
+#freethrows-round.active {
     opacity: 1;
 }
 
-.game-round::before {
+.game-round::before,
+#freethrows-round::before {
     content: "";
     background-color: rgba(0, 0, 0, 0.2);
     width: 100%;
@@ -228,9 +231,13 @@ body > * {
     position: absolute;
     left: 0;
     top: 0;
-    transform: skew(30deg, 0deg);
+    transform: skew(26.6deg, 0deg);
     z-index: -1;
     padding: 0 40%;
+}
+
+#freethrows-round {
+    color: white;
 }
 
 .robot-image {
