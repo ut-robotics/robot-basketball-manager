@@ -86,15 +86,41 @@ class CompetitionResults extends LitElement {
         }
 
         return html`${this.renderHeader()}
-            ${this.renderRobots(this.competitionInfo.robots)}
-            ${this.renderTournament()}
-            ${this.renderSwissGamesList()}
+            ${this.renderCompetitionResults()}
+            ${this.renderDoubleElimination()}
+            <h2>Swiss-system tournament</h2>
             ${this.renderSwissScoreboard()}
-            ${this.renderDoubleElimination()}`;
+            ${this.renderSwissGamesList()}`;
     }
 
     renderHeader() {
-        return html`<h1>${`${this.competitionInfo.name} | ${this.competitionInfo.id}`}</h1>`
+        return html`<h1>${`${this.competitionInfo.name}`}</h1>`
+    }
+
+    renderCompetitionResults() {
+        const deInfo = this.competitionInfo.doubleEliminationTournament;
+
+        if (!deInfo) {
+            return null;
+        }
+
+        const robotCount = deInfo.robots.length;
+
+        let firstPlaceRobot = deInfo.noLossQueue.length + deInfo.oneLossQueue.length === 1
+            ? deInfo.noLossQueue[0] || deInfo.oneLossQueue[0]
+            : null;
+        let secondPlaceRobot = deInfo.eliminatedRobots[robotCount - 2];
+        let thirdPlaceRobot = deInfo.eliminatedRobots[robotCount - 3];
+
+        if (!thirdPlaceRobot) {
+            return null;
+        }
+
+        return html`<ul>
+            <li>Winner: ${firstPlaceRobot ? firstPlaceRobot.name : '???'}</li>
+            <li>2nd place: ${secondPlaceRobot ? secondPlaceRobot.name : '???'}</li>
+            <li>3rd place: ${thirdPlaceRobot ? thirdPlaceRobot.name : '???'}</li>
+        </ul>`;
     }
 
     renderRobots(robots) {
@@ -107,30 +133,7 @@ class CompetitionResults extends LitElement {
     }
 
     renderRobot(robot) {
-        return html`<li>${`${robot.name} | ${robot.id}`}</li>`;
-    }
-
-    renderNewRobotForm() {
-        return html`<form @submit=${this.handleAddRobot}>
-            <input type="text" name="id" placeholder="id">
-            <input type="text" name="name" placeholder="name">
-            <button type="submit">Add</button>
-        </form>`;
-    }
-
-    renderTournament() {
-        return html`<h2>Tournament</h2>
-            ${this.renderTournamentSettings()}`;
-    }
-
-    renderTournamentSettings() {
-        if (this.competitionInfo.tournament) {
-            const {swissEnabled, numberOfSwissRounds, doubleEliminationEnabled} = this.competitionInfo.tournament;
-
-            return html`<div>${`Swiss: ${swissEnabled}, Swiss rounds: ${numberOfSwissRounds}, Double elimination: ${doubleEliminationEnabled}`}</div>`
-        }
-
-        return html`${this.renderStartTournamentForm()}`;
+        return html`<li>${`${robot.name}`}</li>`;
     }
 
     renderSwissGamesList() {
@@ -153,47 +156,83 @@ class CompetitionResults extends LitElement {
             rounds[roundIndex].push(game);
         }
 
-        return html`<h2>Swiss games</h2>
-            ${rounds.map((r, index) => this.renderSwissGamesRound(index + 1, roundCount, r, byes[index]))}`
+        const reversedRounds = rounds.slice().reverse();
+
+        return html`${reversedRounds.map((r, index) => this.renderSwissGamesRound(roundCount - index, roundCount, r, byes[roundCount - index - 1]))}`
     }
 
     renderSwissGamesRound(roundNumber, roundsInTotal, games, bye) {
         return html`<h3>Round ${roundNumber} of ${roundsInTotal}</h3>
-            <ul>${games.map(g => this.renderGamesListItem(g))}</ul>
-            <>`
+            <ul>
+                ${games.map(g => this.renderGamesListItem(g))}
+                ${this.renderBye(bye)}
+            </ul>`
+    }
+
+    renderBye(bye) {
+        if (!bye) {
+            return null;
+        }
+
+        const robot = this.competitionInfo.robots.find(r => r.id === bye.robotID);
+
+        if (!robot) {
+            return null;
+        }
+
+        return html`<li>Bye: ${robot.name} | bye = 1 point</li>`;
     }
 
     renderGamesListItem(game, gameType) {
-        const activeGame = this.competitionInfo.activeGame;
-        let text = `${game.id} ${game.robots[0].name} vs ${game.robots[1].name}`;
+        let robotsText = `${game.robots[0].name} vs ${game.robots[1].name}`;
 
         const {status} = game;
 
-        if (status.result !== 'unknown') {
-            const {result} = status;
+        if (status.result === 'unknown') {
+            return html`<li>${robotsText}</li>`;
+        }
 
-            for (const round of game.rounds) {
-                if (!round.hasEnded) {
-                    continue;
-                }
+        const {result} = status;
 
-                const validScoreCounts = getValidScoreCounts(round.scores);
-                text += ` (${validScoreCounts[0]} - ${validScoreCounts[1]})`
+        let roundsText = '';
 
+        for (const round of game.rounds) {
+            if (!round.hasEnded) {
+                continue;
             }
 
-            if (result === 'won') {
-                text += ` (${status.winner.name} ${result})`
+            const validScoreCounts = getValidScoreCounts(round.scores);
+            roundsText += ` (${validScoreCounts[0]} - ${validScoreCounts[1]})`
+
+        }
+
+        const resultContent =  result === 'won'
+            ? html`<b>${status.winner.name} ${result}</b>`
+            : `${result}`;
+
+        let pointsText = '';
+
+        if (!gameType) {
+            const roundCount = game.rounds.length;
+
+            pointsText += ' | ';
+
+            if (result === 'tied') {
+                pointsText += 'tie = 0.5 points';
             } else {
-                text += ` (${result})`;
+                if (roundCount === 2) {
+                    pointsText += '2 out of 2 round wins = 1 point';
+                } else {
+                    if (status.roundWinCount === 2) {
+                        pointsText += '2 out of 3 round wins = 0.9 points';
+                    } else {
+                        pointsText += ' 1 out of 3 round wins = 0.8 points';
+                    }
+                }
             }
         }
 
-        if (activeGame && activeGame.id === game.id) {
-            text += ' (active)';
-        }
-
-        return html`<li>${text}</li>`;
+        return html`<li>${robotsText} | ${roundsText} | ${resultContent}${pointsText}</li>`;
     }
 
     renderSwissScoreboard() {
@@ -213,7 +252,7 @@ class CompetitionResults extends LitElement {
             return b.score - a.score;
         });
 
-        return html`<h2>Swiss scoreboard</h2>
+        return html`<h3>Scoreboard</h3>
             <table>
                 <thead><tr><th>Name</th><th>Score</th><th>Tiebreak score</th></tr></thead>
                 <tbody>${orderedScores.map(s => this.renderSwissScoreboardRow(s))}</tbody>
@@ -235,7 +274,7 @@ class CompetitionResults extends LitElement {
             return null;
         }
 
-        return html`${this.renderDoubleEliminationGames(deInfo)}
+        return html`<h2>Double elimination tournament</h2>
             ${this.renderDoubleEliminationQueues(deInfo)}`;
     }
 
@@ -245,12 +284,65 @@ class CompetitionResults extends LitElement {
     }
 
     renderDoubleEliminationQueues(deInfo) {
-        return html`<h2>No games lost</h2>
-            <ol>${deInfo.noLossQueue.map(r => this.renderRobot(r))}</ol>
-            <h2>1 game lost</h2>
-            <ol>${deInfo.oneLossQueue.map(r => this.renderRobot(r))}</ol>
-            <h2>Eliminated</h2>
-            <ol>${deInfo.eliminatedRobots.map(r => this.renderRobot(r))}</ol>`
+        const {games, gameTypes} = deInfo;
+
+        const noLossGames = [];
+        const oneLossGames = [];
+        const finalGames = [];
+
+        for (const game of games) {
+            const gameType = gameTypes[game.id];
+
+            if (gameType === 'noLoss') {
+                noLossGames.push(game);
+            } else if (gameType === 'oneLoss') {
+                oneLossGames.push(game);
+            } else if (gameType.endsWith('Final')) {
+                finalGames.push(game);
+            }
+        }
+
+        return html`${this.renderDoubleEliminationFinalGames(finalGames)}
+            <h3>No games lost</h3>
+            <ul>${noLossGames.map(g => this.renderGamesListItem(g, gameTypes[g.id]))}</ul>
+            ${this.renderDoubleEliminationNextGames(deInfo.noLossQueue)}
+            
+            <h3>1 game lost</h3>
+            <ul>${oneLossGames.map(g => this.renderGamesListItem(g, gameTypes[g.id]))}</ul>
+            ${this.renderDoubleEliminationNextGames(deInfo.oneLossQueue)}
+        
+            <h3>Eliminated</h3>
+            <ul>${deInfo.eliminatedRobots.map(r => this.renderRobot(r))}</ul>`
+    }
+
+    renderDoubleEliminationFinalGames(games) {
+        if (games.length === 0) {
+            return null;
+        }
+
+        const deInfo = this.competitionInfo.doubleEliminationTournament;
+        const {gameTypes} = deInfo;
+
+        return html`<h3>Final games</h3>
+            <ul>${games.map(g => this.renderGamesListItem(g, gameTypes[g.id]))}</ul>`;
+    }
+
+    renderDoubleEliminationNextGames(robots) {
+        const matches = [];
+
+        for (let i = 0; i < robots.length; i += 2) {
+            matches.push(robots.slice(i, i+ 2));
+        }
+
+        return html`<ul>${matches.map(m => this.renderMatch(m))}</ul>`;
+    }
+
+    renderMatch(robots) {
+        if (robots.length === 1) {
+            return html`<li>${robots[0].name}</li>`;
+        }
+
+        return html`<li>${robots[0].name} vs ${robots[1].name}</li>`;
     }
 }
 
