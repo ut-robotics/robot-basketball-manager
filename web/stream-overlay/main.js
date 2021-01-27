@@ -112,24 +112,14 @@ function renderState(state) {
 
     if (state.freeThrows) {
         const rounds = state.freeThrows.rounds;
+        const scoreCounts = [0, 0];
 
-        const winnerIndices = rounds.map(([attempt1, attempt2]) => {
-            if (attempt1.didScore && !attempt2.didScore) {
-                return 0;
-            } else if (!attempt1.didScore && attempt2.didScore) {
-                return 1;
-            }
-
-            return -1;
-        });
-
-        const indexCounts = {'-1': 0, 0: 0, 1: 0};
-
-        for (const index of winnerIndices) {
-            indexCounts[index]++;
+        for (const round of rounds) {
+            scoreCounts[0] += round[0].didScore ? 1 : 0;
+            scoreCounts[1] += round[1].didScore ? 1 : 0;
         }
 
-        freethrowsRoundElement.innerHTML = `${indexCounts[0]}-${indexCounts[1]}`;
+        freethrowsRoundElement.innerHTML = `${scoreCounts[0]}-${scoreCounts[1]}`;
         freethrowsRoundElement.classList.add('active');
     } else {
         freethrowsRoundElement.classList.remove('active');
