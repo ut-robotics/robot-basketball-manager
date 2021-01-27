@@ -1,6 +1,6 @@
 import EventEmitter from "events";
 import Competition from "./competition.mjs";
-import {loadCompetition, log, logError, saveCompetition, saveGame} from "./util.mjs";
+import {loadCompetition, log, logError, saveCompetition, saveCompetitionSummary, saveGame} from "./util.mjs";
 import RobotsApi from "./robots-api.mjs";
 import WebSocket from "ws";
 import {Basket} from "./constants.mjs";
@@ -36,10 +36,12 @@ export default class CompetitionManager extends EventEmitter {
         this.#setCompetition(competition);
 
         saveCompetition(competition, this.#competitionDirectory);
+        saveCompetitionSummary(this.#competition, this.#competitionDirectory);
     }
 
     async saveCompetition() {
         await saveCompetition(this.#competition, this.#competitionDirectory);
+        await saveCompetitionSummary(this.#competition, this.#competitionDirectory);
     }
 
     #setup() {
@@ -156,6 +158,7 @@ export default class CompetitionManager extends EventEmitter {
     #handleCompetitionChanged() {
         log('handleCompetitionChanged');
         saveCompetition(this.#competition, this.#competitionDirectory);
+        saveCompetitionSummary(this.#competition, this.#competitionDirectory);
     }
 
     #handleGameChanged(changeType, game) {
@@ -163,6 +166,7 @@ export default class CompetitionManager extends EventEmitter {
         this.#broadcastGameState(game);
         this.#handleGameChangeType(changeType, game);
         saveGame(game, this.#competitionDirectory);
+        saveCompetitionSummary(this.#competition, this.#competitionDirectory);
     }
 
     #handleGameChangeType(changeType, game) {

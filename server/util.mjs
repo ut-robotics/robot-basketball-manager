@@ -1,6 +1,6 @@
 import {promises as fs} from 'fs';
 import path from "path";
-import {competitionInfoFileName} from "./constants.mjs";
+import {competitionInfoFileName, competitionSummaryFileName} from "./constants.mjs";
 import Game from "./game.mjs";
 import Competition from "./competition.mjs";
 import jsonStringifyCompact from "json-stringify-pretty-compact";
@@ -186,6 +186,14 @@ export async function saveCompetition(competition, directory) {
     }
 
     return writeJSONFile(path.join(directory, competitionInfoFileName), competitionInfo);
+}
+
+export async function saveCompetitionSummary(competition, directory) {
+    log(`Saving competition summary`);
+
+    const competitionInfo = competition.getInfo();
+
+    return writeJSONFile(path.join(directory, competitionSummaryFileName), competitionInfo);
 }
 
 export async function saveGame(game, directory) {

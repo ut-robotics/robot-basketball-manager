@@ -33,3 +33,4 @@ export const outOfRoundFoulCount =  2;
 
 export const doubleEliminationGameIdOffset = 1000;
 export const competitionInfoFileName = 'competition-info.json';
+export const competitionSummaryFileName = 'competition-summary.json';
