@@ -32,11 +32,11 @@ body > * {
 #top-row {
     display: flex;
     height: 25vh;
-    font-size: 10vh;
+    font-size: 8vh;
     text-align: center;
     justify-content: center;
     align-items: flex-end;
-    line-height: 12vh;
+    line-height: 10vh;
 }
 
 .robot-name {
@@ -50,10 +50,10 @@ body > * {
 
 #middle-row {
     display: flex;
-    height: 50vh;
+    height: 45vh;
     font-size: 50vh;
     justify-content: center;
-    line-height: 50vh;
+    line-height: 45vh;
 }
 
 .robot-score {
@@ -103,6 +103,15 @@ body > * {
 
 #message {
 
+}
+
+#fouls-row {
+    text-align: center;
+    font-size: 5vh;
+    line-height: 5vh;
+    height: 5vh;
+    width: 100vw;
+    position: relative;
 }
 
 #left-fouls {
