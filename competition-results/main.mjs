@@ -85,15 +85,19 @@ class CompetitionResults extends LitElement {
             return html`<div>Loading...</div>`;
         }
 
+        if (!this.competitionInfo.name) {
+            return null;
+        }
+
         return html`${this.renderHeader()}
             ${this.renderCompetitionResults()}
             ${this.renderDoubleElimination()}
-            <h2>Swiss-system tournament</h2>
-            ${this.renderSwissScoreboard()}
-            ${this.renderSwissGamesList()}`;
+            ${this.renderSwiss()}`;
     }
 
     renderHeader() {
+        if (this.competitionInfo.name)
+
         return html`<h1>${`${this.competitionInfo.name}`}</h1>`
     }
 
@@ -136,6 +140,18 @@ class CompetitionResults extends LitElement {
         return html`<li>${`${robot.name}`}</li>`;
     }
 
+    renderSwiss() {
+        const swissInfo = this.competitionInfo.swissSystemTournament;
+
+        if (!swissInfo || !swissInfo.games) {
+            return null;
+        }
+
+        return html`<h2>Swiss-system tournament</h2>
+            ${this.renderSwissScoreboard()}
+            ${this.renderSwissGamesList()}`;
+    }
+
     renderSwissGamesList() {
         const swissInfo = this.competitionInfo.swissSystemTournament;
 
@@ -158,7 +174,7 @@ class CompetitionResults extends LitElement {
 
         const reversedRounds = rounds.slice().reverse();
 
-        return html`${reversedRounds.map((r, index) => this.renderSwissGamesRound(roundCount - index, roundCount, r, byes[roundCount - index - 1]))}`
+        return html`${reversedRounds.map((r, index) => this.renderSwissGamesRound(rounds.length - index, roundCount, r, byes[rounds.length - index - 1]))}`
     }
 
     renderSwissGamesRound(roundNumber, roundsInTotal, games, bye) {
@@ -188,7 +204,7 @@ class CompetitionResults extends LitElement {
 
         const {status} = game;
 
-        if (status.result === 'unknown') {
+        if (status.result === 'unknown' && game.rounds.length === 0 || !game.rounds[0].hasEnded) {
             return html`<li>${robotsText}</li>`;
         }
 
@@ -204,6 +220,9 @@ class CompetitionResults extends LitElement {
             const validScoreCounts = getValidScoreCounts(round.scores);
             roundsText += ` (${validScoreCounts[0]} - ${validScoreCounts[1]})`
 
+        }
+        if (status.result === 'unknown') {
+            return html`<li>${robotsText} | ${roundsText}</li>`;
         }
 
         const resultContent =  result === 'won'
