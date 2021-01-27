@@ -1,5 +1,5 @@
 import SwissSystemTournament from "./swiss-system-tournament.mjs";
-import {cloneObject, log} from "./util.mjs";
+import {cloneObject, log, shuffledArray} from "./util.mjs";
 import EventEmitter from "events";
 import DoubleEliminationTournament from "./double-elimination-tournament.mjs";
 
@@ -37,7 +37,10 @@ export default class Competition extends EventEmitter {
         }
 
         if (this.#tournament.swissEnabled && !this.#swissSystemTournament) {
-            const swissTournament = new SwissSystemTournament(this.#robots, this.#tournament.numberOfSwissRounds);
+            const swissTournament = new SwissSystemTournament(
+                shuffledArray(this.#robots),
+                this.#tournament.numberOfSwissRounds
+            );
 
             this.#setSwissTournament(swissTournament);
         }
@@ -73,14 +76,14 @@ export default class Competition extends EventEmitter {
                     }
 
                     const doubleEliminationTournament = new DoubleEliminationTournament(
-                        bestRobots,
+                        shuffledArray(bestRobots),
                         cloneObject(this.#swissSystemTournament.robotStartingBaskets)
                     );
 
                     this.#setDoubleEliminationTournament(doubleEliminationTournament);
                 }
             } else {
-                const doubleEliminationTournament = new DoubleEliminationTournament(this.#robots);
+                const doubleEliminationTournament = new DoubleEliminationTournament(shuffledArray(this.#robots));
                 this.#setDoubleEliminationTournament(doubleEliminationTournament);
             }
         }
