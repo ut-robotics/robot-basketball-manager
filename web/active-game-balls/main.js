@@ -192,11 +192,24 @@ window.addEventListener('mousedown', (event) => {
     move(event);
 });
 
+function handleKeyDown(event) {
+    console.log(event.code);
+
+    switch (event.code) {
+        case 'Space':
+            event.preventDefault();
+            document.getElementById('container').classList.toggle('active');
+            break;
+    }
+}
+
 window.addEventListener('mouseup', () => {
     currentCorner = -1;
     localStorage.setItem('corners', JSON.stringify(corners));
 });
 
 window.addEventListener('mousemove', move);
+
+document.addEventListener('keydown', handleKeyDown);
 
 update();
