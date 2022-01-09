@@ -1,6 +1,7 @@
 import WebsocketManager from "../js/util/websocket-manager.js";
 import getRoundRuntime from "../js/util/get-round-runtime.js";
 import getValidScoreCounts from "../js/util/get-valid-score-counts.js";
+import zip from "../js/util/zip.js";
 
 let socketManager = new WebsocketManager(onSocketMessage);
 
@@ -21,20 +22,24 @@ function onSocketMessage(message) {
     }
 }
 
-const timeElement = document.getElementById('time');
-const titleRowElement = document.getElementById('title-row');
-const titleElement = document.getElementById('title');
-const messageElement = document.getElementById('message');
-const leftFoulsElement = document.getElementById('left-fouls');
-const rightFoulsElement = document.getElementById('right-fouls');
+const infoBoxElement = document.getElementById('info-box');
+const robotsElement = document.getElementById('robots');
+const mainRoundsElement = document.getElementById('main-rounds');
 const freethrowsRoundElement = document.getElementById('freethrows-round');
+const timeElement = document.getElementById('time');
+const gameResultsElement = document.getElementById('game-results');
+const messageElement = document.getElementById('message');
+
+const robotElements = robotsElement.getElementsByClassName('robot');
+const robotNameElements = robotsElement.getElementsByClassName('robot-name');
+const robotFoulsElements = robotsElement.getElementsByClassName('robot-fouls');
+const mainRoundElements = mainRoundsElement.getElementsByClassName('main-round');
 
 let activeGameState = null;
 
 function renderState(state) {
-    if (!state) {
-        titleRowElement.classList.remove('active');
-        timeElement.classList.remove('active');
+    if (!infoBoxElement) {
+        infoBoxElement.classList.remove('active');
         return;
     }
 
@@ -45,57 +50,96 @@ function renderState(state) {
         return;
     }
 
-    titleRowElement.classList.add('active');
-    timeElement.classList.add('active');
+    infoBoxElement.classList.add('active');
 
-    titleElement.innerText = `${robots[0].name} vs ${robots[1].name}`;
+    const robotsData = zip(robots, robotNameElements, robotFoulsElements, lastRound.fouls);
 
-    leftFoulsElement.classList.remove('first');
-    leftFoulsElement.classList.remove('second');
-    rightFoulsElement.classList.remove('first');
-    rightFoulsElement.classList.remove('second');
+    for (const [robot, robotNameElement, robotFoulsElement, robotFouls] of robotsData) {
+        robotNameElement.innerText = robot.name;
 
-    if (state.freeThrows) {
-        leftFoulsElement.classList.remove('active');
-        leftFoulsElement.classList.remove('active');
-    } else {
-        for (const [index, element] of [leftFoulsElement, rightFoulsElement].entries()) {
-            const foulCount = lastRound.fouls[index].length;
+        robotFoulsElement.classList.remove('first');
+        robotFoulsElement.classList.remove('second');
+
+        if (state.freeThrows || state.hasEnded) {
+            robotFoulsElement.classList.remove('active');
+        } else {
+            const foulCount = robotFouls.length;
 
             if (foulCount > 0) {
                 if (foulCount === 2) {
-                    element.classList.add('second');
+                    robotFoulsElement.classList.add('second');
                 } else {
-                    element.classList.add('first');
+                    robotFoulsElement.classList.add('first');
                 }
 
-                element.classList.add('active');
+                robotFoulsElement.classList.add('active');
             } else {
-                element.classList.remove('active');
+                robotFoulsElement.classList.remove('active');
             }
+        }
+
+        if (state.status.result === 'won') {
+            if (robot.id === state.status.winner.id) {
+                robotNameElement.classList.add('won');
+            } else {
+                robotNameElement.classList.add('lost');
+            }
+        } else if (state.status.result === 'tied') {
+            robotNameElement.classList.remove('tied');
+        } else {
+            robotNameElement.classList.remove('won');
+            robotNameElement.classList.remove('lost');
+            robotNameElement.classList.remove('tied');
         }
     }
 
-    const gameRoundElements = document.querySelectorAll('.game-round');
-
-    for (let i = 0; i < gameRoundElements.length; i++) {
-        const element = gameRoundElements[i];
-
-        if (rounds[i]) {
-            element.classList.add('active');
-
-            const validScoreCounts = getValidScoreCounts(rounds[i].scores);
-
-            if (rounds[i] !== lastRound || state.freeThrows) {
-                element.innerText = `${validScoreCounts[0]}-${validScoreCounts[1]}`;
-            } else {
-                const leftClass = rounds[i].baskets[0] === 'blue' ? 'blue-basket' : 'magenta-basket';
-                const rightClass = rounds[i].baskets[1] === 'blue' ? 'blue-basket' : 'magenta-basket';
-                element.innerHTML = `<span class="${leftClass}">${validScoreCounts[0]}</span>-<span class="${rightClass}">${validScoreCounts[1]}</span>`;
-            }
-        } else {
+    for (const [element, round] of zip(mainRoundElements, rounds)) {
+        if (!round) {
             element.classList.remove('active');
+            continue;
         }
+
+        element.classList.add('active');
+
+        const validScoreCounts = getValidScoreCounts(round.scores);
+
+        if (round.hasEnded && round.isConfirmed) {
+            const robot1Class = round.winnerIndex === 0 ? 'won' : (round.winnerIndex === -1 ? 'tied' : 'lost');
+            const robot2Class = round.winnerIndex === 1 ? 'won' : (round.winnerIndex === -1 ? 'tied' : 'lost');
+
+            element.innerHTML = `<div class="${robot1Class}">${validScoreCounts[0]}</div><div class="${robot2Class}">${validScoreCounts[1]}</div>`;
+        } else if (round === lastRound && !state.freeThrows) {
+            const robot1Class = round.baskets[0] === 'blue' ? 'blue-basket' : 'magenta-basket';
+            const robot2Class = round.baskets[1] === 'blue' ? 'blue-basket' : 'magenta-basket';
+
+            element.innerHTML = `<div class="${robot1Class}">${validScoreCounts[0]}</div><div class="${robot2Class}">${validScoreCounts[1]}</div>`;
+        } else {
+            element.innerHTML = `<div>${validScoreCounts[0]}</div><div>${validScoreCounts[1]}</div>`;
+        }
+    }
+
+    if (state.hasEnded) {
+        gameResultsElement.classList.add('active');
+        timeElement.classList.remove('active');
+
+        let robot1Content = '';
+        let robot2Content = '';
+
+        if (state.status.result === 'won') {
+            if (state.robots[0].id === state.status.winner.id) {
+                robot1Content = '&#9734;'
+            } else {
+                robot2Content = '&#9734;'
+            }
+        } else if (state.status.result === 'tied') {
+            robot1Content = '='
+            robot2Content = '='
+        }
+
+        gameResultsElement.innerHTML = `<div>${robot1Content}</div><div>${robot2Content}</div>`;
+    } else {
+        gameResultsElement.classList.remove('active');
+        timeElement.classList.add('active');
     }
 
     if (state.status.result === 'won') {
@@ -119,7 +163,7 @@ function renderState(state) {
             scoreCounts[1] += round[1].didScore ? 1 : 0;
         }
 
-        freethrowsRoundElement.innerHTML = `${scoreCounts[0]}-${scoreCounts[1]}`;
+        freethrowsRoundElement.innerHTML = `<div>${scoreCounts[0]}</div><div>${scoreCounts[1]}</div>`;
         freethrowsRoundElement.classList.add('active');
     } else {
         freethrowsRoundElement.classList.remove('active');
@@ -144,7 +188,7 @@ requestAnimationFrame(updateTime);
 function updateTime() {
     requestAnimationFrame(updateTime);
 
-    if (!activeGameState) {
+    if (!activeGameState || activeGameState.hasEnded) {
         return;
     }
 

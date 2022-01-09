@@ -1,8 +1,13 @@
 @import url('https://fonts.googleapis.com/css?family=Noto+Sans&display=swap');
 
+:root {
+    --info-box-items-bg-color: rgba(0, 0, 0, 0.3);
+    --info-box-items-spacing: 0.5vh;
+    --info-box-items-line-height: 4vh;
+}
+
 html {
     box-sizing: border-box;
-    background-color: #0F0;
 }
 
 *, *:before, *:after {
@@ -18,11 +23,7 @@ html, body {
 }
 
 body {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    /* background-color: black; */
-    color: #EEE;
+    color: white;
     overflow: hidden;
 }
 
@@ -30,233 +31,132 @@ body > * {
     width: 100vw;
 }
 
-#top-row {
+#info-box {
+    position: absolute;
+    bottom: 4vh;
+    left: 8vh;
     display: flex;
-    height: 10vh;
-    font-size: 10vh;
-    text-align: center;
-    justify-content: center;
+    align-items: center;
+    gap: var(--info-box-items-spacing);
+    font-size: 3vh;
+}
+
+#robots,
+.main-round.active,
+#freethrows-round.active,
+#game-results.active {
+    display: flex;
+    flex-direction: column;
+    gap: var(--info-box-items-spacing);
+}
+
+#robots {
+
+}
+
+.robot {
+    background-color: var(--info-box-items-bg-color);
+    display: flex;
+    align-items: center;
+    gap: 1vh;
+    padding: 0 1vh;
 }
 
 .robot-name {
-    width: 35vw;
-    text-align: center;
-    background-color: rgba(0, 0, 0, 0.2);
+    line-height: var(--info-box-items-line-height);
 }
 
-#time {
+.robot-fouls {
     opacity: 0;
-    position: relative;
-    width: 10vw;
-    font-size: 8vh;
-    line-height: 10vh;
-    text-align: center;
-    /*background-color: rgba(0, 0, 0, 0.2);*/
-}
-
-#time.active {
-    opacity: 1;
-}
-
-#time::before {
-    content: "";
-    background-color: rgba(0, 0, 0, 0.2);
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    left: 0;
-    top: 0;
-    transform: skew(-26.6deg, 0deg);
-    z-index: -1;
-    padding: 0 80%;
-}
-
-#middle-row {
-    display: flex;
-    height: 50vh;
-    font-size: 50vh;
-    justify-content: center;
-    line-height: 50vh;
-}
-
-.robot-score {
-    width: 35vw;
-    text-align: center;
-}
-
-#left-score {
-
-}
-
-#right-score {
-
-}
-
-.blue-basket {
-    color: dodgerblue;
-}
-
-.magenta-basket {
-    color: #d600d6;
-}
-
-#score-separator {
-    width: 10vw;
-    text-align: center;
-    color: #444;
-    line-height: 38vh;
-}
-
-#title-row {
-    opacity: 0;
-    text-align: center;
-    font-size: 6vh;
-    height: 10vh;
-    line-height: 10vh;
-    width: 100vw;
-    display: flex;
-    justify-content: center;
-}
-
-#title-row.active {
-    opacity: 1;
-}
-
-#title-content {
-    display: flex;
-    padding: 0 3vw;
-    position: relative;
-}
-
-#title-content::before {
-    content: "";
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    left: 0;
-    top: 0;
-    z-index: -1;
-    padding: 0 20%;
-    border-top: 10vh solid rgba(0, 0, 0, 0.2);
-    border-left: 5vh solid transparent;
-    border-right: 5vh solid transparent;
-}
-
-#title {
-    padding: 0 1vw;
-    /*background-color: rgba(0, 0, 0, 0.2);*/
-}
-
-#message-row {
-    text-align: center;
-    font-size: 6vh;
-    line-height: 10vh;
-    height: 10vh;
-    width: 100vw;
-    position: relative;
-    display: flex;
-    justify-content: center;
-}
-
-#message {
-    background-color: rgba(0, 0, 0, 0.2);
-    padding: 0 2vw;
-    opacity: 0;
-}
-
-#message.active {
-    opacity: 1;
-}
-
-#left-fouls,
-#right-fouls {
-    opacity: 0;
-    background-color: rgba(0, 0, 0, 0.2);
-    margin: 4vh 0;
-    width: 2vh;
+    width: 1vh;
+    height: 1vh;
     border-radius: 100%;
 }
 
-#left-fouls.active,
-#right-fouls.active {
+.robot-fouls.active {
     opacity: 1;
 }
 
-#left-fouls.first,
-#right-fouls.first {
+.robot-fouls.first {
     background-color: yellow;
 }
 
-#left-fouls.second,
-#right-fouls.second {
+.robot-fouls.second {
     background-color: red;
 }
 
-#bottom-row {
-    display: flex;
-    height: 10vh;
-    position: relative;
-    text-align: center;
-    justify-content: space-between;
-}
-
-#rounds {
-    margin-left: -1.4vw;
+#game-rounds {
     display: flex;
 }
 
-.game-round,
-#freethrows-round {
-    opacity: 0;
-    width: 12vw;
-    text-align: center;
-    position: relative;
-    font-size: 8vh;
-    line-height: 10vh;
-    color: #AAA;
-    margin-right: 3px;
+#main-rounds {
+    display: flex;
 }
 
-.game-round.active,
+#main-rounds,
+#freethrows-round,
+#game-results {
+    line-height: var(--info-box-items-line-height);
+    text-align: center;
+}
+
+.main-round,
+#freethrows-round,
+#game-results {
+    display: none;
+}
+
+.main-round > *,
+#freethrows-round > * {
+    background-color: var(--info-box-items-bg-color);
+    padding: 0 1vh;
+}
+
+#game-results > * {
+    background-color: var(--info-box-items-bg-color);
+    height: var(--info-box-items-line-height);
+    width: var(--info-box-items-line-height);
+}
+
+.main-round.active + .main-round.active,
 #freethrows-round.active {
-    opacity: 1;
+    padding-left: var(--info-box-items-spacing);
 }
 
-.game-round::before,
-#freethrows-round::before {
-    content: "";
-    background-color: rgba(0, 0, 0, 0.2);
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    left: 0;
-    top: 0;
-    transform: skew(26.6deg, 0deg);
-    z-index: -1;
-    padding: 0 40%;
+#time {
+    display: none;
 }
 
-#freethrows-round {
+#time.active {
+    display: block;
+    background-color: var(--info-box-items-bg-color);
+    font-size: 5vh;
+    line-height: calc(2 * var(--info-box-items-line-height) + var(--info-box-items-spacing));
+    width: 9vh;
+    text-align: center;
+}
+
+#message {
+    display: none;
+}
+
+.blue-basket,
+.magenta-basket {
     color: white;
 }
 
-.robot-image {
-    position: absolute;
-    height: 100vh;
-    width: 50vw;
-    top: 0;
-    z-index: -2;
-    opacity: 0.4;
-    background-repeat: no-repeat;
-    background-size: 30vw;
+.blue-basket {
+    background-color: rgba(30, 144, 255, 0.8);
 }
 
-#left-robot-image {
-    left: 0;
-    background-position: left center;
+.magenta-basket {
+    background-color: rgba(214, 0, 214, 0.8);
 }
 
-#right-robot-image {
-    right: 0;
-    background-position: right center;
+.lost {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.tied {
+    color: rgba(255, 255, 255, 0.7);
 }
