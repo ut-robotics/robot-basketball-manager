@@ -125,8 +125,13 @@ class GameView extends LitElement {
         } else if (type === 'roundStopped' || type === 'freeThrowAttemptEnded') {
             this.audioPlayer.whistleLong();
         } else if (type === 'roundEnded') {
-            this.audioPlayer.stopAll();
-            this.audioPlayer.buzzer();
+            const lastRound = this.gameInfo.rounds[this.gameInfo.rounds.length - 1];
+
+            if (lastRound.duration >= lastRound.timeLimit) {
+                // round ended with time running out
+                this.audioPlayer.stopAll();
+                this.audioPlayer.buzzer();
+            }
         }
     }
 
