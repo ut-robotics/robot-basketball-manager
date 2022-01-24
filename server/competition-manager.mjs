@@ -5,6 +5,14 @@ import RobotsApi from "./robots-api.mjs";
 import WebSocket from "ws";
 import {Basket} from "./constants.mjs";
 
+export const CompetitionManagerEventName = {
+    competitionSaved: 'competitionSaved',
+    competitionSummarySaved: 'competitionSummarySaved',
+    competitionChanged: 'competitionChanged',
+    gameChanged: 'gameChanged',
+    competitionCreated: 'competitionCreated',
+};
+
 export default class CompetitionManager extends EventEmitter {
     #competition = null;
     #competitionDirectory;
@@ -32,18 +40,25 @@ export default class CompetitionManager extends EventEmitter {
         this.#setup();
     }
 
-    createCompetition(id, name) {
+    async createCompetition(id, name) {
         const competition = new Competition(id, name);
 
         this.#setCompetition(competition);
 
-        saveCompetition(competition, this.#competitionDirectory);
-        saveCompetitionSummary(this.#competition, this.#competitionDirectory);
+        await this.saveCompetition(competition, this.#competitionDirectory);
+
+        this.emit(CompetitionManagerEventName.competitionCreated);
     }
 
     async saveCompetition() {
         await saveCompetition(this.#competition, this.#competitionDirectory);
+        await this.saveCompetitionSummary();
+        this.emit(CompetitionManagerEventName.competitionSaved);
+    }
+
+    async saveCompetitionSummary() {
         await saveCompetitionSummary(this.#competition, this.#competitionDirectory);
+        this.emit(CompetitionManagerEventName.competitionSummarySaved);
     }
 
     #setup() {
@@ -157,18 +172,19 @@ export default class CompetitionManager extends EventEmitter {
         }
     }
 
-    #handleCompetitionChanged() {
+    async #handleCompetitionChanged() {
         log('handleCompetitionChanged');
-        saveCompetition(this.#competition, this.#competitionDirectory);
-        saveCompetitionSummary(this.#competition, this.#competitionDirectory);
+        await this.saveCompetition(this.#competition, this.#competitionDirectory);
+        this.emit(CompetitionManagerEventName.competitionChanged);
     }
 
-    #handleGameChanged(changeType, game) {
+    async #handleGameChanged(changeType, game) {
         log('handleGameChanged');
         this.#broadcastGameState(game);
         this.#handleGameChangeType(changeType, game);
-        saveGame(game, this.#competitionDirectory);
-        saveCompetitionSummary(this.#competition, this.#competitionDirectory);
+        await saveGame(game, this.#competitionDirectory);
+        await this.saveCompetitionSummary(this.#competition, this.#competitionDirectory);
+        this.emit(CompetitionManagerEventName.gameChanged, changeType, game);
     }
 
     #handleGameChangeType(changeType, game) {
