@@ -2,8 +2,8 @@ import CompetitionManager from "./competition-manager.mjs";
 
 export let competitionManager;
 
-export function initCompetitionManager(competitionDirectory, server, basketsPort, refereePort) {
+export function initCompetitionManager(competitionDirectory, server, robotsPort, basketsPort, refereePort) {
     if (!competitionManager) {
-        competitionManager = new CompetitionManager(competitionDirectory, server, basketsPort, refereePort);
+        competitionManager = new CompetitionManager(competitionDirectory, server, robotsPort, basketsPort, refereePort);
     }
 }

@@ -13,10 +13,11 @@ app.use('/manual-command', manualCommandRouter);
 app.use(express.static('../web'));
 
 const uiPort = 8110;
+const robotsPort = 8111;
 const basketsPort = 8112;
 const refereePort = 8114;
 
-initCompetitionManager(process.argv[2], server, basketsPort, refereePort);
+initCompetitionManager(competitionResultsDirectory, server, robotsPort, basketsPort, refereePort);
 
 server.listen(uiPort, function listening() {
     log('Listening on', server.address().port);

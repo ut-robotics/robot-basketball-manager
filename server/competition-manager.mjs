@@ -10,6 +10,7 @@ export default class CompetitionManager extends EventEmitter {
     #competitionDirectory;
     #server;
     #robotsApi;
+    #robotsPort;
     #basketsPort;
     #refereePort;
     #wss;
@@ -20,10 +21,11 @@ export default class CompetitionManager extends EventEmitter {
         return this.#competition;
     }
 
-    constructor(competitionDirectory, uiServer, basketsPort, refereePort) {
+    constructor(competitionDirectory, uiServer, robotsPort, basketsPort, refereePort) {
         super();
         this.#competitionDirectory = competitionDirectory;
         this.#server = uiServer;
+        this.#robotsPort = robotsPort;
         this.#basketsPort = basketsPort;
         this.#refereePort = refereePort;
 
@@ -49,7 +51,7 @@ export default class CompetitionManager extends EventEmitter {
             .then(competition => this.#setCompetition(competition))
             .catch(error => logError(error));
 
-        this.#robotsApi = new RobotsApi(8111, (method, params) => {
+        this.#robotsApi = new RobotsApi(this.#robotsPort, (method, params) => {
             if (method === 'get_active_game_state') {
                 const activeGame = this.#competition?.getActiveGame();
 
