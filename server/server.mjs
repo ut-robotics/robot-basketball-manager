@@ -22,7 +22,7 @@ const refereePort = 8114;
 
 const competitionRootDirectory = process.argv[2];
 const gitRemote = process.argv[3];
-const competitionResultsDirectory = path.join(competitionRootDirectory, 'competition-results');
+const competitionResultsDirectory = path.join(competitionRootDirectory, 'competition-state');
 
 const gitResultsUpdater = new GitResultsUpdater(competitionRootDirectory, gitRemote);
 
@@ -30,13 +30,11 @@ initCompetitionManager(competitionResultsDirectory, server, robotsPort, basketsP
 
 competitionManager.on(CompetitionManagerEventName.competitionCreated, async () => {
     await gitResultsUpdater.init();
-    log('git init done');
 });
 
 competitionManager.on(CompetitionManagerEventName.competitionSummarySaved, async () => {
     if (gitResultsUpdater.isInitialized()) {
-        await gitResultsUpdater.update();
-        log('git update done');
+        gitResultsUpdater.update();
     }
 });
 
