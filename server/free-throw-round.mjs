@@ -1,6 +1,13 @@
 import EventEmitter from 'events';
 import {FreeThrowsResult}  from './constants.mjs';
 
+export const FreeThrowsEventName = {
+    attemptStarted: 'attemptStarted',
+    attemptEnded: 'attemptEnded',
+    isConfirmedChanged: 'isConfirmedChanged',
+    ended: 'ended',
+};
+
 export default class FreeThrows extends EventEmitter {
     #minRounds = 3;
     #timeLimit = 10000;
@@ -50,7 +57,7 @@ export default class FreeThrows extends EventEmitter {
         lastRound = this.#getLastRound();
         lastRound.push({startTime: time, didScore: false, robot: this.#robots[this.#robotIndex]});
 
-        this.emit('attemptStarted');
+        this.emit(FreeThrowsEventName.attemptStarted);
 
         this.#startTimeCheck();
     }
@@ -68,7 +75,7 @@ export default class FreeThrows extends EventEmitter {
             attempt.didScore = didScore;
         }
 
-        this.emit('attemptEnded');
+        this.emit(FreeThrowsEventName.attemptEnded);
     }
 
     confirm() {
@@ -77,7 +84,7 @@ export default class FreeThrows extends EventEmitter {
         if (lastAttempt) {
             lastAttempt.isConfirmed = true;
 
-            this.emit('isConfirmedChanged');
+            this.emit(FreeThrowsEventName.isConfirmedChanged);
 
             this.#checkStatus();
         }
@@ -89,13 +96,13 @@ export default class FreeThrows extends EventEmitter {
         if (lastAttempt) {
             lastAttempt.isConfirmed = false;
 
-            this.emit('isConfirmedChanged');
+            this.emit(FreeThrowsEventName.isConfirmedChanged);
         }
     }
 
     #end = () => {
         this.#hasEnded = true;
-        this.emit('ended');
+        this.emit(FreeThrowsEventName.ended);
     };
 
     #checkStatus = () => {

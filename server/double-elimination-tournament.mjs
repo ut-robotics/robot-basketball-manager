@@ -1,8 +1,12 @@
 import EventEmitter from "events";
-import Game from "./game.mjs";
+import Game, {GameEventChangeType, GameEventName} from "./game.mjs";
 import {doubleEliminationGameIdOffset, DoubleEliminationGameType} from "./constants.mjs";
 import {decideBasketsForRobots, log} from "./util.mjs";
-import SwissSystemTournament from "./swiss-system-tournament.mjs";
+
+export const DoubleEliminationTournamentEventName = {
+    changed: 'changed',
+    ended: 'ended',
+};
 
 export default class DoubleEliminationTournament extends EventEmitter {
     /** @type {{id: string, name: string}[]} */
@@ -53,7 +57,7 @@ export default class DoubleEliminationTournament extends EventEmitter {
         this.#robotStartingBaskets[match[0].id].push(baskets[0]);
         this.#robotStartingBaskets[match[1].id].push(baskets[1]);
 
-        game.on('changed', (changeType) => {
+        game.on(GameEventName.changed, (changeType) => {
             this.#handleGameChange(changeType, game);
         });
     }
@@ -103,7 +107,7 @@ export default class DoubleEliminationTournament extends EventEmitter {
         console.log('noLoss', this.#noLossQueue.map(r => r.id).join(', '));
         console.log('oneLoss', this.#oneLossQueue.map(r => r.id).join(', '));
 
-        this.emit('changed');
+        this.emit(DoubleEliminationTournamentEventName.changed);
     }
 
     getGames() {
@@ -112,7 +116,7 @@ export default class DoubleEliminationTournament extends EventEmitter {
 
     #handleGameChange(changeType, game) {
         log('handleGameChange', changeType);
-        if (changeType === 'ended') {
+        if (changeType === GameEventChangeType.ended) {
             const gameType = this.#gameTypes[game.id];
             const status = game.getStatus();
 
@@ -154,8 +158,8 @@ export default class DoubleEliminationTournament extends EventEmitter {
     #end() {
         if (!this.#hasEnded) {
             this.#hasEnded = true;
-            this.emit('changed');
-            this.emit('ended');
+            this.emit(DoubleEliminationTournamentEventName.changed);
+            this.emit(DoubleEliminationTournamentEventName.ended);
         }
     }
 
@@ -196,7 +200,7 @@ export default class DoubleEliminationTournament extends EventEmitter {
         this.#hasEnded = state.hasEnded;
 
         for (const game of this.#games) {
-            game.on('changed', (changeType) => {
+            game.on(GameEventName.changed, (changeType) => {
                 this.#handleGameChange(changeType, game);
             });
         }

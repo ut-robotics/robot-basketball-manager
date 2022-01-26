@@ -1,6 +1,6 @@
 import EventEmitter from 'events';
-import GameRound from './game-round.mjs';
-import  FreeThrows from './free-throw-round.mjs';
+import GameRound, {GameRoundEventName} from './game-round.mjs';
+import FreeThrows, {FreeThrowsEventName} from './free-throw-round.mjs';
 import {
     mainRoundLength,
     extraRoundLength,
@@ -11,6 +11,28 @@ import {
     Basket
 } from './constants.mjs';
 import {generateBallPlacement} from "./util.mjs";
+
+export const GameEventName = {
+    changed: 'changed',
+};
+
+export const GameEventChangeType = {
+    ended: 'ended',
+    scoreChanged: 'scoreChanged',
+    foulsChanged: 'foulsChanged',
+    roundAdded: 'roundAdded',
+    roundStarted: 'roundStarted',
+    roundStopped: 'roundStopped',
+    roundEnded: 'roundEnded',
+    roundIsConfirmedChanged: 'roundIsConfirmedChanged',
+    roundScoreValidityChanged: 'roundScoreValidityChanged',
+    freeThrowsAdded: 'freeThrowsAdded',
+    freeThrowAttemptStarted: 'freeThrowAttemptStarted',
+    freeThrowAttemptEnded: 'freeThrowAttemptEnded',
+    freeThrowsEnded: 'freeThrowsEnded',
+    freeThrowsStarted: 'freeThrowsStarted',
+    freeThrowAttemptIsConfirmedChanged: 'freeThrowAttemptIsConfirmedChanged',
+};
 
 export default class Game extends EventEmitter {
     #id;
@@ -103,7 +125,7 @@ export default class Game extends EventEmitter {
 
     #end = () => {
         this.#hasEnded = true;
-        this.emit('changed', 'ended');
+        this.emit(GameEventName.changed, GameEventChangeType.ended);
     };
 
     incrementScore(basket) {
@@ -116,7 +138,7 @@ export default class Game extends EventEmitter {
 
         if (lastRound) {
             lastRound.incrementScore(basket);
-            this.emit('changed', 'scoreChanged');
+            this.emit(GameEventName.changed, GameEventChangeType.scoreChanged);
         }
     }
 
@@ -130,7 +152,7 @@ export default class Game extends EventEmitter {
 
         if (lastRound) {
             lastRound.incrementFouls(robotIndex);
-            this.emit('changed', 'foulsChanged');
+            this.emit(GameEventName.changed, GameEventChangeType.foulsChanged);
         }
     }
 
@@ -177,7 +199,7 @@ export default class Game extends EventEmitter {
 
         this.#addRound(new GameRound(maxDuration, baskets));
 
-        this.emit('changed', 'roundAdded');
+        this.emit(GameEventName.changed, GameEventChangeType.roundAdded);
     };
 
     #addRoundFromState = (state) => {
@@ -187,25 +209,25 @@ export default class Game extends EventEmitter {
     #addRound = (round) => {
         this.#rounds.push(round);
 
-        round.on('started', () => {
-            this.emit('changed', 'roundStarted');
+        round.on(GameRoundEventName.started, () => {
+            this.emit(GameEventName.changed, GameEventChangeType.roundStarted);
         });
 
-        round.on('stopped', () => {
-            this.emit('changed', 'roundStopped');
+        round.on(GameRoundEventName.stopped, () => {
+            this.emit(GameEventName.changed, GameEventChangeType.roundStopped);
         });
 
-        round.on('ended', () => {
+        round.on(GameRoundEventName.ended, () => {
             console.log(`Round ${this.#rounds.length} ended`);
-            this.emit('changed', 'roundEnded');
+            this.emit(GameEventName.changed, GameEventChangeType.roundEnded);
         });
 
-        round.on('isConfirmedChanged', () => {
-            this.emit('changed', 'roundIsConfirmedChanged');
+        round.on(GameRoundEventName.isConfirmedChanged, () => {
+            this.emit(GameEventName.changed, GameEventChangeType.roundIsConfirmedChanged);
         });
 
-        round.on('scoreValidityChanged', () => {
-            this.emit('changed', 'roundScoreValidityChanged');
+        round.on(GameRoundEventName.scoreValidityChanged, () => {
+            this.emit(GameEventName.changed, GameEventChangeType.roundScoreValidityChanged);
         });
     };
 
@@ -214,7 +236,7 @@ export default class Game extends EventEmitter {
 
         this.#addFreeThrows(new FreeThrows(this.#robots, [basket, basket],3, freeThrowAttemptRoundLength));
 
-        this.emit('changed', 'freeThrowsAdded');
+        this.emit(GameEventName.changed, GameEventChangeType.freeThrowsAdded);
     };
 
     #addFreeThrowsFromState = (state) => {
@@ -224,26 +246,26 @@ export default class Game extends EventEmitter {
     #addFreeThrows = (freeThrows) => {
         this.#freeThrows = freeThrows;
 
-        this.#freeThrows.on('attemptStarted', () => {
+        this.#freeThrows.on(FreeThrowsEventName.attemptStarted, () => {
             console.log('Free throw attempt started');
-            this.emit('changed', 'freeThrowAttemptStarted');
+            this.emit(GameEventName.changed, GameEventChangeType.freeThrowAttemptStarted);
         });
 
-        this.#freeThrows.on('attemptEnded', () => {
+        this.#freeThrows.on(FreeThrowsEventName.attemptEnded, () => {
             console.log('Free throw attempt ended');
-            this.emit('changed', 'freeThrowAttemptEnded');
+            this.emit(GameEventName.changed, GameEventChangeType.freeThrowAttemptEnded);
         });
 
-        this.#freeThrows.on('ended', () => {
+        this.#freeThrows.on(FreeThrowsEventName.ended, () => {
             console.log('Free throws ended');
-            this.emit('changed', 'freeThrowsEnded');
+            this.emit(GameEventName.changed, GameEventChangeType.freeThrowsEnded);
         });
 
-        this.emit('change', 'freeThrowsStarted');
+        this.emit(GameEventName.changed, GameEventChangeType.freeThrowsStarted);
 
-        this.#freeThrows.on('isConfirmedChanged', () => {
+        this.#freeThrows.on(FreeThrowsEventName.isConfirmedChanged, () => {
             console.log('Free throw attempt isConfirmed changed');
-            this.emit('changed', 'freeThrowAttemptIsConfirmedChanged');
+            this.emit(GameEventName.changed, GameEventChangeType.freeThrowAttemptIsConfirmedChanged);
         });
     };
 

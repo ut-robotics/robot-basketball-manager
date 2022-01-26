@@ -1,6 +1,14 @@
 import EventEmitter from 'events';
 import {mainRoundLength} from './constants.mjs';
 
+export const GameRoundEventName = {
+    isConfirmedChanged: 'isConfirmedChanged',
+    started: 'started',
+    stopped: 'stopped',
+    ended: 'ended',
+    scoreValidityChanged: 'scoreValidityChanged',
+};
+
 export default class GameRound extends EventEmitter {
     #runs = [];
     #runtimeCheckInterval;
@@ -21,7 +29,7 @@ export default class GameRound extends EventEmitter {
             this.#isConfirmed = value;
 
             if (oldValue !== value) {
-                this.emit('isConfirmedChanged');
+                this.emit(GameRoundEventName.isConfirmedChanged);
             }
         }
     }
@@ -47,7 +55,7 @@ export default class GameRound extends EventEmitter {
 
         if (lastRun && lastRun.endTime || !lastRun) {
             this.#runs.push({startTime: time, endTime: null});
-            this.emit('started');
+            this.emit(GameRoundEventName.started);
         }
 
         if (!this.#runtimeCheckInterval) {
@@ -61,7 +69,7 @@ export default class GameRound extends EventEmitter {
 
         if (lastRun && !lastRun.endTime) {
             lastRun.endTime = time;
-            this.emit('stopped');
+            this.emit(GameRoundEventName.stopped);
         }
     }
 
@@ -73,7 +81,7 @@ export default class GameRound extends EventEmitter {
         clearInterval(this.#runtimeCheckInterval);
         this.stop();
         this.#hasEnded = true;
-        this.emit('ended');
+        this.emit(GameRoundEventName.ended);
     }
 
     #startRuntimeCheck = () => {
@@ -143,7 +151,7 @@ export default class GameRound extends EventEmitter {
             score.isValid = isValid;
 
             if (oldValue !== isValid) {
-                this.emit('scoreValidityChanged');
+                this.emit(GameRoundEventName.scoreValidityChanged);
             }
         }
     }

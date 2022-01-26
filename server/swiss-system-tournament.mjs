@@ -1,7 +1,12 @@
 import {chooseNextBasketColor, decideBaskets, decideBasketsForRobots, log, selectRandom} from './util.mjs';
-import Game from "./game.mjs";
+import Game, {GameEventChangeType, GameEventName} from "./game.mjs";
 import EventEmitter from "events";
 import {GameResult} from "./constants.mjs";
+
+export const SwissSystemTournamentEventName = {
+    ended: 'ended',
+    changed: 'changed',
+}
 
 export default class SwissSystemTournament extends EventEmitter {
     /** @type {{id: string, name: string}[]} */
@@ -57,7 +62,7 @@ export default class SwissSystemTournament extends EventEmitter {
 
             if (!this.#hasEnded) {
                 this.#hasEnded = true;
-                this.emit('ended');
+                this.emit(SwissSystemTournamentEventName.ended);
             }
 
             return;
@@ -124,15 +129,15 @@ export default class SwissSystemTournament extends EventEmitter {
             this.#robotStartingBaskets[match[0].id].push(baskets[0]);
             this.#robotStartingBaskets[match[1].id].push(baskets[1]);
 
-            game.on('changed', this.gameChangedListener);
+            game.on(GameEventName.changed, this.gameChangedListener);
         }
 
-        this.emit('changed');
+        this.emit(SwissSystemTournamentEventName.changed);
     }
 
     #handleGameChange(changeType) {
         log('handleGameChange', changeType);
-        if (changeType === 'ended') {
+        if (changeType === GameEventChangeType.ended) {
             this.proceed();
         }
     }

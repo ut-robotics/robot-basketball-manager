@@ -1,7 +1,13 @@
-import SwissSystemTournament from "./swiss-system-tournament.mjs";
+import SwissSystemTournament, {SwissSystemTournamentEventName} from "./swiss-system-tournament.mjs";
 import {cloneObject, log, shuffledArray} from "./util.mjs";
 import EventEmitter from "events";
-import DoubleEliminationTournament from "./double-elimination-tournament.mjs";
+import DoubleEliminationTournament, {DoubleEliminationTournamentEventName} from "./double-elimination-tournament.mjs";
+import {GameEventName} from "./game.mjs";
+
+export const CompetitionEventName = {
+    changed: 'changed',
+    gameChanged: 'gameChanged',
+};
 
 export default class Competition extends EventEmitter {
     /** @type {string} */
@@ -103,15 +109,15 @@ export default class Competition extends EventEmitter {
         log('Set swiss tournament');
 
         if (this.#swissSystemTournament) {
-            this.#swissSystemTournament.off('changed', this.swissTournamentChangedListener);
-            this.#swissSystemTournament.removeAllListeners('ended');
+            this.#swissSystemTournament.off(SwissSystemTournamentEventName.changed, this.swissTournamentChangedListener);
+            this.#swissSystemTournament.removeAllListeners(SwissSystemTournamentEventName.ended);
         }
 
         this.#swissSystemTournament = swissTournament;
 
-        this.#swissSystemTournament.on('changed', this.swissTournamentChangedListener);
+        this.#swissSystemTournament.on(SwissSystemTournamentEventName.changed, this.swissTournamentChangedListener);
 
-        this.#swissSystemTournament.on('ended', () => {
+        this.#swissSystemTournament.on(SwissSystemTournamentEventName.ended, () => {
             log('Swiss tournament ended');
             this.proceed();
         });
@@ -121,22 +127,22 @@ export default class Competition extends EventEmitter {
         log('Set double elimination tournament');
 
         if (this.#doubleEliminationTournament) {
-            this.#doubleEliminationTournament.off('changed', this.doubleEliminationTournamentChangedListener);
+            this.#doubleEliminationTournament.off(DoubleEliminationTournamentEventName.changed, this.doubleEliminationTournamentChangedListener);
         }
 
         this.#doubleEliminationTournament = doubleEliminationTournament;
 
-        this.#doubleEliminationTournament.on('changed', this.doubleEliminationTournamentChangedListener);
+        this.#doubleEliminationTournament.on(DoubleEliminationTournamentEventName.changed, this.doubleEliminationTournamentChangedListener);
     }
 
     #handleSwissTournamentChanged() {
         log('Swiss tournament changed');
-        this.emit('changed');
+        this.emit(CompetitionEventName.changed);
     }
 
     #handleDoubleEliminationTournamentChanged() {
         log('Double elimination tournament changed');
-        this.emit('changed');
+        this.emit(CompetitionEventName.changed);
     }
 
     startTournament(swissEnabled, numberOfSwissRounds, doubleEliminationEnabled) {
@@ -203,9 +209,9 @@ export default class Competition extends EventEmitter {
         if (game) {
             this.#activeGame = game;
 
-            game.on('changed', (changeType) => {
+            game.on(GameEventName.changed, (changeType) => {
                 console.log('changed', changeType, this);
-                this.emit('gameChanged', changeType, game);
+                this.emit(CompetitionEventName.gameChanged, changeType, game);
             });
 
             log(`Game (id = ${id}) now active`);

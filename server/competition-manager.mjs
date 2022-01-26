@@ -1,5 +1,5 @@
 import EventEmitter from "events";
-import Competition from "./competition.mjs";
+import Competition, {CompetitionEventName} from "./competition.mjs";
 import {loadCompetition, log, logError, saveCompetition, saveCompetitionSummary, saveGame} from "./util.mjs";
 import RobotsApi from "./robots-api.mjs";
 import WebSocket from "ws";
@@ -164,9 +164,9 @@ export default class CompetitionManager extends EventEmitter {
         if (this.#competition === null) {
             this.#competition = competition;
 
-            this.#competition.on('changed', () => this.#handleCompetitionChanged());
+            this.#competition.on(CompetitionEventName.changed, () => this.#handleCompetitionChanged());
 
-            this.#competition.on('gameChanged', (changeType, game) => this.#handleGameChanged(changeType, game));
+            this.#competition.on(CompetitionEventName.gameChanged, (changeType, game) => this.#handleGameChanged(changeType, game));
 
             this.#competition.proceed();
         }
