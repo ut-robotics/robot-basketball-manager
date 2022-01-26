@@ -105,8 +105,12 @@ export class GitResultsUpdater {
             'git push',
         ];
 
-        await this.#runCommands(commands, this.#competitionDirectory);
+        try {
+            await this.#runCommands(commands, this.#competitionDirectory);
 
-        log('Git results update done');
+            log('Git results update done');
+        } catch (e) {
+            console.error(e);
+        }
     }
 }
