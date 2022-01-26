@@ -33,7 +33,7 @@ body > * {
 
 #info-box {
     position: absolute;
-    bottom: 4vh;
+    bottom: 8vh;
     left: 8vh;
     display: flex;
     align-items: center;
