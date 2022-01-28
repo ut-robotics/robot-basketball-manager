@@ -161,9 +161,10 @@ class CompetitionResults extends LitElement {
 
         const {roundCount, byes} = swissInfo;
         const rounds = [];
+        const gamesPerRound = Math.floor(swissInfo.robots.length / 2);
 
         for (const [index, game] of swissInfo.games.entries()) {
-            const roundIndex = Math.floor(index / roundCount);
+            const roundIndex = Math.floor(index / gamesPerRound);
 
             if (!rounds[roundIndex]) {
                 rounds[roundIndex] = [];
