@@ -37,8 +37,11 @@ body > * {
     left: 8vh;
     display: flex;
     align-items: center;
-    gap: var(--info-box-items-spacing);
     font-size: 3vh;
+}
+
+#info-box > * + * {
+    margin-left: var(--info-box-items-spacing);
 }
 
 #robots,
@@ -47,7 +50,13 @@ body > * {
 #game-results.active {
     display: flex;
     flex-direction: column;
-    gap: var(--info-box-items-spacing);
+}
+
+#robots > * + *,
+.main-round.active > * + *,
+#freethrows-round.active > * + *,
+#game-results.active > * + * {
+    margin-top: var(--info-box-items-spacing);
 }
 
 #robots {
@@ -60,6 +69,10 @@ body > * {
     align-items: center;
     gap: 1vh;
     padding: 0 1vh;
+}
+
+.robot > * + * {
+    margin-left: var(--info-box-items-spacing);
 }
 
 .robot-name {
