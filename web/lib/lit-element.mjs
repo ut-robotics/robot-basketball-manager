@@ -12,6 +12,51 @@
  * http://polymer.github.io/PATENTS.txt
  */
 const directives = new WeakMap();
+/**
+ * Brands a function as a directive factory function so that lit-html will call
+ * the function during template rendering, rather than passing as a value.
+ *
+ * A _directive_ is a function that takes a Part as an argument. It has the
+ * signature: `(part: Part) => void`.
+ *
+ * A directive _factory_ is a function that takes arguments for data and
+ * configuration and returns a directive. Users of directive usually refer to
+ * the directive factory as the directive. For example, "The repeat directive".
+ *
+ * Usually a template author will invoke a directive factory in their template
+ * with relevant arguments, which will then return a directive function.
+ *
+ * Here's an example of using the `repeat()` directive factory that takes an
+ * array and a function to render an item:
+ *
+ * ```js
+ * html`<ul><${repeat(items, (item) => html`<li>${item}</li>`)}</ul>`
+ * ```
+ *
+ * When `repeat` is invoked, it returns a directive function that closes over
+ * `items` and the template function. When the outer template is rendered, the
+ * return directive function is called with the Part for the expression.
+ * `repeat` then performs it's custom logic to render multiple items.
+ *
+ * @param f The directive factory function. Must be a function that returns a
+ * function of the signature `(part: Part) => void`. The returned function will
+ * be called with the part object.
+ *
+ * @example
+ *
+ * import {directive, html} from 'lit-html';
+ *
+ * const immutable = directive((v) => (part) => {
+ *   if (part.value !== v) {
+ *     part.setValue(v)
+ *   }
+ * });
+ */
+const directive = (f) => ((...args) => {
+    const d = f(...args);
+    directives.set(d, true);
+    return d;
+});
 const isDirective = (o) => {
     return typeof o === 'function' && directives.has(o);
 };
@@ -32,7 +77,8 @@ const isDirective = (o) => {
 /**
  * True if the custom elements polyfill is in use.
  */
-const isCEPolyfill = window.customElements !== undefined &&
+const isCEPolyfill = typeof window !== 'undefined' &&
+    window.customElements != null &&
     window.customElements.polyfillWrapFlushCallback !==
         undefined;
 /**
@@ -111,7 +157,7 @@ const markerRegex = new RegExp(`${marker}|${nodeMarker}`);
  */
 const boundAttributeSuffix = '$lit$';
 /**
- * An updateable Template that tracks the location of dynamic parts.
+ * An updatable Template that tracks the location of dynamic parts.
  */
 class Template {
     constructor(result, element) {
@@ -293,7 +339,9 @@ const createMarker = () => document.createComment('');
  *    * (") then any non-("), or
  *    * (') then any non-(')
  */
-const lastAttributeNameRegex = /([ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F "'>=/]+)([ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*))$/;
+const lastAttributeNameRegex = 
+// eslint-disable-next-line no-control-regex
+/([ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F "'>=/]+)([ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*))$/;
 
 /**
  * @license
@@ -354,7 +402,7 @@ class TemplateInstance {
         // Given these constraints, with full custom elements support we would
         // prefer the order: Clone, Process, Adopt, Upgrade, Update, Connect
         //
-        // But Safari dooes not implement CustomElementRegistry#upgrade, so we
+        // But Safari does not implement CustomElementRegistry#upgrade, so we
         // can not implement that order and still have upgrade-before-update and
         // upgrade disconnected fragments. So we instead sacrifice the
         // process-before-upgrade constraint, since in Custom Elements v1 elements
@@ -440,6 +488,16 @@ class TemplateInstance {
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+/**
+ * Our TrustedTypePolicy for HTML which is declared using the html template
+ * tag function.
+ *
+ * That HTML is a developer-authored constant, and is parsed with innerHTML
+ * before any untrusted expressions have been mixed in. Therefor it is
+ * considered safe by construction.
+ */
+const policy = window.trustedTypes &&
+    trustedTypes.createPolicy('lit-html', { createHTML: (s) => s });
 const commentMarker = ` ${marker} `;
 /**
  * The return type of `html`, which holds a Template and the values from
@@ -464,7 +522,7 @@ class TemplateResult {
             // For each binding we want to determine the kind of marker to insert
             // into the template source before it's parsed by the browser's HTML
             // parser. The marker type is based on whether the expression is in an
-            // attribute, text, or comment poisition.
+            // attribute, text, or comment position.
             //   * For node-position bindings we insert a comment with the marker
             //     sentinel as its text content, like <!--{{lit-guid}}-->.
             //   * For attribute bindings we insert just the marker sentinel for the
@@ -484,13 +542,13 @@ class TemplateResult {
             // be false positives.
             isCommentBinding = (commentOpen > -1 || isCommentBinding) &&
                 s.indexOf('-->', commentOpen + 1) === -1;
-            // Check to see if we have an attribute-like sequence preceeding the
+            // Check to see if we have an attribute-like sequence preceding the
             // expression. This can match "name=value" like structures in text,
             // comments, and attribute values, so there can be false-positives.
             const attributeMatch = lastAttributeNameRegex.exec(s);
             if (attributeMatch === null) {
                 // We're only in this branch if we don't have a attribute-like
-                // preceeding sequence. For comments, this guards against unusual
+                // preceding sequence. For comments, this guards against unusual
                 // attribute values like <div foo="<!--${'bar'}">. Cases like
                 // <!-- foo=${'bar'}--> are handled correctly in the attribute branch
                 // below.
@@ -510,7 +568,15 @@ class TemplateResult {
     }
     getTemplateElement() {
         const template = document.createElement('template');
-        template.innerHTML = this.getHTML();
+        let value = this.getHTML();
+        if (policy !== undefined) {
+            // this is secure because `this.strings` is a TemplateStringsArray.
+            // TODO: validate this when
+            // https://github.com/tc39/proposal-array-is-template-object is
+            // implemented.
+            value = policy.createHTML(value);
+        }
+        template.innerHTML = value;
         return template;
     }
 }
@@ -554,12 +620,12 @@ const isPrimitive = (value) => {
 };
 const isIterable = (value) => {
     return Array.isArray(value) ||
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         !!(value && value[Symbol.iterator]);
 };
 /**
  * Writes attribute values to the DOM for a group of AttributeParts bound to a
- * single attibute. The value is only set once even if there are multiple parts
+ * single attribute. The value is only set once even if there are multiple parts
  * for an attribute.
  */
 class AttributeCommitter {
@@ -582,10 +648,33 @@ class AttributeCommitter {
     _getValue() {
         const strings = this.strings;
         const l = strings.length - 1;
+        const parts = this.parts;
+        // If we're assigning an attribute via syntax like:
+        //    attr="${foo}"  or  attr=${foo}
+        // but not
+        //    attr="${foo} ${bar}" or attr="${foo} baz"
+        // then we don't want to coerce the attribute value into one long
+        // string. Instead we want to just return the value itself directly,
+        // so that sanitizeDOMValue can get the actual value rather than
+        // String(value)
+        // The exception is if v is an array, in which case we do want to smash
+        // it together into a string without calling String() on the array.
+        //
+        // This also allows trusted values (when using TrustedTypes) being
+        // assigned to DOM sinks without being stringified in the process.
+        if (l === 1 && strings[0] === '' && strings[1] === '') {
+            const v = parts[0].value;
+            if (typeof v === 'symbol') {
+                return String(v);
+            }
+            if (typeof v === 'string' || !isIterable(v)) {
+                return v;
+            }
+        }
         let text = '';
         for (let i = 0; i < l; i++) {
             text += strings[i];
-            const part = this.parts[i];
+            const part = parts[i];
             if (part !== undefined) {
                 const v = part.value;
                 if (isPrimitive(v) || !isIterable(v)) {
@@ -696,6 +785,9 @@ class NodePart {
         this.__pendingValue = value;
     }
     commit() {
+        if (this.startNode.parentNode === null) {
+            return;
+        }
         while (isDirective(this.__pendingValue)) {
             const directive = this.__pendingValue;
             this.__pendingValue = noChange;
@@ -892,7 +984,7 @@ class PropertyCommitter extends AttributeCommitter {
     commit() {
         if (this.dirty) {
             this.dirty = false;
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             this.element[this.name] = this._getValue();
         }
     }
@@ -900,24 +992,29 @@ class PropertyCommitter extends AttributeCommitter {
 class PropertyPart extends AttributePart {
 }
 // Detect event listener options support. If the `capture` property is read
-// from the options object, then options are supported. If not, then the thrid
+// from the options object, then options are supported. If not, then the third
 // argument to add/removeEventListener is interpreted as the boolean capture
 // value so we should only pass the `capture` property.
 let eventOptionsSupported = false;
-try {
-    const options = {
-        get capture() {
-            eventOptionsSupported = true;
-            return false;
-        }
-    };
-    // tslint:disable-next-line:no-any
-    window.addEventListener('test', options, options);
-    // tslint:disable-next-line:no-any
-    window.removeEventListener('test', options, options);
-}
-catch (_e) {
-}
+// Wrap into an IIFE because MS Edge <= v41 does not support having try/catch
+// blocks right into the body of a module
+(() => {
+    try {
+        const options = {
+            get capture() {
+                eventOptionsSupported = true;
+                return false;
+            }
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        window.addEventListener('test', options, options);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        window.removeEventListener('test', options, options);
+    }
+    catch (_e) {
+        // event options not supported
+    }
+})();
 class EventPart {
     constructor(element, eventName, eventContext) {
         this.value = undefined;
@@ -1128,7 +1225,9 @@ const render = (result, container, options) => {
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
-(window['litHtmlVersions'] || (window['litHtmlVersions'] = [])).push('1.1.2');
+if (typeof window !== 'undefined') {
+    (window['litHtmlVersions'] || (window['litHtmlVersions'] = [])).push('1.3.0');
+}
 /**
  * Interprets a template literal as an HTML template that can efficiently
  * render to and update a container.
@@ -1548,6 +1647,11 @@ const render$1 = (result, container, options) => {
  */
 var _a;
 /**
+ * Use this module if you want to create your own base class extending
+ * [[UpdatingElement]].
+ * @packageDocumentation
+ */
+/*
  * When using Closure Compiler, JSCompiler_renameProperty(property, object) is
  * replaced at compile time by the munged name for object[property]. We cannot
  * alias this function, so we have to use a small shim that has the same
@@ -1596,12 +1700,10 @@ const defaultPropertyDeclaration = {
     reflect: false,
     hasChanged: notEqual
 };
-const microtaskPromise = Promise.resolve(true);
 const STATE_HAS_UPDATED = 1;
 const STATE_UPDATE_REQUESTED = 1 << 2;
 const STATE_IS_REFLECTING_TO_ATTRIBUTE = 1 << 3;
 const STATE_IS_REFLECTING_TO_PROPERTY = 1 << 4;
-const STATE_HAS_CONNECTED = 1 << 5;
 /**
  * The Closure JS Compiler doesn't currently have good support for static
  * property semantics where "this" is dynamic (e.g.
@@ -1613,23 +1715,11 @@ const finalized = 'finalized';
  * Base element class which manages element properties and attributes. When
  * properties change, the `update` method is asynchronously called. This method
  * should be supplied by subclassers to render updates as desired.
+ * @noInheritDoc
  */
 class UpdatingElement extends HTMLElement {
     constructor() {
         super();
-        this._updateState = 0;
-        this._instanceProperties = undefined;
-        this._updatePromise = microtaskPromise;
-        this._hasConnectedResolver = undefined;
-        /**
-         * Map with keys for any properties that have changed since the last
-         * update cycle with previous values.
-         */
-        this._changedProperties = new Map();
-        /**
-         * Map with keys of properties that should be reflected when updated.
-         */
-        this._reflectingProperties = undefined;
         this.initialize();
     }
     /**
@@ -1669,10 +1759,25 @@ class UpdatingElement extends HTMLElement {
         }
     }
     /**
-     * Creates a property accessor on the element prototype if one does not exist.
+     * Creates a property accessor on the element prototype if one does not exist
+     * and stores a PropertyDeclaration for the property with the given options.
      * The property setter calls the property's `hasChanged` property option
      * or uses a strict identity check to determine whether or not to request
      * an update.
+     *
+     * This method may be overridden to customize properties; however,
+     * when doing so, it's important to call `super.createProperty` to ensure
+     * the property is setup correctly. This method calls
+     * `getPropertyDescriptor` internally to get a descriptor to install.
+     * To customize what properties do when they are get or set, override
+     * `getPropertyDescriptor`. To customize the options for a property,
+     * implement `createProperty` like this:
+     *
+     * static createProperty(name, options) {
+     *   options = Object.assign(options, {myOption: true});
+     *   super.createProperty(name, options);
+     * }
+     *
      * @nocollapse
      */
     static createProperty(name, options = defaultPropertyDeclaration) {
@@ -1690,7 +1795,37 @@ class UpdatingElement extends HTMLElement {
             return;
         }
         const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
-        Object.defineProperty(this.prototype, name, {
+        const descriptor = this.getPropertyDescriptor(name, key, options);
+        if (descriptor !== undefined) {
+            Object.defineProperty(this.prototype, name, descriptor);
+        }
+    }
+    /**
+     * Returns a property descriptor to be defined on the given named property.
+     * If no descriptor is returned, the property will not become an accessor.
+     * For example,
+     *
+     *   class MyElement extends LitElement {
+     *     static getPropertyDescriptor(name, key, options) {
+     *       const defaultDescriptor =
+     *           super.getPropertyDescriptor(name, key, options);
+     *       const setter = defaultDescriptor.set;
+     *       return {
+     *         get: defaultDescriptor.get,
+     *         set(value) {
+     *           setter.call(this, value);
+     *           // custom action.
+     *         },
+     *         configurable: true,
+     *         enumerable: true
+     *       }
+     *     }
+     *   }
+     *
+     * @nocollapse
+     */
+    static getPropertyDescriptor(name, key, options) {
+        return {
             // tslint:disable-next-line:no-any no symbol in index
             get() {
                 return this[key];
@@ -1698,11 +1833,28 @@ class UpdatingElement extends HTMLElement {
             set(value) {
                 const oldValue = this[name];
                 this[key] = value;
-                this._requestUpdate(name, oldValue);
+                this
+                    .requestUpdateInternal(name, oldValue, options);
             },
             configurable: true,
             enumerable: true
-        });
+        };
+    }
+    /**
+     * Returns the property options associated with the given property.
+     * These options are defined with a PropertyDeclaration via the `properties`
+     * object or the `@property` decorator and are registered in
+     * `createProperty(...)`.
+     *
+     * Note, this method should be considered "final" and not overridden. To
+     * customize the options for a given property, override `createProperty`.
+     *
+     * @nocollapse
+     * @final
+     */
+    static getPropertyOptions(name) {
+        return this._classProperties && this._classProperties.get(name) ||
+            defaultPropertyDeclaration;
     }
     /**
      * Creates property accessors for registered properties and ensures
@@ -1797,10 +1949,14 @@ class UpdatingElement extends HTMLElement {
      * registered properties.
      */
     initialize() {
+        this._updateState = 0;
+        this._updatePromise =
+            new Promise((res) => this._enableUpdatingResolver = res);
+        this._changedProperties = new Map();
         this._saveInstanceProperties();
         // ensures first update will be caught by an early access of
         // `updateComplete`
-        this._requestUpdate();
+        this.requestUpdateInternal();
     }
     /**
      * Fixes any properties set on the instance before upgrade time.
@@ -1840,14 +1996,14 @@ class UpdatingElement extends HTMLElement {
         this._instanceProperties = undefined;
     }
     connectedCallback() {
-        this._updateState = this._updateState | STATE_HAS_CONNECTED;
         // Ensure first connection completes an update. Updates cannot complete
-        // before connection and if one is pending connection the
-        // `_hasConnectionResolver` will exist. If so, resolve it to complete the
-        // update, otherwise requestUpdate.
-        if (this._hasConnectedResolver) {
-            this._hasConnectedResolver();
-            this._hasConnectedResolver = undefined;
+        // before connection.
+        this.enableUpdating();
+    }
+    enableUpdating() {
+        if (this._enableUpdatingResolver !== undefined) {
+            this._enableUpdatingResolver();
+            this._enableUpdatingResolver = undefined;
         }
     }
     /**
@@ -1900,9 +2056,12 @@ class UpdatingElement extends HTMLElement {
             return;
         }
         const ctor = this.constructor;
+        // Note, hint this as an `AttributeMap` so closure clearly understands
+        // the type; it has issues with tracking types through statics
+        // tslint:disable-next-line:no-unnecessary-type-assertion
         const propName = ctor._attributeToPropertyMap.get(name);
         if (propName !== undefined) {
-            const options = ctor._classProperties.get(propName) || defaultPropertyDeclaration;
+            const options = ctor.getPropertyOptions(propName);
             // mark state reflecting
             this._updateState = this._updateState | STATE_IS_REFLECTING_TO_PROPERTY;
             this[propName] =
@@ -1913,16 +2072,16 @@ class UpdatingElement extends HTMLElement {
         }
     }
     /**
-     * This private version of `requestUpdate` does not access or return the
+     * This protected version of `requestUpdate` does not access or return the
      * `updateComplete` promise. This promise can be overridden and is therefore
      * not free to access.
      */
-    _requestUpdate(name, oldValue) {
+    requestUpdateInternal(name, oldValue, options) {
         let shouldRequestUpdate = true;
         // If we have a property key, perform property update steps.
         if (name !== undefined) {
             const ctor = this.constructor;
-            const options = ctor._classProperties.get(name) || defaultPropertyDeclaration;
+            options = options || ctor.getPropertyOptions(name);
             if (ctor._valueHasChanged(this[name], oldValue, options.hasChanged)) {
                 if (!this._changedProperties.has(name)) {
                     this._changedProperties.set(name, oldValue);
@@ -1945,7 +2104,7 @@ class UpdatingElement extends HTMLElement {
             }
         }
         if (!this._hasRequestedUpdate && shouldRequestUpdate) {
-            this._enqueueUpdate();
+            this._updatePromise = this._enqueueUpdate();
         }
     }
     /**
@@ -1962,51 +2121,31 @@ class UpdatingElement extends HTMLElement {
      * @returns {Promise} A Promise that is resolved when the update completes.
      */
     requestUpdate(name, oldValue) {
-        this._requestUpdate(name, oldValue);
+        this.requestUpdateInternal(name, oldValue);
         return this.updateComplete;
     }
     /**
      * Sets up the element to asynchronously update.
      */
     async _enqueueUpdate() {
-        // Mark state updating...
         this._updateState = this._updateState | STATE_UPDATE_REQUESTED;
-        let resolve;
-        let reject;
-        const previousUpdatePromise = this._updatePromise;
-        this._updatePromise = new Promise((res, rej) => {
-            resolve = res;
-            reject = rej;
-        });
         try {
             // Ensure any previous update has resolved before updating.
             // This `await` also ensures that property changes are batched.
-            await previousUpdatePromise;
+            await this._updatePromise;
         }
         catch (e) {
             // Ignore any previous errors. We only care that the previous cycle is
             // done. Any error should have been handled in the previous update.
         }
-        // Make sure the element has connected before updating.
-        if (!this._hasConnected) {
-            await new Promise((res) => this._hasConnectedResolver = res);
+        const result = this.performUpdate();
+        // If `performUpdate` returns a Promise, we await it. This is done to
+        // enable coordinating updates with a scheduler. Note, the result is
+        // checked to avoid delaying an additional microtask unless we need to.
+        if (result != null) {
+            await result;
         }
-        try {
-            const result = this.performUpdate();
-            // If `performUpdate` returns a Promise, we await it. This is done to
-            // enable coordinating updates with a scheduler. Note, the result is
-            // checked to avoid delaying an additional microtask unless we need to.
-            if (result != null) {
-                await result;
-            }
-        }
-        catch (e) {
-            reject(e);
-        }
-        resolve(!this._hasRequestedUpdate);
-    }
-    get _hasConnected() {
-        return (this._updateState & STATE_HAS_CONNECTED);
+        return !this._hasRequestedUpdate;
     }
     get _hasRequestedUpdate() {
         return (this._updateState & STATE_UPDATE_REQUESTED);
@@ -2031,6 +2170,12 @@ class UpdatingElement extends HTMLElement {
      * ```
      */
     performUpdate() {
+        // Abort any update if one is not pending when this is called.
+        // This can happen if `performUpdate` is called early to "flush"
+        // the update.
+        if (!this._hasRequestedUpdate) {
+            return;
+        }
         // Mixin instance properties once, if they exist.
         if (this._instanceProperties) {
             this._applyInstanceProperties();
@@ -2042,16 +2187,17 @@ class UpdatingElement extends HTMLElement {
             if (shouldUpdate) {
                 this.update(changedProperties);
             }
+            else {
+                this._markUpdated();
+            }
         }
         catch (e) {
             // Prevent `firstUpdated` and `updated` from running when there's an
             // update exception.
             shouldUpdate = false;
-            throw e;
-        }
-        finally {
             // Ensure element can accept additional updates after an exception.
             this._markUpdated();
+            throw e;
         }
         if (shouldUpdate) {
             if (!(this._updateState & STATE_HAS_UPDATED)) {
@@ -2107,7 +2253,7 @@ class UpdatingElement extends HTMLElement {
      * an update. By default, this method always returns `true`, but this can be
      * customized to control when to update.
      *
-     * * @param _changedProperties Map of changed properties with old values
+     * @param _changedProperties Map of changed properties with old values
      */
     shouldUpdate(_changedProperties) {
         return true;
@@ -2118,7 +2264,7 @@ class UpdatingElement extends HTMLElement {
      * Setting properties inside this method will *not* trigger
      * another update.
      *
-     * * @param _changedProperties Map of changed properties with old values
+     * @param _changedProperties Map of changed properties with old values
      */
     update(_changedProperties) {
         if (this._reflectingProperties !== undefined &&
@@ -2128,6 +2274,7 @@ class UpdatingElement extends HTMLElement {
             this._reflectingProperties.forEach((v, k) => this._propertyToAttribute(k, this[k], v));
             this._reflectingProperties = undefined;
         }
+        this._markUpdated();
     }
     /**
      * Invoked whenever the element is updated. Implement to perform
@@ -2136,7 +2283,7 @@ class UpdatingElement extends HTMLElement {
      * Setting properties inside this method will trigger the element to update
      * again after this update cycle completes.
      *
-     * * @param _changedProperties Map of changed properties with old values
+     * @param _changedProperties Map of changed properties with old values
      */
     updated(_changedProperties) {
     }
@@ -2147,7 +2294,7 @@ class UpdatingElement extends HTMLElement {
      * Setting properties inside this method will trigger the element to update
      * again after this update cycle completes.
      *
-     * * @param _changedProperties Map of changed properties with old values
+     * @param _changedProperties Map of changed properties with old values
      */
     firstUpdated(_changedProperties) {
     }
@@ -2159,203 +2306,6 @@ _a = finalized;
 UpdatingElement[_a] = true;
 
 /**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-const legacyCustomElement = (tagName, clazz) => {
-    window.customElements.define(tagName, clazz);
-    // Cast as any because TS doesn't recognize the return type as being a
-    // subtype of the decorated class when clazz is typed as
-    // `Constructor<HTMLElement>` for some reason.
-    // `Constructor<HTMLElement>` is helpful to make sure the decorator is
-    // applied to elements however.
-    // tslint:disable-next-line:no-any
-    return clazz;
-};
-const standardCustomElement = (tagName, descriptor) => {
-    const { kind, elements } = descriptor;
-    return {
-        kind,
-        elements,
-        // This callback is called once the class is otherwise fully defined
-        finisher(clazz) {
-            window.customElements.define(tagName, clazz);
-        }
-    };
-};
-/**
- * Class decorator factory that defines the decorated class as a custom element.
- *
- * @param tagName the name of the custom element to define
- */
-const customElement = (tagName) => (classOrDescriptor) => (typeof classOrDescriptor === 'function') ?
-    legacyCustomElement(tagName, classOrDescriptor) :
-    standardCustomElement(tagName, classOrDescriptor);
-const standardProperty = (options, element) => {
-    // When decorating an accessor, pass it through and add property metadata.
-    // Note, the `hasOwnProperty` check in `createProperty` ensures we don't
-    // stomp over the user's accessor.
-    if (element.kind === 'method' && element.descriptor &&
-        !('value' in element.descriptor)) {
-        return Object.assign({}, element, { finisher(clazz) {
-                clazz.createProperty(element.key, options);
-            } });
-    }
-    else {
-        // createProperty() takes care of defining the property, but we still
-        // must return some kind of descriptor, so return a descriptor for an
-        // unused prototype field. The finisher calls createProperty().
-        return {
-            kind: 'field',
-            key: Symbol(),
-            placement: 'own',
-            descriptor: {},
-            // When @babel/plugin-proposal-decorators implements initializers,
-            // do this instead of the initializer below. See:
-            // https://github.com/babel/babel/issues/9260 extras: [
-            //   {
-            //     kind: 'initializer',
-            //     placement: 'own',
-            //     initializer: descriptor.initializer,
-            //   }
-            // ],
-            initializer() {
-                if (typeof element.initializer === 'function') {
-                    this[element.key] = element.initializer.call(this);
-                }
-            },
-            finisher(clazz) {
-                clazz.createProperty(element.key, options);
-            }
-        };
-    }
-};
-const legacyProperty = (options, proto, name) => {
-    proto.constructor
-        .createProperty(name, options);
-};
-/**
- * A property decorator which creates a LitElement property which reflects a
- * corresponding attribute value. A `PropertyDeclaration` may optionally be
- * supplied to configure property features.
- *
- * @ExportDecoratedItems
- */
-function property(options) {
-    // tslint:disable-next-line:no-any decorator
-    return (protoOrDescriptor, name) => (name !== undefined) ?
-        legacyProperty(options, protoOrDescriptor, name) :
-        standardProperty(options, protoOrDescriptor);
-}
-/**
- * A property decorator that converts a class property into a getter that
- * executes a querySelector on the element's renderRoot.
- *
- * @ExportDecoratedItems
- */
-function query(selector) {
-    return (protoOrDescriptor, 
-    // tslint:disable-next-line:no-any decorator
-    name) => {
-        const descriptor = {
-            get() {
-                return this.renderRoot.querySelector(selector);
-            },
-            enumerable: true,
-            configurable: true,
-        };
-        return (name !== undefined) ?
-            legacyQuery(descriptor, protoOrDescriptor, name) :
-            standardQuery(descriptor, protoOrDescriptor);
-    };
-}
-/**
- * A property decorator that converts a class property into a getter
- * that executes a querySelectorAll on the element's renderRoot.
- *
- * @ExportDecoratedItems
- */
-function queryAll(selector) {
-    return (protoOrDescriptor, 
-    // tslint:disable-next-line:no-any decorator
-    name) => {
-        const descriptor = {
-            get() {
-                return this.renderRoot.querySelectorAll(selector);
-            },
-            enumerable: true,
-            configurable: true,
-        };
-        return (name !== undefined) ?
-            legacyQuery(descriptor, protoOrDescriptor, name) :
-            standardQuery(descriptor, protoOrDescriptor);
-    };
-}
-const legacyQuery = (descriptor, proto, name) => {
-    Object.defineProperty(proto, name, descriptor);
-};
-const standardQuery = (descriptor, element) => ({
-    kind: 'method',
-    placement: 'prototype',
-    key: element.key,
-    descriptor,
-});
-const standardEventOptions = (options, element) => {
-    return Object.assign({}, element, { finisher(clazz) {
-            Object.assign(clazz.prototype[element.key], options);
-        } });
-};
-const legacyEventOptions = 
-// tslint:disable-next-line:no-any legacy decorator
-(options, proto, name) => {
-    Object.assign(proto[name], options);
-};
-/**
- * Adds event listener options to a method used as an event listener in a
- * lit-html template.
- *
- * @param options An object that specifis event listener options as accepted by
- * `EventTarget#addEventListener` and `EventTarget#removeEventListener`.
- *
- * Current browsers support the `capture`, `passive`, and `once` options. See:
- * https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#Parameters
- *
- * @example
- *
- *     class MyElement {
- *
- *       clicked = false;
- *
- *       render() {
- *         return html`<div @click=${this._onClick}`><button></button></div>`;
- *       }
- *
- *       @eventOptions({capture: true})
- *       _onClick(e) {
- *         this.clicked = true;
- *       }
- *     }
- */
-const eventOptions = (options) => 
-// Return value typed as any to prevent TypeScript from complaining that
-// standard decorator function signature does not match TypeScript decorator
-// signature
-// TODO(kschaaf): unclear why it was only failing on this decorator and not
-// the others
-((protoOrDescriptor, name) => (name !== undefined) ?
-    legacyEventOptions(options, protoOrDescriptor, name) :
-    standardEventOptions(options, protoOrDescriptor));
-
-/**
 @license
 Copyright (c) 2019 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at
@@ -2365,7 +2315,12 @@ found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as
 part of the polymer project is also subject to an additional IP rights grant
 found at http://polymer.github.io/PATENTS.txt
 */
-const supportsAdoptingStyleSheets = ('adoptedStyleSheets' in Document.prototype) &&
+/**
+ * Whether the current browser supports `adoptedStyleSheets`.
+ */
+const supportsAdoptingStyleSheets = (window.ShadowRoot) &&
+    (window.ShadyCSS === undefined || window.ShadyCSS.nativeShadow) &&
+    ('adoptedStyleSheets' in Document.prototype) &&
     ('replace' in CSSStyleSheet.prototype);
 const constructionToken = Symbol();
 class CSSResult {
@@ -2379,8 +2334,8 @@ class CSSResult {
     // stylesheets are not created until the first element instance is made.
     get styleSheet() {
         if (this._styleSheet === undefined) {
-            // Note, if `adoptedStyleSheets` is supported then we assume CSSStyleSheet
-            // is constructable.
+            // Note, if `supportsAdoptingStyleSheets` is true then we assume
+            // CSSStyleSheet is constructable.
             if (supportsAdoptingStyleSheets) {
                 this._styleSheet = new CSSStyleSheet();
                 this._styleSheet.replaceSync(this.cssText);
@@ -2396,7 +2351,7 @@ class CSSResult {
     }
 }
 /**
- * Wrap a value for interpolation in a css tagged template literal.
+ * Wrap a value for interpolation in a [[`css`]] tagged template literal.
  *
  * This is unsafe because untrusted CSS text can be used to phone home
  * or exfiltrate data to an attacker controlled site. Take care to only use
@@ -2418,10 +2373,10 @@ const textFromCSSResult = (value) => {
     }
 };
 /**
- * Template tag which which can be used with LitElement's `style` property to
- * set element styles. For security reasons, only literal string values may be
- * used. To incorporate non-literal values `unsafeCSS` may be used inside a
- * template string part.
+ * Template tag which which can be used with LitElement's [[LitElement.styles |
+ * `styles`]] property to set element styles. For security reasons, only literal
+ * string values may be used. To incorporate non-literal values [[`unsafeCSS`]]
+ * may be used inside a template string part.
  */
 const css = (strings, ...values) => {
     const cssText = values.reduce((acc, v, idx) => acc + textFromCSSResult(v) + strings[idx + 1], strings[0]);
@@ -2445,78 +2400,91 @@ const css = (strings, ...values) => {
 // This line will be used in regexes to search for LitElement usage.
 // TODO(justinfagnani): inject version number at build time
 (window['litElementVersions'] || (window['litElementVersions'] = []))
-    .push('2.2.1');
+    .push('2.4.0');
 /**
- * Minimal implementation of Array.prototype.flat
- * @param arr the array to flatten
- * @param result the accumlated result
+ * Sentinal value used to avoid calling lit-html's render function when
+ * subclasses do not implement `render`
  */
-function arrayFlat(styles, result = []) {
-    for (let i = 0, length = styles.length; i < length; i++) {
-        const value = styles[i];
-        if (Array.isArray(value)) {
-            arrayFlat(value, result);
-        }
-        else {
-            result.push(value);
-        }
-    }
-    return result;
-}
-/** Deeply flattens styles array. Uses native flat if available. */
-const flattenStyles = (styles) => styles.flat ? styles.flat(Infinity) : arrayFlat(styles);
+const renderNotImplemented = {};
+/**
+ * Base element class that manages element properties and attributes, and
+ * renders a lit-html template.
+ *
+ * To define a component, subclass `LitElement` and implement a
+ * `render` method to provide the component's template. Define properties
+ * using the [[`properties`]] property or the [[`property`]] decorator.
+ */
 class LitElement extends UpdatingElement {
-    /** @nocollapse */
-    static finalize() {
-        // The Closure JS Compiler does not always preserve the correct "this"
-        // when calling static super methods (b/137460243), so explicitly bind.
-        super.finalize.call(this);
-        // Prepare styling that is stamped at first render time. Styling
-        // is built from user provided `styles` or is inherited from the superclass.
-        this._styles =
-            this.hasOwnProperty(JSCompiler_renameProperty('styles', this)) ?
-                this._getUniqueStyles() :
-                this._styles || [];
+    /**
+     * Return the array of styles to apply to the element.
+     * Override this method to integrate into a style management system.
+     *
+     * @nocollapse
+     */
+    static getStyles() {
+        return this.styles;
     }
     /** @nocollapse */
     static _getUniqueStyles() {
-        // Take care not to call `this.styles` multiple times since this generates
-        // new CSSResults each time.
+        // Only gather styles once per class
+        if (this.hasOwnProperty(JSCompiler_renameProperty('_styles', this))) {
+            return;
+        }
+        // Take care not to call `this.getStyles()` multiple times since this
+        // generates new CSSResults each time.
         // TODO(sorvell): Since we do not cache CSSResults by input, any
         // shared styles will generate new stylesheet objects, which is wasteful.
         // This should be addressed when a browser ships constructable
         // stylesheets.
-        const userStyles = this.styles;
-        const styles = [];
+        const userStyles = this.getStyles();
         if (Array.isArray(userStyles)) {
-            const flatStyles = flattenStyles(userStyles);
-            // As a performance optimization to avoid duplicated styling that can
-            // occur especially when composing via subclassing, de-duplicate styles
-            // preserving the last item in the list. The last item is kept to
-            // try to preserve cascade order with the assumption that it's most
-            // important that last added styles override previous styles.
-            const styleSet = flatStyles.reduceRight((set, s) => {
-                set.add(s);
-                // on IE set.add does not return the set.
-                return set;
-            }, new Set());
-            // Array.from does not work on Set in IE
-            styleSet.forEach((v) => styles.unshift(v));
+            // De-duplicate styles preserving the _last_ instance in the set.
+            // This is a performance optimization to avoid duplicated styles that can
+            // occur especially when composing via subclassing.
+            // The last item is kept to try to preserve the cascade order with the
+            // assumption that it's most important that last added styles override
+            // previous styles.
+            const addStyles = (styles, set) => styles.reduceRight((set, s) => 
+            // Note: On IE set.add() does not return the set
+            Array.isArray(s) ? addStyles(s, set) : (set.add(s), set), set);
+            // Array.from does not work on Set in IE, otherwise return
+            // Array.from(addStyles(userStyles, new Set<CSSResult>())).reverse()
+            const set = addStyles(userStyles, new Set());
+            const styles = [];
+            set.forEach((v) => styles.unshift(v));
+            this._styles = styles;
         }
-        else if (userStyles) {
-            styles.push(userStyles);
+        else {
+            this._styles = userStyles === undefined ? [] : [userStyles];
         }
-        return styles;
+        // Ensure that there are no invalid CSSStyleSheet instances here. They are
+        // invalid in two conditions.
+        // (1) the sheet is non-constructible (`sheet` of a HTMLStyleElement), but
+        //     this is impossible to check except via .replaceSync or use
+        // (2) the ShadyCSS polyfill is enabled (:. supportsAdoptingStyleSheets is
+        //     false)
+        this._styles = this._styles.map((s) => {
+            if (s instanceof CSSStyleSheet && !supportsAdoptingStyleSheets) {
+                // Flatten the cssText from the passed constructible stylesheet (or
+                // undetectable non-constructible stylesheet). The user might have
+                // expected to update their stylesheets over time, but the alternative
+                // is a crash.
+                const cssText = Array.prototype.slice.call(s.cssRules)
+                    .reduce((css, rule) => css + rule.cssText, '');
+                return unsafeCSS(cssText);
+            }
+            return s;
+        });
     }
     /**
-     * Performs element initialization. By default this calls `createRenderRoot`
-     * to create the element `renderRoot` node and captures any pre-set values for
-     * registered properties.
+     * Performs element initialization. By default this calls
+     * [[`createRenderRoot`]] to create the element [[`renderRoot`]] node and
+     * captures any pre-set values for registered properties.
      */
     initialize() {
         super.initialize();
-        this.renderRoot =
-            this.createRenderRoot();
+        this.constructor._getUniqueStyles();
+        this.renderRoot = this.createRenderRoot();
         // Note, if renderRoot is not a shadowRoot, styles would/could apply to the
         // element's getRootNode(). While this could be done, we're choosing not to
         // support this now since it would require different logic around de-duping.
@@ -2535,7 +2503,7 @@ class LitElement extends UpdatingElement {
         return this.attachShadow({ mode: 'open' });
     }
     /**
-     * Applies styling to the element shadowRoot using the `static get styles`
+     * Applies styling to the element shadowRoot using the [[`styles`]]
      * property. Styling will apply using `shadowRoot.adoptedStyleSheets` where
      * available and will fallback otherwise. When Shadow DOM is polyfilled,
      * ShadyCSS scopes styles and adds them to the document. When Shadow DOM
@@ -2550,7 +2518,7 @@ class LitElement extends UpdatingElement {
         }
         // There are three separate cases here based on Shadow DOM support.
         // (1) shadowRoot polyfilled: use ShadyCSS
-        // (2) shadowRoot.adoptedStyleSheets available: use it.
+        // (2) shadowRoot.adoptedStyleSheets available: use it
         // (3) shadowRoot.adoptedStyleSheets polyfilled: append styles after
         // rendering
         if (window.ShadyCSS !== undefined && !window.ShadyCSS.nativeShadow) {
@@ -2558,7 +2526,7 @@ class LitElement extends UpdatingElement {
         }
         else if (supportsAdoptingStyleSheets) {
             this.renderRoot.adoptedStyleSheets =
-                styles.map((s) => s.styleSheet);
+                styles.map((s) => s instanceof CSSStyleSheet ? s : s.styleSheet);
         }
         else {
             // This must be done after rendering so the actual style insertion is done
@@ -2578,12 +2546,16 @@ class LitElement extends UpdatingElement {
      * Updates the element. This method reflects property values to attributes
      * and calls `render` to render DOM via lit-html. Setting properties inside
      * this method will *not* trigger another update.
-     * * @param _changedProperties Map of changed properties with old values
+     * @param _changedProperties Map of changed properties with old values
      */
     update(changedProperties) {
-        super.update(changedProperties);
+        // Setting properties in `render` should not trigger an update. Since
+        // updates are allowed after super.update, it's important to call `render`
+        // before that.
         const templateResult = this.render();
-        if (templateResult instanceof TemplateResult) {
+        super.update(changedProperties);
+        // If render is not implemented by the component, don't call lit-html render
+        if (templateResult !== renderNotImplemented) {
             this.constructor
                 .render(templateResult, this.renderRoot, { scopeName: this.localName, eventContext: this });
         }
@@ -2600,11 +2572,13 @@ class LitElement extends UpdatingElement {
         }
     }
     /**
-     * Invoked on each update to perform rendering tasks. This method must return
-     * a lit-html TemplateResult. Setting properties inside this method will *not*
-     * trigger the element to update.
+     * Invoked on each update to perform rendering tasks. This method may return
+     * any value renderable by lit-html's `NodePart` - typically a
+     * `TemplateResult`. Setting properties inside this method will *not* trigger
+     * the element to update.
      */
     render() {
+        return renderNotImplemented;
     }
 }
 /**
@@ -2616,13 +2590,199 @@ class LitElement extends UpdatingElement {
  */
 LitElement['finalized'] = true;
 /**
- * Render method used to render the lit-html TemplateResult to the element's
- * DOM.
- * @param {TemplateResult} Template to render.
- * @param {Element|DocumentFragment} Node into which to render.
- * @param {String} Element name.
+ * Reference to the underlying library method used to render the element's
+ * DOM. By default, points to the `render` method from lit-html's shady-render
+ * module.
+ *
+ * **Most users will never need to touch this property.**
+ *
+ * This  property should not be confused with the `render` instance method,
+ * which should be overridden to define a template for the element.
+ *
+ * Advanced users creating a new base class based on LitElement can override
+ * this property to point to a custom render method with a signature that
+ * matches [shady-render's `render`
+ * method](https://lit-html.polymer-project.org/api/modules/shady_render.html#render).
+ *
  * @nocollapse
  */
 LitElement.render = render$1;
 
-export { CSSResult, LitElement, SVGTemplateResult, TemplateResult, UpdatingElement, css, customElement, defaultConverter, eventOptions, html, notEqual, property, query, queryAll, supportsAdoptingStyleSheets, svg, unsafeCSS };
+/**
+ * @license
+ * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
+ */
+// IE11 doesn't support classList on SVG elements, so we emulate it with a Set
+class ClassList {
+    constructor(element) {
+        this.classes = new Set();
+        this.changed = false;
+        this.element = element;
+        const classList = (element.getAttribute('class') || '').split(/\s+/);
+        for (const cls of classList) {
+            this.classes.add(cls);
+        }
+    }
+    add(cls) {
+        this.classes.add(cls);
+        this.changed = true;
+    }
+    remove(cls) {
+        this.classes.delete(cls);
+        this.changed = true;
+    }
+    commit() {
+        if (this.changed) {
+            let classString = '';
+            this.classes.forEach((cls) => classString += cls + ' ');
+            this.element.setAttribute('class', classString);
+        }
+    }
+}
+/**
+ * Stores the ClassInfo object applied to a given AttributePart.
+ * Used to unset existing values when a new ClassInfo object is applied.
+ */
+const previousClassesCache = new WeakMap();
+/**
+ * A directive that applies CSS classes. This must be used in the `class`
+ * attribute and must be the only part used in the attribute. It takes each
+ * property in the `classInfo` argument and adds the property name to the
+ * element's `class` if the property value is truthy; if the property value is
+ * falsey, the property name is removed from the element's `class`. For example
+ * `{foo: bar}` applies the class `foo` if the value of `bar` is truthy.
+ * @param classInfo {ClassInfo}
+ */
+const classMap = directive((classInfo) => (part) => {
+    if (!(part instanceof AttributePart) || (part instanceof PropertyPart) ||
+        part.committer.name !== 'class' || part.committer.parts.length > 1) {
+        throw new Error('The `classMap` directive must be used in the `class` attribute ' +
+            'and must be the only part in the attribute.');
+    }
+    const { committer } = part;
+    const { element } = committer;
+    let previousClasses = previousClassesCache.get(part);
+    if (previousClasses === undefined) {
+        // Write static classes once
+        // Use setAttribute() because className isn't a string on SVG elements
+        element.setAttribute('class', committer.strings.join(' '));
+        previousClassesCache.set(part, previousClasses = new Set());
+    }
+    const classList = (element.classList || new ClassList(element));
+    // Remove old classes that no longer apply
+    // We use forEach() instead of for-of so that re don't require down-level
+    // iteration.
+    previousClasses.forEach((name) => {
+        if (!(name in classInfo)) {
+            classList.remove(name);
+            previousClasses.delete(name);
+        }
+    });
+    // Add or remove classes based on their classMap value
+    for (const name in classInfo) {
+        const value = classInfo[name];
+        if (value != previousClasses.has(name)) {
+            // We explicitly want a loose truthy check of `value` because it seems
+            // more convenient that '' and 0 are skipped.
+            if (value) {
+                classList.add(name);
+                previousClasses.add(name);
+            }
+            else {
+                classList.remove(name);
+                previousClasses.delete(name);
+            }
+        }
+    }
+    if (typeof classList.commit === 'function') {
+        classList.commit();
+    }
+});
+
+/**
+ * @license
+ * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
+ */
+/**
+ * Stores the StyleInfo object applied to a given AttributePart.
+ * Used to unset existing values when a new StyleInfo object is applied.
+ */
+const previousStylePropertyCache = new WeakMap();
+/**
+ * A directive that applies CSS properties to an element.
+ *
+ * `styleMap` can only be used in the `style` attribute and must be the only
+ * expression in the attribute. It takes the property names in the `styleInfo`
+ * object and adds the property values as CSS properties. Property names with
+ * dashes (`-`) are assumed to be valid CSS property names and set on the
+ * element's style object using `setProperty()`. Names without dashes are
+ * assumed to be camelCased JavaScript property names and set on the element's
+ * style object using property assignment, allowing the style object to
+ * translate JavaScript-style names to CSS property names.
+ *
+ * For example `styleMap({backgroundColor: 'red', 'border-top': '5px', '--size':
+ * '0'})` sets the `background-color`, `border-top` and `--size` properties.
+ *
+ * @param styleInfo {StyleInfo}
+ */
+const styleMap = directive((styleInfo) => (part) => {
+    if (!(part instanceof AttributePart) || (part instanceof PropertyPart) ||
+        part.committer.name !== 'style' || part.committer.parts.length > 1) {
+        throw new Error('The `styleMap` directive must be used in the style attribute ' +
+            'and must be the only part in the attribute.');
+    }
+    const { committer } = part;
+    const { style } = committer.element;
+    let previousStyleProperties = previousStylePropertyCache.get(part);
+    if (previousStyleProperties === undefined) {
+        // Write static styles once
+        style.cssText = committer.strings.join(' ');
+        previousStylePropertyCache.set(part, previousStyleProperties = new Set());
+    }
+    // Remove old properties that no longer exist in styleInfo
+    // We use forEach() instead of for-of so that re don't require down-level
+    // iteration.
+    previousStyleProperties.forEach((name) => {
+        if (!(name in styleInfo)) {
+            previousStyleProperties.delete(name);
+            if (name.indexOf('-') === -1) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                style[name] = null;
+            }
+            else {
+                style.removeProperty(name);
+            }
+        }
+    });
+    // Add or update properties
+    for (const name in styleInfo) {
+        previousStyleProperties.add(name);
+        if (name.indexOf('-') === -1) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            style[name] = styleInfo[name];
+        }
+        else {
+            style.setProperty(name, styleInfo[name]);
+        }
+    }
+});
+
+export { LitElement, classMap, css, html, render, styleMap, svg };
