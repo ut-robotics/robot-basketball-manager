@@ -49,3 +49,28 @@ Stop signal for robots with IDs of `Io` and `001TRT`.
   "targets":  ["Io", "001TRT"]
 }
 ----
+
+== Setup
+
+. Install https://nodejs.org/en/[node.js]
++
+Version 14+ should work. Newer versions (18+) are recommended.
++
+Newer versions for Ubuntu:
+https://github.com/nodesource/distributions/blob/master/README.md#rpminstall
+
+. Install dependencies
++
+In `server` directory run `npm i`.
+
+== Usage
+
+=== Manual command server
+
+. In `server` directory run `node manual-command-server.mjs`.
+
+. In robot's code create WebSocket client that connects to
+** `localhost:8222`, if the server and robot's code is on the same computer;
+** `<server computer IP address>:8222`, if the server and robot's code are on different computers.
+Make sure that server and robot are in the same network.
+. Open `localhost:8220` or `<server computer IP address>:8220` in the web browser to send start and stop commands.
