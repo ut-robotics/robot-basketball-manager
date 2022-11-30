@@ -1,4 +1,4 @@
-import {html, LitElement, classMap} from "../lib/lit-element.mjs";
+import {html, LitElement, classMap} from "../lib/lit.mjs";
 import AudioPlayer from "../js/audio-player.js";
 
 

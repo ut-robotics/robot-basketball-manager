@@ -1,4 +1,4 @@
-import {css, html, LitElement} from "../lib/lit-element.mjs";
+import {css, html, LitElement} from "../lib/lit.mjs";
 import '../js/basketball-game.js';
 import {stringify} from '../lib/json-stringify-compact.js';
 import serverApi from "../js/server-api.js";

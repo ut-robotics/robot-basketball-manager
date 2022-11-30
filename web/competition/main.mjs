@@ -1,4 +1,4 @@
-import {html, LitElement} from "../lib/lit-element.mjs";
+import {html, LitElement} from "../lib/lit.mjs";
 import serverApi from "../js/server-api.js";
 
 class CompetitionView extends LitElement {

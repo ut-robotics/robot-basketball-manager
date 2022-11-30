@@ -1,9 +1,9 @@
-import resolve from 'rollup-plugin-node-resolve';
+import resolve from '@rollup/plugin-node-resolve';
 import includePaths from 'rollup-plugin-includepaths';
-//import { terser } from 'rollup-plugin-terser';
+//import {terser} from 'rollup-plugin-terser';
 
 export default {
-    input: './node_modules/lit-element/lit-element.js',
+    input: './lit-wrapper.mjs',
     plugins: [
         includePaths({
             include: {},
@@ -14,8 +14,8 @@ export default {
     context: 'null',
     moduleContext: 'null',
     output: {
-        file: 'lit-element.mjs',
+        file: 'lit.mjs',
         format: 'esm',
-        name: 'lit-element'
+        name: 'lit'
     }
 };

@@ -1,4 +1,4 @@
-import {css, html, LitElement} from "../lib/lit-element.mjs";
+import {css, html, LitElement} from "../lib/lit.mjs";
 import './main-round.js';
 import './free-throws.js';
 

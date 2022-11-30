@@ -1,4 +1,4 @@
-import {css, html, LitElement} from "../lib/lit-element.mjs";
+import {css, html, LitElement} from "../lib/lit.mjs";
 import './runtime-counter.js'
 
 class FreeThrows extends LitElement {

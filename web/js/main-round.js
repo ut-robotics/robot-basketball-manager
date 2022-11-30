@@ -1,4 +1,4 @@
-import {css, html, LitElement} from "../lib/lit-element.mjs";
+import {css, html, LitElement} from "../lib/lit.mjs";
 import getValidScoreCounts from "./util/get-valid-score-counts.js";
 import './runtime-counter.js'
 
@@ -174,7 +174,7 @@ class MainRound extends LitElement {
             lastStartTime = run.startTime;
         }
 
-        return html`<runtime-counter ?running=${running} elapsed=${elapsed} laststarttime=${lastStartTime} timelimit=${timeLimit}></runtime-counter>`;
+        return html`<runtime-counter ?running=${running} .elapsed=${elapsed} .laststarttime=${lastStartTime} .timelimit=${timeLimit}></runtime-counter>`;
     }
 
     renderSide(sideIndex) {
