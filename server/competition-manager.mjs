@@ -2,7 +2,7 @@ import EventEmitter from "events";
 import Competition, {CompetitionEventName} from "./competition.mjs";
 import {loadCompetition, log, logError, saveCompetition, saveCompetitionSummary, saveGame} from "./util.mjs";
 import RobotsApi from "./robots-api.mjs";
-import WebSocket from "ws";
+import WebSocket, {WebSocketServer} from "ws";
 import {Basket} from "./constants.mjs";
 
 export const CompetitionManagerEventName = {
@@ -91,13 +91,16 @@ export default class CompetitionManager extends EventEmitter {
     }
 
     #setupUIWebSocket() {
-        this.#wss = new WebSocket.Server({server: this.#server});
+        this.#wss = new WebSocketServer({server: this.#server});
 
         this.#wss.on('connection', (ws, req) => {
             log('websocket connection', req.connection.remoteAddress, req.connection.remotePort);
 
-            ws.on('message', (message) => {
+            ws.on('message', (data, isBinary) => {
+                const message = isBinary ? data : data.toString();
+
                 log('received:', message);
+
                 try {
                     this.#handleWsMessage(JSON.parse(message));
                 } catch (error) {
@@ -114,14 +117,16 @@ export default class CompetitionManager extends EventEmitter {
     }
 
     #setupBasketsWebSocket() {
-        this.#wssBaskets = new WebSocket.Server({port: this.#basketsPort}, () => {
+        this.#wssBaskets = new WebSocketServer({port: this.#basketsPort}, () => {
             log('Opened baskets websocket');
         });
 
         this.#wssBaskets.on('connection', (ws, req) => {
             log('basket websocket connection', req.connection.remoteAddress, req.connection.remotePort);
 
-            ws.on('message', (message) => {
+            ws.on('message', (data, isBinary) => {
+                const message = isBinary ? data : data.toString();
+
                 log('basket sent:', message);
 
                 if (message === 'blue') {
@@ -134,14 +139,16 @@ export default class CompetitionManager extends EventEmitter {
     }
 
     #setupRefereeWebSocket() {
-        this.#wssReferee = new WebSocket.Server({port: this.#refereePort}, () => {
+        this.#wssReferee = new WebSocketServer({port: this.#refereePort}, () => {
             log('Opened referee websocket');
         });
 
         this.#wssReferee.on('connection', (ws, req) => {
             log('referee websocket connection', req.connection.remoteAddress, req.connection.remotePort);
 
-            ws.on('message', (message) => {
+            ws.on('message', (data, isBinary) => {
+                const message = isBinary ? data : data.toString();
+
                 log('referee sent:', message);
 
                 if (message === 'start_stop') {

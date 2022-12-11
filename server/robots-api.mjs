@@ -1,4 +1,4 @@
-import WebSocket from 'ws';
+import {WebSocketServer} from 'ws';
 
 import {log} from './util.mjs';
 
@@ -10,14 +10,16 @@ export default class RobotsApi {
     constructor(port, methodHandler) {
         this.#port = port;
         this.#methodHandler = methodHandler;
-        this.#wss = new WebSocket.Server({port}, () => {
+        this.#wss = new WebSocketServer({port}, () => {
             log('Opened robots websocket');
         });
 
         this.#wss.on('connection', (ws, req) => {
             log('robot connection', req.connection.remoteAddress, req.connection.remotePort);
 
-            ws.on('message', (message) => {
+            ws.on('message', (data, isBinary) => {
+                const message = isBinary ? data : data.toString();
+
                 log('received', message);
 
                 this.#handleMessage(message, ws);

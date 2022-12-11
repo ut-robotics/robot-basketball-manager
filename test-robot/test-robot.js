@@ -8,8 +8,8 @@ wsManager.on('open', () => {
 
 wsManager.on('message', onMessage);
 
-function onMessage(message) {
-    console.log(message);
+function onMessage(data, isBinary) {
+    const message = isBinary ? data : data.toString();
 
     try {
         const info = JSON.parse(message);

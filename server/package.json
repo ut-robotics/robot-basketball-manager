@@ -12,6 +12,6 @@
   "dependencies": {
     "express": "^4.17.1",
     "json-stringify-pretty-compact": "^4.0.0",
-    "ws": "^7.2.1"
+    "ws": "^8.11.0"
   }
 }
