@@ -193,7 +193,9 @@ export async function saveCompetitionSummary(competition, directory) {
 
     const competitionInfo = competition.getInfo();
 
-    return writeJSONFile(path.join(directory, competitionSummaryFileName), competitionInfo);
+    await writeJSONFile(path.join(directory, competitionSummaryFileName), competitionInfo);
+
+    return competitionInfo;
 }
 
 export async function saveGame(game, directory) {

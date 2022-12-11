@@ -57,8 +57,9 @@ export default class CompetitionManager extends EventEmitter {
     }
 
     async saveCompetitionSummary() {
-        await saveCompetitionSummary(this.#competition, this.#competitionDirectory);
-        this.emit(CompetitionManagerEventName.competitionSummarySaved);
+        const competitionInfo = await saveCompetitionSummary(this.#competition, this.#competitionDirectory);
+        this.emit(CompetitionManagerEventName.competitionSummarySaved, competitionInfo);
+        this.#wsServerBroadcast(this.#wss, JSON.stringify({event: 'competition_summary', params: competitionInfo}));
     }
 
     #setup() {
