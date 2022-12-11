@@ -22,21 +22,24 @@ const refereePort = 8114;
 
 const competitionRootDirectory = process.argv[2];
 const gitRemote = process.argv[3];
-const competitionResultsDirectory = path.join(competitionRootDirectory, 'competition-state');
 
-const gitResultsUpdater = new GitResultsUpdater(competitionRootDirectory, gitRemote);
+const competitionResultsDirectory = path.join(competitionRootDirectory, 'competition-state');
 
 initCompetitionManager(competitionResultsDirectory, server, robotsPort, basketsPort, refereePort);
 
-competitionManager.on(CompetitionManagerEventName.competitionCreated, async () => {
-    await gitResultsUpdater.init();
-});
+if (gitRemote) {
+    const gitResultsUpdater = new GitResultsUpdater(competitionRootDirectory, gitRemote);
 
-competitionManager.on(CompetitionManagerEventName.competitionSummarySaved, async () => {
-    if (gitResultsUpdater.isInitialized()) {
-        gitResultsUpdater.update();
-    }
-});
+    competitionManager.on(CompetitionManagerEventName.competitionCreated, async () => {
+        await gitResultsUpdater.init();
+    });
+
+    competitionManager.on(CompetitionManagerEventName.competitionSummarySaved, async () => {
+        if (gitResultsUpdater.isInitialized()) {
+            gitResultsUpdater.update();
+        }
+    });
+}
 
 server.listen(uiPort, function listening() {
     log('Listening on', server.address().port);
