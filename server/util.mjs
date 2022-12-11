@@ -137,7 +137,7 @@ export async function readJSONFile(filePath) {
 }
 
 export async function writeJSONFile(filePath, object) {
-    const content = jsonStringifyCompact(object, null, 2);
+    const content = jsonStringifyCompact(object, {indent: 2});
     //return fs.writeFile(filePath, content, 'utf8');
     return fileWriteManager.queueWrite(filePath, content);
 }
