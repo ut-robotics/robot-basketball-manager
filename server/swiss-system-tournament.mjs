@@ -209,8 +209,10 @@ export default class SwissSystemTournament extends EventEmitter {
     }
 
     calculateTieBreakScore(robot) {
-        const opponents = this.getOpponents(robot);
+        const opponents = this.getOpponents(robot, false);
         const opponentScores = opponents.map(o => this.calculateScore(o));
+
+        console.log('calculateTieBreakScore', robot, opponents, opponentScores);
 
         return opponentScores.reduce((total, value) => total + value, 0);
     }
@@ -219,12 +221,22 @@ export default class SwissSystemTournament extends EventEmitter {
      * @param {{id: string, name: string}} robot
      * @returns {Game[]}
      */
-    getRobotGames(robot) {
-        return this.#games.filter(g => g.robots.some(r => r.id === robot.id));
+    getRobotGames(robot, includeUnfinishedGames = true) {
+        return this.#games.filter(game => {
+            if (!includeUnfinishedGames) {
+                const status = game.getStatus();
+
+                if (status.result === GameResult.unknown) {
+                    return false;
+                }
+            }
+
+            return game.robots.some(r => r.id === robot.id);
+        });
     }
 
-    getOpponents(robot) {
-        const games = this.getRobotGames(robot);
+    getOpponents(robot, includeUnfinishedGames = true) {
+        const games = this.getRobotGames(robot, includeUnfinishedGames);
 
         return games.map(g => g.getOpponent(robot));
     }
