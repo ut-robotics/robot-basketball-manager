@@ -10,6 +10,9 @@ const markerElements = [
 ];
 
 const boxElement = document.getElementById('box');
+const containerElement = document.getElementById('container');
+
+let activeGameState = null;
 
 function onSocketMessage(message) {
     try {
@@ -20,13 +23,24 @@ function onSocketMessage(message) {
                 activeGameState = info.params;
                 renderState(info.params);
                 break;
+            case 'game_state_change':
+                handleGameStateChange(info.params.type);
+                break;
         }
     } catch (error) {
         console.info(error);
     }
 }
 
-let activeGameState = null;
+function handleGameStateChange(type) {
+    console.log('handleGameStateChange', type);
+
+    if (type === 'roundStarted' || type === 'freeThrowAttemptStarted') {
+        containerElement.classList.remove('active');
+    } else if (type === 'roundStopped' || type === 'freeThrowAttemptEnded' || type === 'roundEnded') {
+        containerElement.classList.add('active');
+    }
+}
 
 function renderState(state) {
     if (!state) {
@@ -198,7 +212,7 @@ function handleKeyDown(event) {
     switch (event.code) {
         case 'Space':
             event.preventDefault();
-            document.getElementById('container').classList.toggle('active');
+            containerElement.classList.toggle('active');
             break;
     }
 }
