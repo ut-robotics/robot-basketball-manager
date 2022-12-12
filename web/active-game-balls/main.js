@@ -47,13 +47,47 @@ function renderState(state) {
         return;
     }
 
-    const {ballPlacement} = state;
+    const leftBasket = 'blue';
+    const rightBasket = 'magenta';
 
-    console.log(ballPlacement);
+    const {ballPlacement, robots, rounds, freeThrows} = state;
 
-    boxElement.innerHTML = ballPlacement
-        .map(point => `<div class="dot" style="left: ${point[0] * 100 + 225}px;top: ${-point[1] * 100 + 150}px"></div>`)
-        .join('');
+    if (freeThrows) {
+        const {baskets, robots, rounds} = freeThrows;
+        const lastRound = rounds[rounds.length - 1];
+        const roundCount = lastRound.length;
+        const robotIndex = roundCount % 2;
+        const robot = robots[robotIndex];
+        const basket = baskets[robotIndex];
+
+        const freeThrowBallOffset = 1.3 + 0.16 - 0.05; // 1.3 meters from basket
+        const freeThrowBallX = (basket === leftBasket ? freeThrowBallOffset : 4.5 - freeThrowBallOffset) * 100;
+        const freeThrowBallY = 150;
+
+        const robotNameX = 225 + (basket === leftBasket ? -20 : 20);
+        const robotNameTransform = basket === leftBasket
+            ? `rotate(-90deg) translate(50%, -100%)`
+            : `rotate(90deg) translate(-50%, 0%)`;
+        const robotNameStyle = `left: ${robotNameX}px;top: 150px;transform: ${robotNameTransform};`
+
+        boxElement.innerHTML = `<div class="dot" style="left: ${freeThrowBallX}px;top: ${freeThrowBallY}px"></div>`
+            + `<div class="freethrow-robot" style="${robotNameStyle}">${robot.name}</div>`
+            + `<div class="robot-position" style="left: 225px; top: 150px"></div>`;
+    } else {
+        console.log(ballPlacement);
+
+        const lastRound = rounds[rounds.length - 1];
+        const baskets = lastRound.baskets;
+
+        const leftRobot = robots[1 - baskets.indexOf(leftBasket)];
+        const rightRobot = robots[1 - baskets.indexOf(rightBasket)];
+
+        boxElement.innerHTML = ballPlacement
+                .map(point => `<div class="dot" style="left: ${point[0] * 100 + 225}px;top: ${-point[1] * 100 + 150}px"></div>`)
+                .join('')
+            + `<div class="left-robot">${leftRobot.name}</div>`
+            + `<div class="right-robot">${rightRobot.name}</div>`;
+    }
 }
 
 function adj(m) { // Compute the adjugate of m
