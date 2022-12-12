@@ -222,6 +222,11 @@ class CompetitionResults extends LitElement {
             roundsText += ` (${validScoreCounts[0]} - ${validScoreCounts[1]})`
 
         }
+
+        if (game.freeThrows) {
+            roundsText += ` (${game.freeThrows.scores[0]} - ${game.freeThrows.scores[1]})`
+        }
+
         if (status.result === 'unknown') {
             return html`<li>${robotsText} | ${roundsText}</li>`;
         }

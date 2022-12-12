@@ -200,19 +200,39 @@ class CompetitionResults extends LitElement {
 
         let roundsText = '';
 
-        for (const round of game.rounds) {
+        if (
+            game.rounds.length >= 1 && game.rounds[0].duration > 0
+            || this.competitionInfo.activeGame.id === game.id
+        ) {
+            for (const round of game.rounds) {
+                let prefix = '(';
+                let suffix = ')';
+
+                if (!round.hasEnded) {
+                    prefix = '[';
+                    suffix = ']';
+                }
+
+                const validScoreCounts = getValidScoreCounts(round.scores);
+                roundsText += ` ${prefix}${validScoreCounts[0]} - ${validScoreCounts[1]}${suffix}`
+
+            }
+        } else {
+            return html`<li>${robotsText}</li>`;
+        }
+
+        if (game.freeThrows) {
             let prefix = '(';
             let suffix = ')';
 
-            if (!round.hasEnded) {
+            if (!game.freeThrows.hasEnded) {
                 prefix = '[';
                 suffix = ']';
             }
 
-            const validScoreCounts = getValidScoreCounts(round.scores);
-            roundsText += ` ${prefix}${validScoreCounts[0]} - ${validScoreCounts[1]}${suffix}`
-
+            roundsText += ` ${prefix}${game.freeThrows.scores[0]} - ${game.freeThrows.scores[1]}${suffix}`
         }
+
         if (status.result === 'unknown') {
             return html`<li>${robotsText} | ${roundsText}</li>`;
         }
