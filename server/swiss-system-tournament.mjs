@@ -212,8 +212,6 @@ export default class SwissSystemTournament extends EventEmitter {
         const opponents = this.getOpponents(robot, false);
         const opponentScores = opponents.map(o => this.calculateScore(o));
 
-        console.log('calculateTieBreakScore', robot, opponents, opponentScores);
-
         return opponentScores.reduce((total, value) => total + value, 0);
     }
 
