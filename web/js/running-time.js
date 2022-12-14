@@ -1,12 +1,11 @@
 import {css, html, LitElement} from "../lib/lit.mjs";
+import {Duration} from "../lib/luxon.mjs";
 
-class RuntimeCounter extends LitElement {
+class RunningTime extends LitElement {
     static get properties() {
         return {
             running: {type: Boolean},
-            elapsed: {type: Number},
-            laststarttime: {type: Number},
-            timelimit: {type: Number},
+            startTime: {type: Number},
         };
     }
 
@@ -21,11 +20,9 @@ class RuntimeCounter extends LitElement {
     constructor() {
         super();
         this.running = false;
-        this.elapsed = 0;
-        this.laststarttime = Date.now();
-        this.timelimit = 0;
+        this.startTime = Date.now();
 
-        this.timerAnimationFrameRequest = null;
+        this.updateTimeout = null;
     }
 
     disconnectedCallback() {
@@ -44,8 +41,8 @@ class RuntimeCounter extends LitElement {
         }
     }
 
-    calcRuntime() {        
-        return this.elapsed + (this.running ? Date.now() - this.laststarttime : 0);
+    calcRuntime() {
+        return Date.now() - this.startTime;
     }
 
     startTimer() {
@@ -55,24 +52,22 @@ class RuntimeCounter extends LitElement {
     }
 
     stopTimer() {
-        cancelAnimationFrame(this.timerAnimationFrameRequest);
+        clearTimeout(this.updateTimeout);
     }
 
     updateTime() {
-        this.timerAnimationFrameRequest = requestAnimationFrame(() => {
+        this.updateTimeout = setTimeout(() => {
             this.requestUpdate();
             this.updateTime();
-        });
+        }, 500);
     }
 
     render() {
         const runtime = this.calcRuntime();
-        const timeLimit = this.timelimit;
-        const upCount = (Math.min(runtime, timeLimit) / 1000).toFixed(1);
-        const downCount = (Math.max(0, timeLimit - runtime) / 1000).toFixed(1);
+        const duration = Duration.fromMillis(runtime);
 
-        return html`&uarr; ${upCount} <b>&darr; ${downCount}</b>`;
+        return html`${duration.toFormat('mm:ss')}`;
     }
 }
 
-customElements.define('runtime-counter', RuntimeCounter);
+customElements.define('running-time', RunningTime);

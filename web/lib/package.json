@@ -12,7 +12,7 @@
   "dependencies": {
     "@rollup/plugin-node-resolve": "^15.0.1",
     "lit": "^2.4.1",
-    "luxon": "^1.22.0",
+    "luxon": "^3.1.1",
     "rollup-plugin-includepaths": "^0.2.3",
     "rollup-plugin-node-resolve": "^5.2.0"
   }

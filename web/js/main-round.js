@@ -1,6 +1,7 @@
 import {css, html, LitElement} from "../lib/lit.mjs";
 import getValidScoreCounts from "./util/get-valid-score-counts.js";
-import './runtime-counter.js'
+import './runtime-counter.js';
+import './running-time.js';
 
 class MainRound extends LitElement {
     static get properties() {
@@ -48,6 +49,7 @@ class MainRound extends LitElement {
     constructor() {
         super();
         this.state = {};
+        this.durationStartTime = Date.now();
     }
 
     isRunning() {
@@ -114,6 +116,7 @@ class MainRound extends LitElement {
             <span>Round ${roundIndex + 1} | Scores: [${scoreCounts[0]} - ${scoreCounts[1]}]${foulsText}</span>
             <span>${this.renderControls()}</span>
             <span>${this.renderRuntime()}</span>
+            <span>${this.renderDuration()}</span>
             </header>`;
     }
 
@@ -175,6 +178,26 @@ class MainRound extends LitElement {
         }
 
         return html`<runtime-counter ?running=${running} .elapsed=${elapsed} .laststarttime=${lastStartTime} .timelimit=${timeLimit}></runtime-counter>`;
+    }
+
+    renderDuration() {
+        if (this.state.isConfirmed) {
+            return null;
+        }
+
+        const {runs} = this.state;
+
+        if (runs.length > 0) {
+            if (this.state.hasEnded) {
+                const lastRun = runs[runs.length - 1];
+
+                this.durationStartTime = lastRun.endTime;
+            } else {
+                this.durationStartTime = runs[0].startTime;
+            }
+        }
+
+        return html`<running-time .running=${true} .startTime=${this.durationStartTime}></running-time>`
     }
 
     renderSide(sideIndex) {
