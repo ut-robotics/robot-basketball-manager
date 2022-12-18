@@ -69,14 +69,14 @@ body > * {
 
 .left-robot {
     position: absolute;
-    bottom: 5px;
-    left: 20px;
+    bottom: -25px;
+    left: 0;
 }
 
 .right-robot {
     position: absolute;
-    top: 5px;
-    right: 20px;
+    top: -25px;
+    right: 0;
 }
 
 .freethrow-robot {

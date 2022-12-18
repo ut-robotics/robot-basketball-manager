@@ -82,11 +82,11 @@ function renderState(state) {
         const leftRobot = robots[1 - baskets.indexOf(leftBasket)];
         const rightRobot = robots[1 - baskets.indexOf(rightBasket)];
 
-        boxElement.innerHTML = ballPlacement
+        boxElement.innerHTML = `<div class="left-robot">${leftRobot.name}</div>`
+            + `<div class="right-robot">${rightRobot.name}</div>`
+            + ballPlacement
                 .map(point => `<div class="dot" style="left: ${point[0] * 100 + 225}px;top: ${-point[1] * 100 + 150}px"></div>`)
-                .join('')
-            + `<div class="left-robot">${leftRobot.name}</div>`
-            + `<div class="right-robot">${rightRobot.name}</div>`;
+                .join('');
     }
 }
 
