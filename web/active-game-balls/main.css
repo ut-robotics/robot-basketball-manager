@@ -57,6 +57,10 @@ body > * {
     border: 1px solid blue;
 }
 
+.corner.active {
+    border: 1px solid cyan;
+}
+
 .dot {
     height: 8px;
     width: 8px;

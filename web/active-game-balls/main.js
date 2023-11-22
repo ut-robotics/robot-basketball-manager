@@ -184,7 +184,8 @@ function transform2d(elt, x1, y1, x2, y2, x3, y3, x4, y4) {
     elt.style.transform = t;
 }
 
-let currentCorner = -1;
+let currentDraggedCorner = -1;
+let currentSelectedCorner = -1;
 let corners =  [100, 100, 550, 100, 100, 400, 550, 400];
 
 try {
@@ -204,16 +205,26 @@ function update() {
         const element = markerElements[i / 2];
         element.style.left = (corners[i] - 20) + 'px';
         element.style.top = (corners[i + 1] - 20) + 'px';
+
+        if (i === currentSelectedCorner) {
+            element.classList.add('active');
+        } else {
+            element.classList.remove('active');
+        }
     }
 }
 
-function move(event) {
-    if (currentCorner < 0) {
+function handleMouseMove(event) {
+    if (currentDraggedCorner < 0) {
         return;
     }
 
-    corners[currentCorner] += event.movementX;
-    corners[currentCorner + 1] += event.movementY;
+    move(event.movementX, event.movementY);
+}
+
+function move(x, y) {
+    corners[currentSelectedCorner] += x;
+    corners[currentSelectedCorner + 1] += y;
 
     update();
 }
@@ -225,7 +236,7 @@ window.addEventListener('mousedown', (event) => {
     let dy;
 
     let best = 400; // 20px grab radius
-    currentCorner = -1;
+    currentDraggedCorner = -1;
 
     for (let i = 0; i !== 8; i += 2) {
         dx = x - corners[i];
@@ -233,31 +244,73 @@ window.addEventListener('mousedown', (event) => {
 
         if (best > dx * dx + dy * dy) {
             best = dx * dx + dy * dy;
-            currentCorner = i;
+            currentDraggedCorner = i;
+            setSelectedCorner(i);
         }
     }
 
-    move(event);
+    handleMouseMove(event);
 });
 
-function handleKeyDown(event) {
-    console.log(event.code);
+function setSelectedCorner(cornerIndex) {
+    currentSelectedCorner = cornerIndex;
+}
 
-    switch (event.code) {
-        case 'Space':
-            event.preventDefault();
-            containerElement.classList.toggle('active');
-            break;
+function handleKeyDown(event) {
+    console.log('keyDown', event.code);
+
+    if (event.code ===  'Space') {
+        event.preventDefault();
+        containerElement.classList.toggle('active');
+    } else if (event.code.startsWith('Digit')) {
+        const digit = parseInt(event.code[5], 10);
+
+        if (digit >= 1 && digit <= 4) {
+            setSelectedCorner((digit - 1) * 2);
+        }
+    } else if (event.code.startsWith('Arrow')) {
+        if (currentSelectedCorner >= 0 && currentSelectedCorner < 8) {
+            const multiplier = event.ctrlKey ? 0.1 : (event.shiftKey ? 10 : 1);
+
+            switch (event.code) {
+                case 'ArrowUp':
+                    move(0, -1 * multiplier);
+                    break;
+                case 'ArrowDown':
+                    move(0, 1 * multiplier);
+                    break;
+                case 'ArrowLeft':
+                    move(-1 * multiplier, 0);
+                    break;
+                case 'ArrowRight':
+                    move(1 * multiplier, 0);
+                    break;
+            }
+        }
     }
+
+    update();
+}
+
+function handleKeyUp(event) {
+    console.log('keyUp', event.code);
+    saveCorners();
+}
+
+function saveCorners() {
+    console.log('saveCorners');
+    localStorage.setItem('corners', JSON.stringify(corners));
 }
 
 window.addEventListener('mouseup', () => {
-    currentCorner = -1;
-    localStorage.setItem('corners', JSON.stringify(corners));
+    currentDraggedCorner = -1;
+    saveCorners();
 });
 
-window.addEventListener('mousemove', move);
+window.addEventListener('mousemove', handleMouseMove);
 
 document.addEventListener('keydown', handleKeyDown);
+
+document.addEventListener('keyup', handleKeyUp);
 
 update();
