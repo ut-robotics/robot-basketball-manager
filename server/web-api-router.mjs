@@ -1,5 +1,5 @@
 import express from "express";
-import {readJSONFile, log, logError} from "./util.mjs";
+import {readJSONFile, log, logError, generateBallPlacement} from "./util.mjs";
 import {competitionManager} from "./data.mjs";
 
 const router = express.Router();
@@ -86,6 +86,11 @@ router.get('/game/:id', async (req, res) => {
         res.sendStatus(400);
     }
 });
+
+router.get('/random-balls', async (req, res) => {
+    res.send(generateBallPlacement());
+});
+
 /*
 async function getCompetitions() {
     try {

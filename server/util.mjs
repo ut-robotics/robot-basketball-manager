@@ -230,7 +230,7 @@ export function roundToTwoDecimalPlaces(number) {
 }
 
 export function generateBallPlacement() {
-    const ballClearance = 0.4;
+    const ballClearance = 0.2;
     const basketClearance = 0.4;
     const robotClearance = 0.4;
 
@@ -251,12 +251,12 @@ export function generateBallPlacement() {
         const coords = generateCoordinate([xRange, yRange]);
         const mirroredCoords = [-coords[0], -coords[1]];
 
-        if (objects.some(o => distanceBetweenPoints([o.x, o.y], coords) < Math.min(o.clearance, ballClearance))) {
+        if (objects.some(o => distanceBetweenPoints([o.x, o.y], coords) < Math.max(o.clearance, ballClearance))) {
             console.log(coords, 'too close to current objects');
             continue;
         }
 
-        if (objects.some(o => distanceBetweenPoints([o.x, o.y], mirroredCoords) < Math.min(o.clearance, ballClearance))) {
+        if (objects.some(o => distanceBetweenPoints([o.x, o.y], mirroredCoords) < Math.max(o.clearance, ballClearance))) {
             console.log(coords, 'too close to current objects');
             continue;
         }

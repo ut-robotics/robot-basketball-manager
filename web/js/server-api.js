@@ -80,6 +80,10 @@ class ServerApi {
     async getGame(id) {
         return get(`/api/game/${id}`);
     }
+
+    async getRandomBalls() {
+        return get(`/api/random-balls`);
+    }
 }
 
 const serverApi = new ServerApi();
