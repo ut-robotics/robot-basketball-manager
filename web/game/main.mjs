@@ -35,7 +35,7 @@ class GameView extends LitElement {
     }
 
     handleKeyDown(event) {
-        console.log(event.code);
+        console.log(Date.now(), event.code);
 
         switch (event.code) {
             case 'Space':
@@ -118,7 +118,7 @@ class GameView extends LitElement {
     }
 
     handleGameStateChange(type) {
-        console.log('handleGameStateChange', type);
+        console.log(Date.now(), 'handleGameStateChange', type);
 
         if (type === 'roundStarted' || type === 'freeThrowAttemptStarted') {
             this.audioPlayer.whistleShort();

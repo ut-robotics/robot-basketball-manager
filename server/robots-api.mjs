@@ -27,12 +27,22 @@ export default class RobotsApi {
         });
     }
 
-    start(targets, baskets) {
-        this.#send('start', targets, baskets);
+    start(targets, baskets, delay = 0) {
+        console.log(Date.now(), 'RobotsApi start requested');
+
+        setTimeout(() => {
+            this.#send('start', targets, baskets);
+            console.log(Date.now(), 'RobotsApi start sent');
+        }, delay);
     }
 
-    stop(targets) {
-        this.#send('stop', targets);
+    stop(targets, delay = 0) {
+        console.log(Date.now(), 'RobotsApi stop requested');
+
+        setTimeout(() => {
+            this.#send('stop', targets);
+            console.log(Date.now(), 'RobotsApi stop sent');
+        }, delay);
     }
 
     #send = (signal, targets, baskets) => {

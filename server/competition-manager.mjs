@@ -14,15 +14,25 @@ export const CompetitionManagerEventName = {
 };
 
 export default class CompetitionManager extends EventEmitter {
+    /** @type {?Competition} */
     #competition = null;
+    /** @type {string} */
     #competitionDirectory;
+
     #server;
+    /** @type {RobotsApi} */
     #robotsApi;
+    /** @type {number} */
     #robotsPort;
+    /** @type {number} */
     #basketsPort;
+    /** @type {number} */
     #refereePort;
+    /** @type {WebSocketServer} */
     #wss;
+    /** @type {WebSocketServer} */
     #wssBaskets;
+    /** @type {WebSocketServer} */
     #wssReferee;
 
     get competition() {
@@ -202,11 +212,11 @@ export default class CompetitionManager extends EventEmitter {
             //playAudio('audio/whistle_blow_short.mp3');
 
             const targets = game.getInGameRobotIds();
-            this.#robotsApi.start(targets, game.getBasketsForRobots(targets));
+            this.#robotsApi.start(targets, game.getBasketsForRobots(targets), 500);
 
         } else if (changeType === 'roundStopped' || changeType === 'freeThrowAttemptEnded') {
             //playAudio('audio/whistle_blow_long.mp3');
-            this.#robotsApi.stop(game.getRobotIds());
+            this.#robotsApi.stop(game.getRobotIds(), 500);
 
         }/* else if (changeType === 'roundEnded') {
             playAudio('audio/basketball_buzzer.mp3');
