@@ -192,15 +192,27 @@ export default class SwissSystemTournament extends EventEmitter {
 
             if (status.result === GameResult.tied) {
                 score += 0.5;
-            } else if (status.winner.id === robot.id) {
+            } else {
+                const winnerId = status.winner.id;
+
+                let winnerScore = 0;
+
                 if (game.getRoundCount() === 2) {
-                    score += 1; // 2 out of 2 rounds won
+                    winnerScore = 1; // 2 out of 2 rounds won
                 } else {
-                    if (status.roundWinCount === 2) {
-                        score += 0.9; // 2 out of 3 rounds won
-                    } else {
-                        score += 0.8; // 1 out of 3 rounds won
+                    if (status.roundWinCount === 2 && status.roundTieCount === 1) {
+                        winnerScore = 0.9; // 2 out of 3 rounds won and 1 round tied
+                    } else if (status.roundWinCount === 2 && status.roundLossCount === 1) {
+                        winnerScore = 0.8; // 2 out of 3 rounds won and 1 round lost
+                    } else if (status.roundWinCount === 1 && status.roundTieCount === 2) {
+                        winnerScore = 0.7; // 1 out of 3 rounds won and 2 rounds tied
                     }
+                }
+
+                if (winnerId === robot.id) {
+                    score += winnerScore; // Winner gets winnerScore amount of points
+                } else {
+                    score += 1 - winnerScore; // Loser gets rest of the points
                 }
             }
         }

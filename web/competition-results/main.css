@@ -9,3 +9,8 @@ html, body {
 body {
     padding: 10px;
 }
+
+th, td {
+    padding: 0 10px;
+    text-align: left;
+}

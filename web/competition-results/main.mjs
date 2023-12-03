@@ -136,7 +136,8 @@ class CompetitionResults extends LitElement {
 
         return html`<h2>Swiss-system tournament</h2>
             ${this.renderSwissScoreboard()}
-            ${this.renderSwissGamesList()}`;
+            ${this.renderSwissGamesList()}
+            ${this.renderSwissGamePointExplanation()}`;
     }
 
     renderSwissGamesList() {
@@ -202,7 +203,7 @@ class CompetitionResults extends LitElement {
 
         if (
             game.rounds.length >= 1 && game.rounds[0].duration > 0
-            || this.competitionInfo.activeGame.id === game.id
+            || this.competitionInfo.activeGame?.id === game.id
         ) {
             for (const round of game.rounds) {
                 let prefix = '(';
@@ -246,24 +247,42 @@ class CompetitionResults extends LitElement {
         if (!gameType) {
             const roundCount = game.rounds.length;
 
-            pointsText += ' | ';
+            pointsText += ' (';
 
             if (result === 'tied') {
-                pointsText += 'tie = 0.5 points';
+                pointsText += '0.5 points';
             } else {
                 if (roundCount === 2) {
-                    pointsText += '2 out of 2 round wins = 1 point';
+                    pointsText += '1 point';
                 } else {
-                    if (status.roundWinCount === 2) {
-                        pointsText += '2 out of 3 round wins = 0.9 points';
-                    } else {
-                        pointsText += ' 1 out of 3 round wins = 0.8 points';
+                    if (status.roundWinCount === 2 && status.roundTieCount === 1) {
+                        pointsText += '0.9 points';
+                    } else if (status.roundWinCount === 2 && status.roundLossCount === 1) {
+                        pointsText += '0.8 points';
+                    } else if (status.roundWinCount === 1 && status.roundTieCount === 2) {
+                        pointsText += '0.7 points';
                     }
                 }
             }
+
+            pointsText += ')';
         }
 
         return html`<li>${robotsText} | ${roundsText} | ${resultContent}${pointsText}</li>`;
+    }
+
+    renderSwissGamePointExplanation() {
+        return html`<h3>Swiss-system tournament game point system</h3>
+            <table>
+                <thead><th>Result</th><th>Robot 1 (winner) points</th><th>Robot 2 points</th></thead>
+                <tbody>
+                <tr><td>2 out of 2 round wins</td><td>1</td><td>0</td></tr>
+                <tr><td>2 out of 3 round wins and 1 tied round</td><td>0.9</td><td>0.1</td></tr>
+                <tr><td>2 out of 3 round wins and 1 lost round</td><td>0.8</td><td>0.2</td></tr>
+                <tr><td>1 out of 3 round wins and 2 tied rounds</td><td>0.7</td><td>0.3</td></tr>
+                <tr><td>Tie</td><td>0.5</td><td>0.5</td></tr>
+                </tbody>
+            </table>`;
     }
 
     renderSwissScoreboard() {
