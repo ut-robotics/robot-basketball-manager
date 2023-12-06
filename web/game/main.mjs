@@ -23,6 +23,7 @@ class GameView extends LitElement {
         this.audioPlayer = new AudioPlayer();
 
         document.addEventListener('keydown', this.handleKeyDown.bind(this));
+        document.addEventListener('keyup', this.handleKeyUp.bind(this));
     }
 
     createRenderRoot() {
@@ -35,29 +36,41 @@ class GameView extends LitElement {
     }
 
     handleKeyDown(event) {
-        console.log(Date.now(), event.code);
-
-        switch (event.code) {
-            case 'Space':
-                event.preventDefault();
-                this.handleStartStop();
-                break;
+        if (event.code === 'Space') {
+            event.preventDefault();
         }
     }
 
-    handleStartStop() {
+    handleKeyUp(event) {
+        console.log(Date.now(), event.code);
+
+        if (event.code === 'Space') {
+            event.preventDefault();
+
+            const shouldStart = event.ctrlKey;
+            this.handleStartStop(shouldStart);
+        }
+    }
+
+    /**
+     * @param {?boolean} shouldStart
+     */
+    handleStartStop(shouldStart) {
         if (this.gameInfo.freeThrows) {
             const rounds = this.gameInfo.freeThrows.rounds;
             const lastRound = rounds[rounds.length - 1];
 
             if (!lastRound) {
-                this.serverWebsocketApi.start();
+                if (shouldStart === true) {
+                    this.serverWebsocketApi.start();
+                }
+
                 return;
             }
 
             const lastAttempt = lastRound[lastRound.length - 1];
 
-            if (lastAttempt.isConfirmed) {
+            if (lastAttempt.isConfirmed && shouldStart === true) {
                 this.serverWebsocketApi.start();
             }
 
@@ -72,9 +85,13 @@ class GameView extends LitElement {
         }
 
         if (isRunning) {
-            this.serverWebsocketApi.stop();
+            if (shouldStart === false) {
+                this.serverWebsocketApi.stop();
+            }
         } else {
-            this.serverWebsocketApi.start();
+            if (shouldStart === true) {
+                this.serverWebsocketApi.start();
+            }
         }
     }
 
