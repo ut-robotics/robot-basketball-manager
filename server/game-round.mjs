@@ -123,6 +123,10 @@ export default class GameRound extends EventEmitter {
     incrementScore(basket) {
         const basketIndex = this.#baskets.indexOf(basket);
 
+        this.incrementScoreAtIndex(basketIndex);
+    }
+
+    incrementScoreAtIndex(basketIndex) {
         if (basketIndex === 0 || basketIndex === 1) {
             this.#scores[basketIndex].push({time: Date.now(), isValid: true});
         }

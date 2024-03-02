@@ -100,6 +100,11 @@ export function chooseNextBasketColor(prevBaskets) {
     return counts.blue > counts.magenta ? 'magenta' : 'blue';
 }
 
+/**
+ *
+ * @param {[string,string]} preferredBaskets
+ * @returns {[string,string]}
+ */
 export function decideBaskets(preferredBaskets) {
     if (!preferredBaskets[0] && !preferredBaskets[1] || preferredBaskets[0] === preferredBaskets[1]) {
         // no preference or same preference
@@ -117,6 +122,12 @@ export function decideBaskets(preferredBaskets) {
     return preferredBaskets;
 }
 
+/**
+ *
+ * @param {[Robot, Robot]} robots
+ * @param {Object.<number,string[]>} robotStartingBaskets
+ * @returns {[string,string]}
+ */
 export function decideBasketsForRobots(robots, robotStartingBaskets) {
     return decideBaskets([
         chooseNextBasketColor(robotStartingBaskets[robots[0].id]),
@@ -270,4 +281,24 @@ export function generateBallPlacement() {
     return objects
         .filter(o => o.type === 'ball')
         .map(o => [roundToTwoDecimalPlaces(o.x), roundToTwoDecimalPlaces(o.y)]);
+}
+
+export function createSwissMatchIndexPairs(robotCount) {
+    const pairs = [];
+
+    for (let i = 0; i < robotCount - 1; i++) {
+        for (let j = i + 1; j < robotCount; j++) {
+            const pair = [i, j];
+            pairs.push(pair);
+            //console.log(i, j, j - i);
+
+            /*if (i === 0) {
+                groups.push([pair]);
+            } else {
+                groups[j - i - 1].push(pair);
+            }*/
+        }
+    }
+
+    return pairs;
 }

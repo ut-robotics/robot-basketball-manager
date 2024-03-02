@@ -155,7 +155,12 @@ export default class Competition extends EventEmitter {
         this.proceed();
     }
 
+    /**
+     *
+     * @returns {Game[]}
+     */
     getGames() {
+        /** @type {Game[]} */
         const games = [];
 
         if (this.#swissSystemTournament) {
