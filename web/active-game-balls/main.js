@@ -313,4 +313,105 @@ document.addEventListener('keydown', handleKeyDown);
 
 document.addEventListener('keyup', handleKeyUp);
 
+const cameraConstraints = {
+    video: {width: {exact: 1920}, height: {exact: 1080}},
+    audio: false,
+};
+
+
+navigator.mediaDevices
+    .getUserMedia(cameraConstraints)
+    .then((localMediaStream) => {
+        const video = document.querySelector('video');
+        video.srcObject = localMediaStream;
+    })
+    .catch((error) => {
+        console.log('Rejected!', error);
+    });
+
+/*
+if (!navigator.mediaDevices?.enumerateDevices) {
+    console.log("enumerateDevices() not supported.");
+} else {
+    // List cameras and microphones.
+    navigator.mediaDevices
+        .enumerateDevices()
+        .then((devices) => {
+            console.log(devices);
+
+            let videoSource = null;
+
+            devices.forEach((device) => {
+                if (device.kind === 'videoinput') {
+                    videoSource = device.deviceId;
+                }
+            });
+
+            sourceSelected(videoSource);
+        })
+        .catch((err) => {
+            console.error(`${err.name}: ${err.message}`);
+        });
+}
+*/
+
+async function getBestCamera(criteriaFunc) {
+    return navigator.mediaDevices.getUserMedia({audio: false, video: true}).then(() => {
+        return navigator.mediaDevices.enumerateDevices().then((devices) => {
+            const sortedDevices = devices
+                .filter(device => device.kind == 'videoinput')
+                .toSorted((device1, device2) => {
+                    const capabilities1 = device1.getCapabilities();
+                    const capabilities2 = device2.getCapabilities();
+
+                    console.log(device1, device2)
+                    console.log("capabilities1", capabilities1)
+                    console.log("capabilities2", capabilities2)
+
+                    return criteriaFunc(capabilities1, capabilities2); // return type: truthy
+                })
+            console.log("sortedDevices: ", sortedDevices)
+            return sortedDevices;
+        })
+            .then(sortedDevices => sortedDevices[0])
+    })
+}
+
+// Usage:
+
+// return type: truthy
+function compareResolutions(capabilities1, capabilities2) {
+    return (capabilities1.height.max * capabilities1.width.max) > (capabilities2.height.max * capabilities2.width.max)
+}
+
+getBestCamera(compareResolutions).then(bestCamera => {
+    console.log("bestCamera: ", bestCamera)
+    console.log("capabilities: ", bestCamera.getCapabilities())
+
+    //sourceSelected(bestCamera.deviceId);
+}); // just to log stuff returned
+
+function sourceSelected(videoSource) {
+    if (!videoSource) {
+        console.error('No videoSource');
+        return;
+    }
+
+    const constraints = {
+        audio: false,
+        video: {width: {exact: 1920}, height: {exact: 1080}},
+        //video: {deviceId: videoSource},
+    };
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then((localMediaStream) => {
+            const video = document.querySelector('video');
+            video.srcObject = localMediaStream;
+        })
+        .catch((error) => {
+            console.log('Rejected!', error);
+        });
+}
+
+//sourceSelected(true);
+
 update();

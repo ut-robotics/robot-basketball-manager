@@ -62,13 +62,14 @@ body > * {
 }
 
 .dot {
-    height: 8px;
-    width: 8px;
-    margin-left: -4px;
-    margin-top: -4px;
+    height: 12px;
+    width: 12px;
+    margin-left: -6px;
+    margin-top: -6px;
     position: absolute;
-    background-color: white;
-    border-radius: 4px;
+    background-color: transparent;
+    border-radius: 50%;
+    border: 1px solid cyan;
 }
 
 .left-robot {
