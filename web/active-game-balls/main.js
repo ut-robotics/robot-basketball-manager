@@ -12,6 +12,9 @@ const markerElements = [
 const boxElement = document.getElementById('box');
 const containerElement = document.getElementById('container');
 
+// const testImageElement = document.getElementById('test-image');
+const videoELement = document.getElementById('court-video');
+
 let activeGameState = null;
 
 function onSocketMessage(message) {
@@ -199,7 +202,9 @@ try {
 }
 
 function update() {
-    transform2d(boxElement, ...corners);
+    // transform2d(boxElement, ...corners);
+    // transform2d(testImageElement, ...corners);
+    transform2d(videoELement, ...corners);
 
     for (let i = 0; i !== 8; i += 2) {
         const element = markerElements[i / 2];
@@ -317,7 +322,6 @@ const cameraConstraints = {
     video: {width: {exact: 1920}, height: {exact: 1080}},
     audio: false,
 };
-
 
 navigator.mediaDevices
     .getUserMedia(cameraConstraints)
