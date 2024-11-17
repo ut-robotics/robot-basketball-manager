@@ -17,6 +17,9 @@ const videoELement = document.getElementById('court-video');
 
 let activeGameState = null;
 
+let scaleX = 1;
+let scaleY = 1;
+
 function onSocketMessage(message) {
     try {
         const info = JSON.parse(message);
@@ -187,6 +190,10 @@ function transform2d(elt, x1, y1, x2, y2, x3, y3, x4, y4) {
     elt.style.transform = t;
 }
 
+function scaleXY(element, scaleX, scaleY) {
+    element.style.transform = `scaleX(${scaleX}) scaleY(${scaleY})`;
+}
+
 let currentDraggedCorner = -1;
 let currentSelectedCorner = -1;
 let corners =  [100, 100, 550, 100, 100, 400, 550, 400];
@@ -264,7 +271,7 @@ function setSelectedCorner(cornerIndex) {
 function handleKeyDown(event) {
     console.log('keyDown', event.code);
 
-    if (event.code ===  'Space') {
+    if (event.code === 'Space') {
         event.preventDefault();
         containerElement.classList.toggle('active');
     } else if (event.code.startsWith('Digit')) {
@@ -291,6 +298,20 @@ function handleKeyDown(event) {
                     move(1 * multiplier, 0);
                     break;
             }
+        }
+    } else {
+        switch (event.code) {
+            case 'KeyX':
+                scaleX = -scaleX;
+                scaleXY(containerElement, scaleX, scaleY)
+                break;
+            case 'KeyY':
+                scaleY = -scaleY;
+                scaleXY(containerElement, scaleX, scaleY)
+                break;
+            case 'reset':
+                videoELement.
+                break;
         }
     }
 
