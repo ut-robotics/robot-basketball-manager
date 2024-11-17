@@ -45,7 +45,7 @@ body > * {
     right: 0;
     bottom: 0;
     transform-origin: 0 0;
-    box-shadow: inset 0 0 0 3px #F00;
+    /*box-shadow: inset 0 0 0 3px #F00;*/
 }
 .corner {
     position: absolute;
