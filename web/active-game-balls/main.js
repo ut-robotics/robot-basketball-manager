@@ -88,7 +88,7 @@ function renderState(state) {
         boxElement.innerHTML = `<div class="left-robot">${leftRobot.name}</div>`
             + `<div class="right-robot">${rightRobot.name}</div>`
             + ballPlacement
-                .map(point => `<div class="dot" style="left: ${point[0] * 100 + 225}px;top: ${-point[1] * 100 + 150}px"></div>`)
+                .map(point => `<div class="dot" style="left: ${(point[0] / 2.25 * 50) + 50}%;top: ${(-point[1] / 1.5 * 50) + 50}%"></div>`)
                 .join('');
     }
 }
