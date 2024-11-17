@@ -12,13 +12,7 @@ const markerElements = [
 const boxElement = document.getElementById('box');
 const containerElement = document.getElementById('container');
 
-// const testImageElement = document.getElementById('test-image');
-const videoELement = document.getElementById('court-video');
-
 let activeGameState = null;
-
-let scaleX = 1;
-let scaleY = 1;
 
 function onSocketMessage(message) {
     try {
@@ -91,7 +85,7 @@ function renderState(state) {
         boxElement.innerHTML = `<div class="left-robot">${leftRobot.name}</div>`
             + `<div class="right-robot">${rightRobot.name}</div>`
             + ballPlacement
-                .map(point => `<div class="dot" style="left: ${(point[0] / 2.25 * 50) + 50}%;top: ${(-point[1] / 1.5 * 50) + 50}%"></div>`)
+                .map(point => `<div class="dot" style="left: ${point[0] * 100 + 225}px;top: ${-point[1] * 100 + 150}px"></div>`)
                 .join('');
     }
 }
@@ -190,16 +184,12 @@ function transform2d(elt, x1, y1, x2, y2, x3, y3, x4, y4) {
     elt.style.transform = t;
 }
 
-function scaleXY(element, scaleX, scaleY) {
-    element.style.transform = `scaleX(${scaleX}) scaleY(${scaleY})`;
-}
-
 let currentDraggedCorner = -1;
 let currentSelectedCorner = -1;
 let corners =  [100, 100, 550, 100, 100, 400, 550, 400];
 
 try {
-    const savedCorners = JSON.parse(localStorage.getItem('corners'));
+    const savedCorners = JSON.parse(localStorage.getItem('corners-with-projector'));
 
     if (Array.isArray(savedCorners) && savedCorners.length === 8) {
         corners = savedCorners;
@@ -209,9 +199,7 @@ try {
 }
 
 function update() {
-    // transform2d(boxElement, ...corners);
-    // transform2d(testImageElement, ...corners);
-    transform2d(videoELement, ...corners);
+    transform2d(boxElement, ...corners);
 
     for (let i = 0; i !== 8; i += 2) {
         const element = markerElements[i / 2];
@@ -271,7 +259,7 @@ function setSelectedCorner(cornerIndex) {
 function handleKeyDown(event) {
     console.log('keyDown', event.code);
 
-    if (event.code === 'Space') {
+    if (event.code ===  'Space') {
         event.preventDefault();
         containerElement.classList.toggle('active');
     } else if (event.code.startsWith('Digit')) {
@@ -299,20 +287,6 @@ function handleKeyDown(event) {
                     break;
             }
         }
-    } else {
-        switch (event.code) {
-            case 'KeyX':
-                scaleX = -scaleX;
-                scaleXY(containerElement, scaleX, scaleY)
-                break;
-            case 'KeyY':
-                scaleY = -scaleY;
-                scaleXY(containerElement, scaleX, scaleY)
-                break;
-            case 'reset':
-                videoELement.
-                break;
-        }
     }
 
     update();
@@ -325,7 +299,7 @@ function handleKeyUp(event) {
 
 function saveCorners() {
     console.log('saveCorners');
-    localStorage.setItem('corners', JSON.stringify(corners));
+    localStorage.setItem('corners-with-projector', JSON.stringify(corners));
 }
 
 window.addEventListener('mouseup', () => {
@@ -338,105 +312,5 @@ window.addEventListener('mousemove', handleMouseMove);
 document.addEventListener('keydown', handleKeyDown);
 
 document.addEventListener('keyup', handleKeyUp);
-
-const cameraConstraints = {
-    video: {width: {exact: 1920}, height: {exact: 1080}},
-    audio: false,
-};
-
-navigator.mediaDevices
-    .getUserMedia(cameraConstraints)
-    .then((localMediaStream) => {
-        const video = document.querySelector('video');
-        video.srcObject = localMediaStream;
-    })
-    .catch((error) => {
-        console.log('Rejected!', error);
-    });
-
-/*
-if (!navigator.mediaDevices?.enumerateDevices) {
-    console.log("enumerateDevices() not supported.");
-} else {
-    // List cameras and microphones.
-    navigator.mediaDevices
-        .enumerateDevices()
-        .then((devices) => {
-            console.log(devices);
-
-            let videoSource = null;
-
-            devices.forEach((device) => {
-                if (device.kind === 'videoinput') {
-                    videoSource = device.deviceId;
-                }
-            });
-
-            sourceSelected(videoSource);
-        })
-        .catch((err) => {
-            console.error(`${err.name}: ${err.message}`);
-        });
-}
-*/
-
-async function getBestCamera(criteriaFunc) {
-    return navigator.mediaDevices.getUserMedia({audio: false, video: true}).then(() => {
-        return navigator.mediaDevices.enumerateDevices().then((devices) => {
-            const sortedDevices = devices
-                .filter(device => device.kind == 'videoinput')
-                .toSorted((device1, device2) => {
-                    const capabilities1 = device1.getCapabilities();
-                    const capabilities2 = device2.getCapabilities();
-
-                    console.log(device1, device2)
-                    console.log("capabilities1", capabilities1)
-                    console.log("capabilities2", capabilities2)
-
-                    return criteriaFunc(capabilities1, capabilities2); // return type: truthy
-                })
-            console.log("sortedDevices: ", sortedDevices)
-            return sortedDevices;
-        })
-            .then(sortedDevices => sortedDevices[0])
-    })
-}
-
-// Usage:
-
-// return type: truthy
-function compareResolutions(capabilities1, capabilities2) {
-    return (capabilities1.height.max * capabilities1.width.max) > (capabilities2.height.max * capabilities2.width.max)
-}
-
-getBestCamera(compareResolutions).then(bestCamera => {
-    console.log("bestCamera: ", bestCamera)
-    console.log("capabilities: ", bestCamera.getCapabilities())
-
-    //sourceSelected(bestCamera.deviceId);
-}); // just to log stuff returned
-
-function sourceSelected(videoSource) {
-    if (!videoSource) {
-        console.error('No videoSource');
-        return;
-    }
-
-    const constraints = {
-        audio: false,
-        video: {width: {exact: 1920}, height: {exact: 1080}},
-        //video: {deviceId: videoSource},
-    };
-    navigator.mediaDevices.getUserMedia(constraints)
-        .then((localMediaStream) => {
-            const video = document.querySelector('video');
-            video.srcObject = localMediaStream;
-        })
-        .catch((error) => {
-            console.log('Rejected!', error);
-        });
-}
-
-//sourceSelected(true);
 
 update();
