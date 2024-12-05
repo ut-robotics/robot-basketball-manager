@@ -218,7 +218,7 @@ export default class Game extends EventEmitter {
         });
 
         round.on(GameRoundEventName.ended, () => {
-            console.log(`Round ${this.#rounds.length} ended`);
+            // console.log(`Round ${this.#rounds.length} ended`);
             this.emit(GameEventName.changed, GameEventChangeType.roundEnded);
         });
 

@@ -15,9 +15,9 @@ const robotsInfo = [
     {id: 'j', name: 'J', accuracy: 0.3, accuracyStdDev: 0.2, speed: 13, speedStdDev: 5},
     {id: 'k', name: 'K', accuracy: 0.3, accuracyStdDev: 0.4, speed: 14, speedStdDev: 6},
     {id: 'l', name: 'L', accuracy: 0.2, accuracyStdDev: 0.3, speed: 15, speedStdDev: 7},
-    /*{id: 'm', name: 'M', accuracy: 0.2, accuracyStdDev: 0.2, speed: 16, speedStdDev: 8},
+    {id: 'm', name: 'M', accuracy: 0.2, accuracyStdDev: 0.2, speed: 16, speedStdDev: 8},
     {id: 'n', name: 'N', accuracy: 0.1, accuracyStdDev: 0.2, speed: 17, speedStdDev: 9},
-    {id: 'o', name: 'O', accuracy: 0.1, accuracyStdDev: 0.1, speed: 18, speedStdDev: 10},*/
+    {id: 'o', name: 'O', accuracy: 0.1, accuracyStdDev: 0.1, speed: 18, speedStdDev: 10},
 ];
 
 shuffleArray(robotsInfo);
@@ -39,7 +39,7 @@ for (let swissRoundIndex = 0; swissRoundIndex < numberOfSwissRounds; swissRoundI
     const unfinishedGames = games.filter(g => !g.hasEnded);
 
     playGames(unfinishedGames);
-    logGames(unfinishedGames);
+    //logGames(unfinishedGames);
     logRobotScores(competition);
 
     competition.proceed();
@@ -66,7 +66,7 @@ function logRobotScores(competition) {
 
     for (const robotScore of competitionInfo.swissSystemTournament.robotScores) {
         const {robot, score, tieBreakScore} = robotScore;
-        console.log(robot.id, 'score', score, 'tieBreakScore', tieBreakScore);
+        console.log(robot.id, 'score', score.toFixed(1), 'tieBreakScore', tieBreakScore.toFixed(1));
     }
 }
 

@@ -136,7 +136,7 @@ export default class Competition extends EventEmitter {
     }
 
     #handleSwissTournamentChanged() {
-        log('Swiss tournament changed');
+        // log('Swiss tournament changed');
         this.emit(CompetitionEventName.changed);
     }
 

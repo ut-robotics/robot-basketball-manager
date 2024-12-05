@@ -115,7 +115,7 @@ export default class DoubleEliminationTournament extends EventEmitter {
     }
 
     #handleGameChange(changeType, game) {
-        log('handleGameChange', changeType);
+        // log('handleGameChange', changeType);
         if (changeType === GameEventChangeType.ended) {
             const gameType = this.#gameTypes[game.id];
             const status = game.getStatus();

@@ -197,7 +197,7 @@ export default class CompetitionManager extends EventEmitter {
     }
 
     async #handleGameChanged(changeType, game) {
-        log('handleGameChanged');
+        // log('handleGameChanged');
         this.#broadcastGameState(game);
         this.#handleGameChangeType(changeType, game);
         await saveGame(game, this.#competitionDirectory);
@@ -255,7 +255,7 @@ export default class CompetitionManager extends EventEmitter {
         }
 
         if (game.hasEnded) {
-            log(`Game (id = ${game.id}) has ended`);
+            // log(`Game (id = ${game.id}) has ended`);
             return;
         }
 

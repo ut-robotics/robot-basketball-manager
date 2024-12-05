@@ -9,6 +9,7 @@ import {
 import Game, {GameEventChangeType, GameEventName} from "./game.mjs";
 import EventEmitter from "events";
 import {GameResult} from "./constants.mjs";
+import {opt as maximumCardinalityMatching} from "./maximum-matching/src/cardinality/index.js";
 
 export const SwissSystemTournamentEventName = {
     ended: 'ended',
@@ -62,13 +63,13 @@ export default class SwissSystemTournament extends EventEmitter {
     }
 
     proceed() {
-        log('Continue Swiss system tournament');
+        // log('Continue Swiss system tournament');
 
         const gamesPerRound = Math.floor(this.#robots.length / 2);
         const gamesInTotal = this.#roundCount * gamesPerRound;
 
         if (this.#games.some(g => !g.hasEnded)) {
-            log('All games have not ended');
+            // log('All games have not ended');
             return;
         }
 
@@ -120,35 +121,6 @@ export default class SwissSystemTournament extends EventEmitter {
             matches = this.#matchRobots(robotsToMatch);
         }
 
-        /*const matches = [];
-        const isMatchedMap = {};
-
-        for (let i = 0; i < robotScores.length; i++) {
-            const robotScore = robotScores[i];
-
-            if (isMatchedMap[robotScore.robot.id]) {
-                continue;
-            }
-
-            for (let j = i + 1; j < robotScores.length; j++) {
-                const opponentRobotScore = robotScores[j];
-
-                if (isMatchedMap[opponentRobotScore.robot.id]) {
-                    continue;
-                }
-
-                if (this.hasPlayedWith(robotScore.robot, opponentRobotScore.robot)) {
-                    continue;
-                }
-
-                matches.push([robotScore.robot, opponentRobotScore.robot]);
-                isMatchedMap[robotScore.robot.id] = true;
-                isMatchedMap[opponentRobotScore.robot.id] = true;
-
-                break;
-            }
-        }*/
-
         //console.log(matches);
 
         for (const match of matches) {
@@ -183,54 +155,159 @@ export default class SwissSystemTournament extends EventEmitter {
         const expectedNumberOfMatches = Math.floor(robots.length / 2);
 
         const robotScores = this.getRobotScores(robots);
-        const matchPairs = createSwissMatchIndexPairs(robots.length)
-            .map(pair => [robotScores[pair[0]], robotScores[pair[1]]])
-            .filter(pair => !this.hasPlayedWith(pair[0].robot, pair[1].robot))
-            .sort((pairA, pairB) => {
-                const robotScoreA0 = pairA[0];
-                const robotScoreA1 = pairA[1];
-                const robotScoreB0 = pairB[0];
-                const robotScoreB1 = pairB[1];
 
-                /*const scoreDiffA = robotScoreA1.score - robotScoreA0.score;
-                const scoreDiffB = robotScoreB1.score - robotScoreB0.score;
+        console.log('robotScores');
 
-                if (scoreDiffA !== scoreDiffB) {
-                    return scoreDiffA - scoreDiffB;
+        for (const robotScore of robotScores) {
+            console.log(
+                robotScore.rank - 1,
+                robotScore.robot.id,
+                robotScore.score.toFixed(1),
+                robotScore.tieBreakScore.toFixed(1)
+            );
+        }
+
+        matches = this.#matchRobotsSimple(robotScores);
+
+        if (matches.length !== expectedNumberOfMatches) {
+            console.log(`Simple matching failed. Matched ${matches.length}/${expectedNumberOfMatches}.`);
+
+            matches = this.#matchRobotsWithGraph(robotScores);
+        }
+
+        if (matches.length !== expectedNumberOfMatches) {
+            console.log(`Graph matching failed. Matched ${matches.length}/${expectedNumberOfMatches}.`);
+        }
+
+        console.timeEnd('matchRobots');
+
+        return matches;
+    }
+
+    /**
+     *
+     * @param {RobotScore[]} robotScores
+     * @returns {([Robot, Robot])[]}
+     */
+    #matchRobotsSimple(robotScores) {
+        console.log('matchRobotsSimple');
+
+        const matches = [];
+        const isMatchedMap = {};
+
+        for (let i = 0; i < robotScores.length; i++) {
+            const robotScore = robotScores[i];
+
+            if (isMatchedMap[robotScore.robot.id]) {
+                continue;
+            }
+
+            for (let j = i + 1; j < robotScores.length; j++) {
+                const opponentRobotScore = robotScores[j];
+
+                if (isMatchedMap[opponentRobotScore.robot.id]) {
+                    continue;
                 }
 
-                const tieBreakScoreDiffA = robotScoreA1.tieBreakScore - robotScoreA0.tieBreakScore;
-                const tieBreakScoreDiffB = robotScoreB1.tieBreakScore - robotScoreB0.tieBreakScore;
-
-                if (tieBreakScoreDiffA !== tieBreakScoreDiffB) {
-                    return tieBreakScoreDiffA - tieBreakScoreDiffB;
-                }*/
-
-                const rankDiffA = robotScoreA1.rank - robotScoreA0.rank;
-                const rankDiffB = robotScoreB1.rank - robotScoreB0.rank;
-
-                return rankDiffB - rankDiffA;
-            });
-
-        //console.log(matchPairs);
-
-        for (let activePairsCount = expectedNumberOfMatches; activePairsCount <= matchPairs.length; activePairsCount++) {
-            const possibleRounds = this.#createAllPossibleRounds(matchPairs.slice(0, activePairsCount + 1), robotScores.length);
-            //const possibleRounds = this.#createAllPossibleRounds(matchPairs, robotScores.length);
-
-            if (possibleRounds.length > 0) {
-                matches = [];
-
-                for (const match of possibleRounds[0]) {
-                    console.log(JSON.stringify(match));
-                    matches.push([match[0].robot, match[1].robot]);
+                if (this.hasPlayedWith(robotScore.robot, opponentRobotScore.robot)) {
+                    continue;
                 }
+
+                matches.push([robotScore.robot, opponentRobotScore.robot]);
+                isMatchedMap[robotScore.robot.id] = true;
+                isMatchedMap[opponentRobotScore.robot.id] = true;
 
                 break;
             }
         }
 
-        console.timeEnd('matchRobots');
+        // Reverse matches to sort by highest ranked robot last
+        return matches.reverse();
+    }
+
+    /**
+     *
+     * @param {RobotScore[]} robotScores
+     * @returns {([Robot, Robot])[]}
+     */
+    #matchRobotsWithGraph(robotScores) {
+        console.log('matchRobotsWithGraph');
+
+        const edgesOfPotentialMatches = this.#createEdgesOfPotentialMatches(robotScores);
+
+        console.log('edgesOfPotentialMatches');
+        console.log(edgesOfPotentialMatches);
+
+        const matching = maximumCardinalityMatching(edgesOfPotentialMatches);
+        const matchesWithIndexes = this.#matchingToMatches(matching);
+
+        const matchesWithRobotScores = [];
+
+        for (const match of matchesWithIndexes) {
+            matchesWithRobotScores.push([robotScores[match[0]], robotScores[match[1]]]);
+        }
+
+        // Sort by highest ranked robot last
+        matchesWithRobotScores.sort((a, b) => {
+            return Math.min(b[0].rank, b[1].rank) - Math.min(a[0].rank, a[1].rank)
+        });
+
+        const matches = [];
+
+        for (const robotScores of matchesWithRobotScores) {
+            matches.push([robotScores[0].robot, robotScores[1].robot]);
+        }
+
+        return matches;
+    }
+
+    /**
+     *
+     * @param {RobotScore[]} robotScores
+     * @returns {([number, number, number])[]}
+     */
+    #createEdgesOfPotentialMatches(robotScores) {
+        const edgesOfPotentialMatches = [];
+        const weightDivider = 2;
+
+        for (let firstIndex = 0; firstIndex < robotScores.length; firstIndex++) {
+            const firstRobotScore = robotScores[firstIndex];
+
+            let addedWeight = Math.pow(2, robotScores.length - firstRobotScore.rank);
+
+            for (let secondIndex = firstIndex + 1; secondIndex < robotScores.length; secondIndex++) {
+                const secondRobotScore = robotScores[secondIndex];
+
+                if (this.hasPlayedWith(firstRobotScore.robot, secondRobotScore.robot)) {
+                    continue;
+                }
+
+                // Prioritise higher ranked robots and lower difference in ranks
+                const edgeWeight = Math.pow(2, robotScores.length - firstRobotScore.rank)
+                    + Math.round(addedWeight);
+
+                edgesOfPotentialMatches.push([firstIndex, secondIndex, edgeWeight]);
+
+                addedWeight /= weightDivider;
+            }
+        }
+
+        return edgesOfPotentialMatches;
+    }
+
+    #matchingToMatches(matching) {
+        const matches = [];
+
+        let i = 0;
+
+        for (const j of matching) {
+            // This takes care of j === -1
+            if (i < j) {
+                matches.push([i, j]);
+            }
+
+            ++i;
+        }
 
         return matches;
     }
@@ -316,7 +393,7 @@ export default class SwissSystemTournament extends EventEmitter {
     }
 
     #handleGameChange(changeType) {
-        log('handleGameChange', changeType);
+        // log('handleGameChange', changeType);
         if (changeType === GameEventChangeType.ended) {
             this.proceed();
         }
@@ -366,14 +443,14 @@ export default class SwissSystemTournament extends EventEmitter {
 
         robotScores.sort((a, b) => {
             if (a.score === b.score) {
-                return a.tieBreakScore - b.tieBreakScore;
+                return b.tieBreakScore - a.tieBreakScore;
             }
 
-            return a.score - b.score;
+            return b.score - a.score;
         });
 
         for (let i = 0; i < robotScores.length; i++) {
-            robotScores[i].rank = robotScores.length - i;
+            robotScores[i].rank = i + 1;
         }
 
         return robotScores;
@@ -396,28 +473,28 @@ export default class SwissSystemTournament extends EventEmitter {
             }
 
             if (status.result === GameResult.tied) {
-                score += 5;
+                score += 0.5;
             } else {
                 const winnerId = status.winner.id;
 
                 let winnerScore = 0;
 
                 if (game.getRoundCount() === 2) {
-                    winnerScore = 10; // 2 out of 2 rounds won
+                    winnerScore = 1; // 2 out of 2 rounds won
                 } else {
                     if (status.roundWinCount === 2 && status.roundTieCount === 1) {
-                        winnerScore = 9; // 2 out of 3 rounds won and 1 round tied
+                        winnerScore = 0.9; // 2 out of 3 rounds won and 1 round tied
                     } else if (status.roundWinCount === 2 && status.roundLossCount === 1) {
-                        winnerScore = 8; // 2 out of 3 rounds won and 1 round lost
+                        winnerScore = 0.8; // 2 out of 3 rounds won and 1 round lost
                     } else if (status.roundWinCount === 1 && status.roundTieCount === 2) {
-                        winnerScore = 7; // 1 out of 3 rounds won and 2 rounds tied
+                        winnerScore = 0.7; // 1 out of 3 rounds won and 2 rounds tied
                     }
                 }
 
                 if (winnerId === robot.id) {
                     score += winnerScore; // Winner gets winnerScore amount of points
                 } else {
-                    score += 10 - winnerScore; // Loser gets rest of the points
+                    score += 1 - winnerScore; // Loser gets rest of the points
                 }
             }
         }

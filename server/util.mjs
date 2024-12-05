@@ -263,12 +263,12 @@ export function generateBallPlacement() {
         const mirroredCoords = [-coords[0], -coords[1]];
 
         if (objects.some(o => distanceBetweenPoints([o.x, o.y], coords) < Math.max(o.clearance, ballClearance))) {
-            console.log(coords, 'too close to current objects');
+            // console.log(coords, 'too close to current objects');
             continue;
         }
 
         if (objects.some(o => distanceBetweenPoints([o.x, o.y], mirroredCoords) < Math.max(o.clearance, ballClearance))) {
-            console.log(coords, 'too close to current objects');
+            // console.log(coords, 'too close to current objects');
             continue;
         }
 
