@@ -189,7 +189,7 @@ let currentSelectedCorner = -1;
 let corners =  [100, 100, 550, 100, 100, 400, 550, 400];
 
 try {
-    const savedCorners = JSON.parse(localStorage.getItem('corners'));
+    const savedCorners = JSON.parse(localStorage.getItem('corners-with-projector'));
 
     if (Array.isArray(savedCorners) && savedCorners.length === 8) {
         corners = savedCorners;
@@ -299,7 +299,7 @@ function handleKeyUp(event) {
 
 function saveCorners() {
     console.log('saveCorners');
-    localStorage.setItem('corners', JSON.stringify(corners));
+    localStorage.setItem('corners-with-projector', JSON.stringify(corners));
 }
 
 window.addEventListener('mouseup', () => {
