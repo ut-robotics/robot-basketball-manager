@@ -105,6 +105,15 @@ export default class Competition extends EventEmitter {
         return this.#robots.push({id, name});
     }
 
+    setRobots(robotsList) {
+        this.#robots = [];
+
+        for (const robotInfo of robotsList) {
+            const {id, name} = robotInfo;
+            this.#robots.push({id, name});
+        }
+    }
+
     #setSwissTournament(swissTournament) {
         log('Set swiss tournament');
 

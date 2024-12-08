@@ -73,6 +73,10 @@ class ServerApi {
         return post(`/api/robot`, params);
     }
 
+    async setRobots(params) {
+        return post(`/api/robots`, params);
+    }
+
     async startTournament(params) {
         return post(`/api/tournament`, params);
     }

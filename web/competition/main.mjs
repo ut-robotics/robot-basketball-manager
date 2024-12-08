@@ -37,6 +37,33 @@ class CompetitionView extends LitElement {
         }
     }
 
+    async handleAddRobotsTSV(event) {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        const tsvIdNameList = data.get('tsv-id-name-list');
+        const rowPattern = /(^[\w-]+)\s(.+)/;
+        const textRows = tsvIdNameList.split('\n');
+        const parsedRows = [];
+
+        for (const textRow of textRows) {
+            const rowMatch = textRow.match(rowPattern);
+
+            if (rowMatch && rowMatch.length === 3) {
+                parsedRows.push({id: rowMatch[1], name: rowMatch[2]});
+            }
+        }
+
+        console.log('parsedRows', parsedRows);
+
+        try {
+            await serverApi.setRobots(parsedRows);
+
+            await this.fetchCompetitionInfo();
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     async handleStartTournament(event) {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
@@ -114,14 +141,13 @@ class CompetitionView extends LitElement {
     }
 
     renderRobot(robot) {
-        return html`<li>${`${robot.name} | ${robot.id}`}</li>`;
+        return html`<li>${robot.id + '\t'}<b>${robot.name}</b></li>`;
     }
 
     renderNewRobotForm() {
-        return html`<form @submit=${this.handleAddRobot}>
-            <input type="text" name="id" placeholder="id">
-            <input type="text" name="name" placeholder="name">
-            <button type="submit">Add</button>
+        return html`<form @submit=${this.handleAddRobotsTSV}>
+            <textarea name="tsv-id-name-list"></textarea>
+            <button type="submit">Update</button>
         </form>`;
     }
 

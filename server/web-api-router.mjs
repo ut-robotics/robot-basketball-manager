@@ -53,6 +53,26 @@ router.post('/robot', async (req, res) => {
     res.sendStatus(200);
 });
 
+router.post('/robots', async (req, res) => {
+    log(req.body);
+
+    try {
+        const robotsList = req.body;
+
+        competitionManager.competition.setRobots(robotsList);
+
+        await competitionManager.saveCompetition();
+    } catch (error) {
+        logError(error);
+
+        res.sendStatus(400);
+
+        return;
+    }
+
+    res.sendStatus(200);
+});
+
 router.post('/tournament', async (req, res) => {
     log(req.body);
 
