@@ -137,12 +137,29 @@ export default class CompetitionManager extends EventEmitter {
             ws.on('message', (data, isBinary) => {
                 const message = isBinary ? data : data.toString();
 
-                log('basket sent:', message);
+                if (isBinary) {
+                    try {
+                        const basket = data.readUint8(0);
+                        const battery = data.readUint16LE(1);
 
-                if (message === 'blue') {
-                    this.#incrementScore(Basket.blue);
-                } else if (message === 'magenta') {
-                    this.#incrementScore(Basket.magenta);
+                        log('basket sent:', `${basket === 1 ? 'magenta' : 'blue'}, battery ${battery} mV`, message);
+
+                        if (basket === 0) {
+                            this.#incrementScore(Basket.blue);
+                        } else if (basket === 1) {
+                            this.#incrementScore(Basket.magenta);
+                        }
+                    } catch (error) {
+                        logError(error);
+                    }
+                } else {
+                    log('basket sent:', message);
+
+                    if (message === 'blue') {
+                        this.#incrementScore(Basket.blue);
+                    } else if (message === 'magenta') {
+                        this.#incrementScore(Basket.magenta);
+                    }
                 }
             });
         });
