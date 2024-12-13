@@ -30,7 +30,7 @@ class CompetitionResults extends LitElement {
     static get properties() {
         return {
             competitionInfo: {type: Object},
-            activeGameState: {type: Object},
+            /*activeGameState: {type: Object},*/
         };
     }
 
@@ -54,10 +54,10 @@ class CompetitionResults extends LitElement {
                 case 'competition_summary':
                     this.competitionInfo = info.params;
                     break;
-                case 'game_state':
+                /*case 'game_state':
                     console.log(info.params);
                     this.activeGameState = info.params;
-                    break;
+                    break;*/
             }
         } catch (error) {
             console.info(error);
@@ -84,7 +84,6 @@ class CompetitionResults extends LitElement {
         }
 
         return html`${this.renderHeader()}
-            ${this.renderActiveGame()}
             ${this.renderCompetitionResults()}
             ${this.renderDoubleElimination()}
             ${this.renderSwiss()}`;
@@ -155,10 +154,18 @@ class CompetitionResults extends LitElement {
             return null;
         }
 
-        return html`<h2>Swiss-system tournament</h2>
-            ${this.renderSwissScoreboard()}
-            ${this.renderSwissGamesList()}
-            ${this.renderSwissGamePointExplanation()}`;
+        return html`<div>
+            <h2>Swiss-system tournament</h2>
+            <div class="columns">
+                <div class="column">
+                    ${this.renderSwissScoreboard()}
+                    ${this.renderSwissGamePointExplanation()}
+                </div>
+                <div class="column">
+                    ${this.renderSwissGamesList()}
+                </div>
+            </div>
+        </div>`;
     }
 
     renderSwissGamesList() {
@@ -267,8 +274,8 @@ class CompetitionResults extends LitElement {
         }
 
         const resultContent =  result === 'won'
-            ? html`<b>${status.winner.name} ${result}</b>`
-            : `${result}`;
+            ? html`<span class="game-result-win">${status.winner.name} ${result}</span>`
+            : html`<span class="game-result-other">${result}</span>`;
 
         let pointsText = '';
 
@@ -302,12 +309,12 @@ class CompetitionResults extends LitElement {
     renderSwissGamePointExplanation() {
         return html`<h3>Swiss-system tournament game point system</h3>
             <table>
-                <thead><th>Result</th><th>Robot 1 (winner) points</th><th>Robot 2 points</th></thead>
+                <thead><th>Round results</th><th>Winner points</th><th>Loser points</th></thead>
                 <tbody>
-                <tr><td>2 out of 2 round wins</td><td>1</td><td>0</td></tr>
-                <tr><td>2 out of 3 round wins and 1 tied round</td><td>0.9</td><td>0.1</td></tr>
-                <tr><td>2 out of 3 round wins and 1 lost round</td><td>0.8</td><td>0.2</td></tr>
-                <tr><td>1 out of 3 round wins and 2 tied rounds</td><td>0.7</td><td>0.3</td></tr>
+                <tr><td>2 out of 2 wins</td><td>1</td><td>0</td></tr>
+                <tr><td>2 wins and 1 tie</td><td>0.9</td><td>0.1</td></tr>
+                <tr><td>2 wins and 1 loss</td><td>0.8</td><td>0.2</td></tr>
+                <tr><td>1 win and 2 ties</td><td>0.7</td><td>0.3</td></tr>
                 <tr><td>Tie</td><td>0.5</td><td>0.5</td></tr>
                 </tbody>
             </table>`;
@@ -330,15 +337,33 @@ class CompetitionResults extends LitElement {
             return b.score - a.score;
         });
 
+        const fourthPlaceScore = orderedScores[3];
+
+        function isInFinals(robotScore) {
+            if (robotScore.score > fourthPlaceScore.score) {
+                return true;
+            }
+
+            if (robotScore.score === fourthPlaceScore.score && robotScore.tieBreakScore >= fourthPlaceScore.tieBreakScore) {
+                return true;
+            }
+
+            return false;
+        }
+
         return html`<h3>Scoreboard</h3>
             <table class="scoreboard">
                 <thead><tr><th></th><th>Name</th><th>Score</th><th>Tiebreak score</th></tr></thead>
-                <tbody>${orderedScores.map((s, i) => this.renderSwissScoreboardRow(s, i))}</tbody>
+                <tbody>${orderedScores.map((s, i) => this.renderSwissScoreboardRow(s, i, isInFinals(s)))}</tbody>
             </table>`
     }
 
-    renderSwissScoreboardRow(robotScore, index) {
-        return html`<tr>
+    renderSwissScoreboardRow(robotScore, index, isFinalist) {
+        const classes = {
+            'is-finalist': isFinalist,
+        }
+
+        return html`<tr class=${classMap(classes)}>
             <td>${index + 1}</td>
             <td>${robotScore.robot.name}</td>
             <td>${roundToTwoDecimalPlaces(robotScore.score)}</td>
