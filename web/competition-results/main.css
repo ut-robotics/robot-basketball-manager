@@ -14,3 +14,7 @@ th, td {
     padding: 0 10px;
     text-align: left;
 }
+
+table.scoreboard tr > td:first-child {
+    text-align: right;
+}

@@ -9,3 +9,7 @@ html, body {
 body {
     padding: 10px;
 }
+
+table.scoreboard tr > td:first-child {
+    text-align: right;
+}

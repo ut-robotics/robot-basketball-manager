@@ -168,10 +168,10 @@ class CompetitionResults extends LitElement {
 
     renderSwissGamesRound(roundNumber, roundsInTotal, games, bye) {
         return html`<h3>Round ${roundNumber} of ${roundsInTotal}</h3>
-            <ul>
+            <ol>
                 ${games.map(g => this.renderGamesListItem(g))}
                 ${this.renderBye(bye)}
-            </ul>`
+            </ol>`
     }
 
     renderBye(bye) {
@@ -303,14 +303,15 @@ class CompetitionResults extends LitElement {
         });
 
         return html`<h3>Scoreboard</h3>
-            <table>
-                <thead><tr><th>Name</th><th>Score</th><th>Tiebreak score</th></tr></thead>
-                <tbody>${orderedScores.map(s => this.renderSwissScoreboardRow(s))}</tbody>
+            <table class="scoreboard">
+                <thead><tr><th></th><th>Name</th><th>Score</th><th>Tiebreak score</th></tr></thead>
+                <tbody>${orderedScores.map((s, i) => this.renderSwissScoreboardRow(s, i))}</tbody>
             </table>`
     }
 
-    renderSwissScoreboardRow(robotScore) {
+    renderSwissScoreboardRow(robotScore, index) {
         return html`<tr>
+            <td>${index + 1}</td>
             <td>${robotScore.robot.name}</td>
             <td>${roundToTwoDecimalPlaces(robotScore.score)}</td>
             <td>${roundToTwoDecimalPlaces(robotScore.tieBreakScore)}</td>
