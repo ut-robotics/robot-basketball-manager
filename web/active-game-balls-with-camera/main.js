@@ -11,9 +11,11 @@ const markerElements = [
 
 const boxElement = document.getElementById('box');
 const containerElement = document.getElementById('container');
+const wrapperElement = document.getElementById('wrapper');
+const freeThrowRobotElement = document.getElementById('freethrow-robot');
 
 // const testImageElement = document.getElementById('test-image');
-const videoELement = document.getElementById('court-video');
+const videoElement = document.getElementById('court-video');
 
 let activeGameState = null;
 
@@ -42,10 +44,14 @@ function handleGameStateChange(type) {
     console.log('handleGameStateChange', type);
 
     if (type === 'roundStarted' || type === 'freeThrowAttemptStarted') {
-        containerElement.classList.remove('active');
+        wrapperElement.classList.remove('active');
     } else if (type === 'roundStopped' || type === 'freeThrowAttemptEnded' || type === 'roundEnded') {
-        containerElement.classList.add('active');
+        wrapperElement.classList.add('active');
     }
+}
+
+function coordinateMetersToPercent(value, scale) {
+    return value / scale * 50 + 50;
 }
 
 function renderState(state) {
@@ -61,25 +67,30 @@ function renderState(state) {
     if (freeThrows) {
         const {baskets, robots, rounds} = freeThrows;
         const lastRound = rounds[rounds.length - 1];
-        const roundCount = lastRound.length;
+        const roundCount = lastRound?.length || 0;
         const robotIndex = roundCount % 2;
         const robot = robots[robotIndex];
         const basket = baskets[robotIndex];
 
-        const freeThrowBallOffset = 1.3 + 0.16 - 0.05; // 1.3 meters from basket
-        const freeThrowBallX = (basket === leftBasket ? freeThrowBallOffset : 4.5 - freeThrowBallOffset) * 100;
-        const freeThrowBallY = 150;
+        // 1.3 meters from basket:
+        // Backboard from center = 2.25 + 0.05
+        // Basket diameter 0.16
+        const freeThrowBallOffsetFromCenter = 2.25 + 0.05 - 0.16 - 1.3; // 1.3 meters from basket
 
-        const robotNameX = 225 + (basket === leftBasket ? -20 : 20);
-        const robotNameTransform = basket === leftBasket
-            ? `rotate(-90deg) translate(50%, -100%)`
-            : `rotate(90deg) translate(-50%, 0%)`;
-        const robotNameStyle = `left: ${robotNameX}px;top: 150px;transform: ${robotNameTransform};`
+        const freeThrowBallX = (basket === leftBasket ? -freeThrowBallOffsetFromCenter : freeThrowBallOffsetFromCenter);
+        const freeThrowBallY = 0;
 
-        boxElement.innerHTML = `<div class="dot" style="left: ${freeThrowBallX}px;top: ${freeThrowBallY}px"></div>`
-            + `<div class="freethrow-robot" style="${robotNameStyle}">${robot.name}</div>`
-            + `<div class="robot-position" style="left: 225px; top: 150px"></div>`;
+        const robotNameX = (basket === leftBasket ? -0.2 : 0.2);
+
+        freeThrowRobotElement.innerText = robot.name;
+        freeThrowRobotElement.classList.add('active');
+
+        boxElement.innerHTML = `<div class="dot" style="left: ${coordinateMetersToPercent(freeThrowBallX, 2.25)}%;top: ${coordinateMetersToPercent(freeThrowBallY, 1.5)}%"></div>`
+            + `<div class="robot-position" style="left: ${coordinateMetersToPercent(0, 2.25)}%;top: ${coordinateMetersToPercent(0, 1.5)}%"></div>`;
     } else {
+        freeThrowRobotElement.innerText = '';
+        freeThrowRobotElement.classList.remove('active');
+
         console.log(ballPlacement);
 
         const lastRound = rounds[rounds.length - 1];
@@ -211,7 +222,7 @@ try {
 function update() {
     // transform2d(boxElement, ...corners);
     // transform2d(testImageElement, ...corners);
-    transform2d(videoELement, ...corners);
+    transform2d(videoElement, ...corners);
 
     for (let i = 0; i !== 8; i += 2) {
         const element = markerElements[i / 2];
@@ -273,7 +284,7 @@ function handleKeyDown(event) {
 
     if (event.code === 'Space') {
         event.preventDefault();
-        containerElement.classList.toggle('active');
+        wrapperElement.classList.toggle('active');
     } else if (event.code.startsWith('Digit')) {
         const digit = parseInt(event.code[5], 10);
 
@@ -308,9 +319,6 @@ function handleKeyDown(event) {
             case 'KeyY':
                 scaleY = -scaleY;
                 scaleXY(containerElement, scaleX, scaleY)
-                break;
-            case 'reset':
-                videoELement.
                 break;
         }
     }
