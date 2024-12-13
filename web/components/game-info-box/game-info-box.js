@@ -180,12 +180,18 @@ class GameInfoBox extends LitElement {
             }
         }
 
+        const winnerIndex = freeThrows.status.winner;
+
         const robot1Classes = {
+            'won': freeThrows.hasEnded && winnerIndex === 0,
+            'lost': freeThrows.hasEnded && winnerIndex === 1,
             'blue-basket': shouldShowBasketColors && robotIndex === 0 && freeThrows.baskets[0] === 'blue',
             'magenta-basket': shouldShowBasketColors && robotIndex === 0 && freeThrows.baskets[0] === 'magenta',
         }
 
         const robot2Classes = {
+            'won': freeThrows.hasEnded && winnerIndex === 1,
+            'lost': freeThrows.hasEnded && winnerIndex === 0,
             'blue-basket': shouldShowBasketColors && robotIndex === 1 && freeThrows.baskets[1] === 'blue',
             'magenta-basket': shouldShowBasketColors && robotIndex === 1 && freeThrows.baskets[1] === 'magenta',
         }
