@@ -7,7 +7,8 @@ html, body {
 }
 
 body {
-    padding: 10px;
+    padding: 0;
+    margin: 0;
 }
 
 th, td {
@@ -15,6 +16,24 @@ th, td {
     text-align: left;
 }
 
+h1, h2, h3 {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
 table.scoreboard tr > td:first-child {
     text-align: right;
+}
+
+game-info-box {
+    background-color: #D24E0E;
+    padding: 10px;
+}
+
+li.active-game {
+    background-color: #93360a;
+}
+
+li {
+    padding: 2px;
 }

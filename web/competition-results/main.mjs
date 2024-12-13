@@ -1,6 +1,8 @@
-import {html, LitElement} from "./lib/lit.mjs";
+import {html, classMap, LitElement} from "./lib/lit.mjs";
 import WebsocketManager from "../js/util/websocket-manager.js";
 import serverApi from "../js/server-api.js";
+
+import '../components/game-info-box/game-info-box.js';
 
 function getValidScoreCounts(roundScores) {
     const validScoreCounts = [];
@@ -27,7 +29,8 @@ function roundToTwoDecimalPlaces(number) {
 class CompetitionResults extends LitElement {
     static get properties() {
         return {
-            competitionInfo: {type: Object}
+            competitionInfo: {type: Object},
+            activeGameState: {type: Object},
         };
     }
 
@@ -50,6 +53,10 @@ class CompetitionResults extends LitElement {
             switch (info.event) {
                 case 'competition_summary':
                     this.competitionInfo = info.params;
+                    break;
+                case 'game_state':
+                    console.log(info.params);
+                    this.activeGameState = info.params;
                     break;
             }
         } catch (error) {
@@ -77,6 +84,7 @@ class CompetitionResults extends LitElement {
         }
 
         return html`${this.renderHeader()}
+            ${this.renderActiveGame()}
             ${this.renderCompetitionResults()}
             ${this.renderDoubleElimination()}
             ${this.renderSwiss()}`;
@@ -86,6 +94,17 @@ class CompetitionResults extends LitElement {
         if (this.competitionInfo.name)
 
         return html`<h1>${`${this.competitionInfo.name}`}</h1>`
+    }
+
+    renderActiveGame() {
+        const activeGame = this.activeGameState || this.competitionInfo.activeGame;
+
+        if (!activeGame) {
+            return null;
+        }
+
+        return html`<h2>Active game</h2>
+            <game-info-box .activeGameState=${activeGame}></game-info-box>`;
     }
 
     renderCompetitionResults() {
@@ -107,7 +126,9 @@ class CompetitionResults extends LitElement {
             return null;
         }
 
-        return html`<ul>
+        return html`
+            <h2>Podium</h2>
+            <ul>
             <li>Winner: ${firstPlaceRobot ? firstPlaceRobot.name : '???'}</li>
             <li>2nd place: ${secondPlaceRobot ? secondPlaceRobot.name : '???'}</li>
             <li>3rd place: ${thirdPlaceRobot ? thirdPlaceRobot.name : '???'}</li>
@@ -193,8 +214,15 @@ class CompetitionResults extends LitElement {
 
         const {status} = game;
 
+        const classes = {
+            'active-game': game.id === this.activeGameState?.id,
+        };
+
+        const test = classMap(classes);
+        console.log(test);
+
         if (status.result === 'unknown' && game.rounds.length === 0) {
-            return html`<li>${robotsText}</li>`;
+            return html`<li class=${classMap(classes)}>${robotsText}</li>`;
         }
 
         const {result} = status;
@@ -219,7 +247,7 @@ class CompetitionResults extends LitElement {
 
             }
         } else {
-            return html`<li>${robotsText}</li>`;
+            return html`<li class=${classMap(classes)}>${robotsText}</li>`;
         }
 
         if (game.freeThrows) {
@@ -235,7 +263,7 @@ class CompetitionResults extends LitElement {
         }
 
         if (status.result === 'unknown') {
-            return html`<li>${robotsText} | ${roundsText}</li>`;
+            return html`<li class=${classMap(classes)}>${robotsText} | ${roundsText}</li>`;
         }
 
         const resultContent =  result === 'won'
@@ -268,7 +296,7 @@ class CompetitionResults extends LitElement {
             pointsText += ')';
         }
 
-        return html`<li>${robotsText} | ${roundsText} | ${resultContent}${pointsText}</li>`;
+        return html`<li class=${classMap(classes)}>${robotsText} | ${roundsText} | ${resultContent}${pointsText}</li>`;
     }
 
     renderSwissGamePointExplanation() {
