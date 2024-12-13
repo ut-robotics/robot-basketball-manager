@@ -3,36 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Basketball</title>
-    <link rel="stylesheet" type="text/css" href="main.css">
     <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="stylesheet" type="text/css" href="../components/game-info-box/game-info-box.css"/>
+    <link rel="stylesheet" type="text/css" href="main.css">
 </head>
 <body>
-<div id="info-box">
-    <div id="robots">
-        <div class="robot">
-            <div class="robot-name"></div>
-            <div class="robot-fouls"></div>
-        </div>
-        <div class="robot">
-            <div class="robot-name"></div>
-            <div class="robot-fouls"></div>
-        </div>
-    </div>
-    <div id="game-rounds">
-        <div id="main-rounds">
-            <div class="main-round"></div>
-            <div class="main-round"></div>
-            <div class="main-round"></div>
-            <div class="main-round"></div>
-            <div class="main-round"></div>
-            <div class="main-round"></div>
-        </div>
-        <div id="freethrows-round"></div>
-    </div>
-    <div id="time"></div>
-    <div id="game-results"></div>
-    <div id="message"></div>
-</div>
+<stream-overlay></stream-overlay>
 <script src="main.js" type="module"></script>
 </body>
 </html>
