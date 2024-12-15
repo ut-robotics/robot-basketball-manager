@@ -30,7 +30,7 @@ class CompetitionResults extends LitElement {
     static get properties() {
         return {
             competitionInfo: {type: Object},
-            /*activeGameState: {type: Object},*/
+            activeGameState: {type: Object},
         };
     }
 
@@ -54,10 +54,10 @@ class CompetitionResults extends LitElement {
                 case 'competition_summary':
                     this.competitionInfo = info.params;
                     break;
-                /*case 'game_state':
+                case 'game_state':
                     console.log(info.params);
                     this.activeGameState = info.params;
-                    break;*/
+                    break;
             }
         } catch (error) {
             console.info(error);
@@ -83,10 +83,15 @@ class CompetitionResults extends LitElement {
             return null;
         }
 
-        return html`${this.renderHeader()}
-            ${this.renderCompetitionResults()}
-            ${this.renderDoubleElimination()}
-            ${this.renderSwiss()}`;
+        return html`<div class="top-content">
+                ${this.renderActiveGame()}
+            </div>
+            <div class="bottom-content">
+                ${this.renderHeader()}
+                ${this.renderCompetitionResults()}
+                ${this.renderDoubleElimination()}
+                ${this.renderSwiss()}
+            </div>`;
     }
 
     renderHeader() {
@@ -102,8 +107,11 @@ class CompetitionResults extends LitElement {
             return null;
         }
 
-        return html`<h2>Active game</h2>
-            <game-info-box .activeGameState=${activeGame}></game-info-box>`;
+        const classes = {
+            extended: !activeGame.hasEnded,
+        }
+
+        return html`<game-info-box class=${classMap(classes)} .activeGameState=${activeGame}></game-info-box>`;
     }
 
     renderCompetitionResults() {
@@ -127,7 +135,7 @@ class CompetitionResults extends LitElement {
 
         return html`
             <h2>Podium</h2>
-            <ul>
+            <ul class="podium-list">
             <li>Winner: ${firstPlaceRobot ? firstPlaceRobot.name : '???'}</li>
             <li>2nd place: ${secondPlaceRobot ? secondPlaceRobot.name : '???'}</li>
             <li>3rd place: ${thirdPlaceRobot ? thirdPlaceRobot.name : '???'}</li>
@@ -407,16 +415,16 @@ class CompetitionResults extends LitElement {
         }
 
         return html`${this.renderDoubleEliminationFinalGames(finalGames)}
-            <h3>No games lost</h3>
-            <ul>${noLossGames.map(g => this.renderGamesListItem(g, gameTypes[g.id]))}</ul>
+            <h3 class="de-title">No games lost</h3>
+            <ul class="de-games">${noLossGames.map(g => this.renderGamesListItem(g, gameTypes[g.id]))}</ul>
             ${this.renderDoubleEliminationNextGames(deInfo.noLossQueue)}
             
-            <h3>1 game lost</h3>
-            <ul>${oneLossGames.map(g => this.renderGamesListItem(g, gameTypes[g.id]))}</ul>
+            <h3 class="de-title">1 game lost</h3>
+            <ul class="de-games">${oneLossGames.map(g => this.renderGamesListItem(g, gameTypes[g.id]))}</ul>
             ${this.renderDoubleEliminationNextGames(deInfo.oneLossQueue)}
         
-            <h3>Eliminated</h3>
-            <ul>${deInfo.eliminatedRobots.map(r => this.renderRobot(r))}</ul>`
+            <h3 class="de-title">Eliminated</h3>
+            <ul class="de-games">${deInfo.eliminatedRobots.map(r => this.renderRobot(r))}</ul>`
     }
 
     renderDoubleEliminationFinalGames(games) {
@@ -427,8 +435,8 @@ class CompetitionResults extends LitElement {
         const deInfo = this.competitionInfo.doubleEliminationTournament;
         const {gameTypes} = deInfo;
 
-        return html`<h3>Final games</h3>
-            <ul>${games.map(g => this.renderGamesListItem(g, gameTypes[g.id]))}</ul>`;
+        return html`<h3 class="de-title">Final games</h3>
+            <ul class="de-games">${games.map(g => this.renderGamesListItem(g, gameTypes[g.id]))}</ul>`;
     }
 
     renderDoubleEliminationNextGames(robots) {
@@ -438,7 +446,7 @@ class CompetitionResults extends LitElement {
             matches.push(robots.slice(i, i+ 2));
         }
 
-        return html`<ul>${matches.map(m => this.renderMatch(m))}</ul>`;
+        return html`<ul class="de-games">${matches.map(m => this.renderMatch(m))}</ul>`;
     }
 
     renderMatch(robots) {
