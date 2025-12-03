@@ -24,6 +24,10 @@ function gamesToChapters(games, startTimestamp, prefix) {
     const chapters = [];
 
     for (const [gameIndex, game] of games.entries()) {
+        if (!game.hasEnded) {
+            continue;
+        }
+
         const robot1 = game.robots[0].name;
         const robot2 = game.robots[1].name;
 
