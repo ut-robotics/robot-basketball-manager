@@ -49,6 +49,10 @@ class WebsocketManager extends EventEmitter{
     send(info) {
         this.socket.send(JSON.stringify(info));
     }
+
+    sendRaw(data) {
+        this.socket.send(data);
+    }
 }
 
 module.exports = WebsocketManager;

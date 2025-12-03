@@ -141,14 +141,20 @@ export default class CompetitionManager extends EventEmitter {
                     try {
                         const basket = data.readUint8(0);
                         const battery = data.readUint16LE(1);
+                        const basketColor = basket === 1 ? 'magenta' : 'blue';
 
-                        log('basket sent:', `${basket === 1 ? 'magenta' : 'blue'}, battery ${battery} mV`, message);
+                        log('basket sent:', `${basketColor}, battery ${battery} mV`, message);
 
                         if (basket === 0) {
                             this.#incrementScore(Basket.blue);
                         } else if (basket === 1) {
                             this.#incrementScore(Basket.magenta);
                         }
+
+                        this.#wsServerBroadcast(this.#wss, JSON.stringify({
+                            event: 'battery_change',
+                            params: {basket_color: basketColor, voltage: battery}
+                        }));
                     } catch (error) {
                         logError(error);
                     }

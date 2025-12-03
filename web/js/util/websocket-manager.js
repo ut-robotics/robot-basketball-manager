@@ -21,7 +21,6 @@ export default class WebsocketManager {
         const socket = new WebSocket('ws://' + location.host);
 
         socket.addEventListener('message', (event) => {
-            console.log(event.data);
             this.onMessage(event.data);
         });
 

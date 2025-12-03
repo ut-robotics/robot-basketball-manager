@@ -8,7 +8,9 @@ import ServerWebsocketApi from "../js/server-websocket-api.js";
 class GameView extends LitElement {
     static get properties() {
         return {
-            gameInfo: {type: Object}
+            gameInfo: {type: Object},
+            blueBasketVoltage: {type: Number},
+            magentaBasketVoltage: {type: Number},
         };
     }
 
@@ -24,6 +26,9 @@ class GameView extends LitElement {
 
         document.addEventListener('keydown', this.handleKeyDown.bind(this));
         document.addEventListener('keyup', this.handleKeyUp.bind(this));
+
+        this.blueBasketVoltage = null;
+        this.magentaBasketVoltage = null;
     }
 
     createRenderRoot() {
@@ -118,6 +123,10 @@ class GameView extends LitElement {
             const info = JSON.parse(message);
 
             if (info.params.id !== this.gameID) {
+                if (info.event === 'battery_change') {
+                    this.handleBatteryVoltageChange(info.params);
+                }
+
                 return;
             }
 
@@ -152,6 +161,14 @@ class GameView extends LitElement {
         }
     }
 
+    handleBatteryVoltageChange(params) {
+        if (params.basket_color === 'blue') {
+            this.blueBasketVoltage = params.voltage;
+        } else if (params.basket_color === 'magenta') {
+            this.magentaBasketVoltage = params.voltage;
+        }
+    }
+
     render() {
         if (!this.gameInfo) {
             this.fetchGameInfo();
@@ -159,8 +176,13 @@ class GameView extends LitElement {
             return html`<div>Loading...</div>`;
         }
 
-        return html`<basketball-game .serverWebsocketApi=${this.serverWebsocketApi} state=${JSON.stringify(this.gameInfo)}></basketball-game>
+        return html`${this.renderBattery()}
+            <basketball-game .serverWebsocketApi=${this.serverWebsocketApi} state=${JSON.stringify(this.gameInfo)}></basketball-game>
             <div class="raw-state">${stringify(this.gameInfo, {maxLength: 120})}</div>`;
+    }
+
+    renderBattery() {
+        return html`<div>Basket counter voltages: blue = ${this.blueBasketVoltage} mV, magenta = ${this.magentaBasketVoltage} mV</div>`;
     }
 }
 
