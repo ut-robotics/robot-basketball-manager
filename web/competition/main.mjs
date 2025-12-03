@@ -120,7 +120,7 @@ class CompetitionView extends LitElement {
     }
 
     renderNewCompetitionForm() {
-        return html`<form @submit=${this.handleSetCompetition}>
+        return html`<form class="new-competition-info" @submit=${this.handleSetCompetition}>
             <input type="text" name="id" placeholder="id">
             <input type="text" name="name" placeholder="name">
             <button type="submit">Confirm</button>
