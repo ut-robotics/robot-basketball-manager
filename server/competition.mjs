@@ -7,6 +7,7 @@ import {GameEventName} from "./game.mjs";
 export const CompetitionEventName = {
     changed: 'changed',
     gameChanged: 'gameChanged',
+    gameSetActive: 'gameSetActive',
 };
 
 export default class Competition extends EventEmitter {
@@ -227,6 +228,8 @@ export default class Competition extends EventEmitter {
                 console.log('changed', changeType, this);
                 this.emit(CompetitionEventName.gameChanged, changeType, game);
             });
+
+            this.emit(CompetitionEventName.gameSetActive, game);
 
             log(`Game (id = ${id}) now active`);
         } else {

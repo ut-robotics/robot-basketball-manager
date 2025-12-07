@@ -11,6 +11,7 @@ export const CompetitionManagerEventName = {
     competitionChanged: 'competitionChanged',
     gameChanged: 'gameChanged',
     competitionCreated: 'competitionCreated',
+    gameSetActive: 'gameSetActive',
 };
 
 export default class CompetitionManager extends EventEmitter {
@@ -209,6 +210,8 @@ export default class CompetitionManager extends EventEmitter {
 
             this.#competition.on(CompetitionEventName.gameChanged, (changeType, game) => this.#handleGameChanged(changeType, game));
 
+            this.#competition.on(CompetitionEventName.gameSetActive, (game) => this.#handleGameSetActive(game));
+
             this.#competition.proceed();
         }
     }
@@ -226,6 +229,11 @@ export default class CompetitionManager extends EventEmitter {
         await saveGame(game, this.#competitionDirectory);
         await this.saveCompetitionSummary(this.#competition, this.#competitionDirectory);
         this.emit(CompetitionManagerEventName.gameChanged, changeType, game);
+    }
+
+    async #handleGameSetActive(game) {
+        this.emit(CompetitionManagerEventName.gameSetActive, game);
+        this.#wsServerBroadcast(this.#wss, JSON.stringify({event: 'game_set_active', params: {id: game.id, robots: game.robots}}));
     }
 
     #handleGameChangeType(changeType, game) {
