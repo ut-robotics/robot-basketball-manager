@@ -26,6 +26,7 @@ export const GameEventChangeType = {
     roundEnded: 'roundEnded',
     roundIsConfirmedChanged: 'roundIsConfirmedChanged',
     roundScoreValidityChanged: 'roundScoreValidityChanged',
+    roundFoulValidityChanged: 'roundFoulValidityChanged',
     freeThrowsAdded: 'freeThrowsAdded',
     freeThrowAttemptStarted: 'freeThrowAttemptStarted',
     freeThrowAttemptEnded: 'freeThrowAttemptEnded',
@@ -192,6 +193,14 @@ export default class Game extends EventEmitter {
         }
     }
 
+    setFoulValidity(sideIndex, foulIndex, isValid) {
+        const lastRound = this.#getLastRound();
+
+        if (lastRound) {
+            lastRound.setFoulValidity(sideIndex, foulIndex, isValid);
+        }
+    }
+
     #addNewRound = () => {
         const completedRoundCount = this.#rounds.length;
         const maxDuration = completedRoundCount >= 3 ? extraRoundLength : mainRoundLength;
@@ -228,6 +237,10 @@ export default class Game extends EventEmitter {
 
         round.on(GameRoundEventName.scoreValidityChanged, () => {
             this.emit(GameEventName.changed, GameEventChangeType.roundScoreValidityChanged);
+        });
+
+        round.on(GameRoundEventName.foulValidityChanged, () => {
+            this.emit(GameEventName.changed, GameEventChangeType.roundFoulValidityChanged);
         });
     };
 

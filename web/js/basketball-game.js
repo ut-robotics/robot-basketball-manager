@@ -17,6 +17,11 @@ class BasketballGame extends LitElement {
                 display: block;
             }
             
+            :host th {
+                text-align: left;
+                font-size: 24px;
+            }
+            
             header {
                 padding: 5px 10px;
                 border-bottom: 1px solid lightgray;
@@ -44,13 +49,20 @@ class BasketballGame extends LitElement {
 
         const {robots} = this.state;
 
-        return html`<header>
-                ${robots[0].name} vs ${robots[1].name}
-                ${this.renderWinner()}
-                ${this.renderSetActiveButton()}
-            </header>
-            ${this.renderFreeThrows()}
-            ${this.renderRounds(this.state.rounds)}`;
+        return html`<table><thead>
+            <tr>
+                <th></th>
+                <th>${this.renderSetActiveButton()}</th>
+                <th>${robots[0].name}</th>
+                <th>${robots[1].name}</th>
+                <th>${this.renderWinner()}</th>
+            </tr>
+            </thead>
+            <tbody>
+                ${this.renderFreeThrows()}
+                ${this.renderRounds(this.state.rounds)}
+            </tbody>            
+            </table>`;
     }
 
     renderWinner() {
@@ -61,10 +73,10 @@ class BasketballGame extends LitElement {
         }
 
         if (status.result === 'won') {
-            return html` | <b>${status.winner.name} WON</b>`;
+            return html`<b>${status.winner.name} WON</b>`;
         }
 
-        return html` | <b>TIE</b>`;
+        return html`<b>TIE</b>`;
     }
 
     renderSetActiveButton() {
@@ -81,7 +93,11 @@ class BasketballGame extends LitElement {
     }
 
     renderRound(round, index) {
-        return html`<main-round .serverWebsocketApi=${this.serverWebsocketApi} state=${JSON.stringify({roundIndex: index, ...round})}>`;
+        return html`<main-round 
+                .serverWebsocketApi=${this.serverWebsocketApi} 
+                state=${JSON.stringify({roundIndex: index, ...round})}
+                .robots=${this.state.robots}
+        ></main-round>`;
     }
 
     renderFreeThrows() {
@@ -91,7 +107,10 @@ class BasketballGame extends LitElement {
             return null;
         }
 
-        return html`<free-throws .serverWebsocketApi=${this.serverWebsocketApi} state=${JSON.stringify(freeThrows)}></free-throws>`
+        return html`<free-throws 
+                .serverWebsocketApi=${this.serverWebsocketApi} 
+                state=${JSON.stringify(freeThrows)}
+        ></free-throws>`
     }
 }
 

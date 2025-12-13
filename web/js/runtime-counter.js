@@ -68,10 +68,10 @@ class RuntimeCounter extends LitElement {
     render() {
         const runtime = this.calcRuntime();
         const timeLimit = this.timelimit;
-        const upCount = (Math.min(runtime, timeLimit) / 1000).toFixed(1);
+        //const upCount = (Math.min(runtime, timeLimit) / 1000).toFixed(1);
         const downCount = (Math.max(0, timeLimit - runtime) / 1000).toFixed(1);
 
-        return html`&uarr; ${upCount} <b>&darr; ${downCount}</b>`;
+        return html`<b>&darr; ${downCount}</b>`;
     }
 }
 

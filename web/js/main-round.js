@@ -1,5 +1,5 @@
-import {css, html, LitElement} from "../lib/lit.mjs";
-import getValidScoreCounts from "./util/get-valid-score-counts.js";
+import {classMap, css, html, LitElement} from "../lib/lit.mjs";
+import getValidScoreOrFoulCounts from "./util/get-valid-score-counts.js";
 import './runtime-counter.js';
 import './running-time.js';
 
@@ -8,6 +8,7 @@ class MainRound extends LitElement {
         return {
             state: {type: Object},
             serverWebsocketApi: {attribute: false},
+            robots: {type: Array},
         };
     }
 
@@ -15,25 +16,49 @@ class MainRound extends LitElement {
         // language=CSS
         return css`
             :host {
-                display: block;
+                display: table-row;
             }
             
-            .scores {
-                display: flex;
+            :host > td {
+                vertical-align: top;
+            }
+
+            :host > td:first-child {
+                font-size: 30px;
+                padding: 0 10px;
+                width: 30px;
+            }
+
+            :host > td:nth-child(2) {
+                width: 150px;
             }
             
-            .scores > div {
-                margin-right: 10px;
-                width: 200px;
+            table.side {
+                border-collapse: collapse;
+            }
+            
+            table.side td {
                 color: white;
+                width: 100px;
+                vertical-align: top;
+            }
+            
+            runtime-counter {
+                font-size: 30px;
+            }
+
+            .round-control {
+                margin-right: 20px;
+                margin-bottom: 10px;
+            }
+
+            .total-score {
+                font-size: 30px;
+                padding: 0 5px;
             }
             
             .score {
                 padding: 5px;
-            }
-            
-            .side {
-                margin-top: 5px;
             }
             
             .magenta-basket {
@@ -43,12 +68,32 @@ class MainRound extends LitElement {
             .blue-basket {
                 background-color: dodgerblue;
             }
+
+            .robot-fouls {
+                opacity: 0;
+                color: black;
+                height: 30px;
+            }
+
+            .robot-fouls.active {
+                opacity: 1;
+                border: 1px solid black;
+            }
+
+            .robot-fouls.first {
+                background-color: yellow;
+            }
+
+            .robot-fouls.second {
+                background-color: red;
+            }
         `;
     }
 
     constructor() {
         super();
         this.state = {};
+        this.robots = [];
         this.durationStartTime = Date.now();
     }
 
@@ -88,6 +133,11 @@ class MainRound extends LitElement {
         this.serverWebsocketApi.setScoreValidity(sideIndex, scoreIndex, event.target.checked);
     }
 
+    handleFoulIsValidChange(sideIndex, foulIndex, event) {
+        console.log('handleFoulIsValidChange', event.target.checked);
+        this.serverWebsocketApi.setFoulValidity(sideIndex, foulIndex, event.target.checked);
+    }
+
     render() {
         const {scores, baskets} = this.state;
 
@@ -95,29 +145,21 @@ class MainRound extends LitElement {
             return null;
         }
 
-        const leftClass = 'side ' + (baskets[0] === 'blue' ? 'blue-basket' : 'magenta-basket');
-        const rightClass = 'side ' + (baskets[1] === 'blue' ? 'blue-basket' : 'magenta-basket');
+        const {roundIndex, fouls} = this.state;
+        const scoreCounts = getValidScoreOrFoulCounts(scores);
+        const foulCounts = getValidScoreOrFoulCounts(fouls);
 
-        return html`${this.renderHeader()}
-            <div class="scores">
-            <div class="${leftClass}">${this.renderSide(0)}</div>
-            <div class="${rightClass}">${this.renderSide(1)}</div>
-            </div>`;
-    }
-
-    renderHeader() {
-        const {roundIndex, scores, fouls, runs} = this.state;
-        const scoreCounts = getValidScoreCounts(scores);
-        const foulsLeft = fouls[0].length;
-        const foulsRight = fouls[1].length;
-        const foulsText = (foulsLeft > 0 || foulsRight > 0) ? ` | Fouls: [${foulsLeft} - ${foulsRight}]` : '';
-
-        return html`<header>
-            <span>Round ${roundIndex + 1} | Scores: [${scoreCounts[0]} - ${scoreCounts[1]}]${foulsText}</span>
-            <span>${this.renderControls()}</span>
-            <span>${this.renderRuntime()}</span>
-            <span>${this.renderDuration()}</span>
-            </header>`;
+        return html`<td>${roundIndex + 1}</td>
+            <td>
+                <div>${this.renderControls()}</div>
+                <div>
+                    <span>${this.renderRuntime()}</span>
+                    ${this.renderDuration()}</span>
+                </div>
+            </td>
+            <td>${this.renderSide(0, baskets[0], scoreCounts[0], foulCounts[0])}</td>
+            <td>${this.renderSide(1, baskets[1], scoreCounts[1], foulCounts[1])}</td>
+            <td>${this.renderWinner()}</td>`;
     }
 
     renderControls() {
@@ -133,9 +175,9 @@ class MainRound extends LitElement {
         }
 
         if (isRunning) {
-            return html`<button @click=${this.handleStop}>Stop</button>`;
+            return html`<button class="round-control" @click=${this.handleStop}>Stop</button>`;
         } else {
-            return html`<button @click=${this.handleStart}>Start</button>`;
+            return html`<button class="round-control" @click=${this.handleStart}>Start</button>`;
         }
     }
 
@@ -144,7 +186,7 @@ class MainRound extends LitElement {
             return null;
         }
 
-        return html`<button @click=${this.handleEnd}>End</button>`;
+        return html`<button class="round-control" @click=${this.handleEnd}>End</button>`;
     }
 
     renderConfirmButton() {
@@ -200,20 +242,39 @@ class MainRound extends LitElement {
         return html`<running-time .running=${true} .startTime=${this.durationStartTime}></running-time>`
     }
 
-    renderSide(sideIndex) {
+    renderSide(sideIndex, basket, totalScore, foulCount) {
+        const foulClasses = {
+            'robot-fouls': true,
+            active: foulCount > 0,
+            first: foulCount === 1,
+            second: foulCount >= 2,
+        };
+
+        const classes = 'side ' + (basket === 'blue' ? 'blue-basket' : 'magenta-basket');
+
         // language=HTML
-        return html`<div>${this.renderSideControls(sideIndex)}</div>
-            ${this.renderScores(sideIndex)}`;
+        return html`<table class=${classes}><tbody>
+            <tr>
+                <td><div class="total-score">${totalScore}</div></td>
+                <td><div class=${classMap(foulClasses)}></div></td>
+            </tr>
+            ${this.renderSideControls(sideIndex)}
+            <tr>
+                <td>${this.renderScoresOrFouls(sideIndex, this.state.scores[sideIndex], this.handleScoreIsValidChange)}</td>
+                <td>${this.renderScoresOrFouls(sideIndex, this.state.fouls[sideIndex], this.handleFoulIsValidChange)}</td>
+            </tr>
+            </tr></tbody></table>`;
     }
 
     renderSideControls(sideIndex) {
-        const {hasEnded, isConfirmed} = this.state;
-
-        if (isConfirmed) {
+        if (this.state.isConfirmed) {
             return null;
         }
 
-        return html`${this.renderAddScoreButton(sideIndex)}${this.renderAddFoulButton(sideIndex)}`;
+        return html`<tr>
+                <td>${this.renderAddScoreButton(sideIndex)}</td>
+                <td>${this.renderAddFoulButton(sideIndex)}</td>
+            </tr>`;
     }
 
     renderAddScoreButton(sideIndex) {
@@ -224,25 +285,37 @@ class MainRound extends LitElement {
         return html`<button @click=${this.handleAddFoul.bind(this, sideIndex)}>Add foul</button>`;
     }
 
-    renderScores(sideIndex) {
-        const scores = this.state.scores[sideIndex];
-
-        return scores.map((score, scoreIndex) => this.renderScore(score, sideIndex, scoreIndex));
+    renderScoresOrFouls(sideIndex, items, isValidChangeHandler) {
+        return items.map((item, index) =>
+            this.renderScoreOrFoul(item, sideIndex, index, isValidChangeHandler.bind(this, sideIndex, index)));
     }
 
-    renderScore(score, sideIndex, scoreIndex) {
+    renderScoreOrFoul(item, sideIndex, index, isValidChangeHandler) {
         const {runs, isConfirmed} = this.state;
-        const runtimeSeconds = getRuntimeMillis(runs, score.time) / 1000;
+        const runtimeSeconds = getRuntimeMillis(runs, item.time) / 1000;
 
         return html`<div class="score">
             <span>${runtimeSeconds.toFixed(1)}</span>
-            <label><input 
-                type="checkbox" 
+            <input type="checkbox" 
                 ?disabled=${isConfirmed} 
-                ?checked=${score.isValid} 
-                @change=${this.handleScoreIsValidChange.bind(this, sideIndex, scoreIndex)}
-                /> Valid</label>
+                ?checked=${item.isValid} 
+                @change=${isValidChangeHandler}
+                />
             </div>`;
+    }
+
+    renderWinner() {
+        const {isConfirmed, winnerIndex} = this.state;
+
+        if (!isConfirmed) {
+            return null;
+        }
+
+        if (winnerIndex !== -1) {
+            return html`<b>${this.robots[winnerIndex].name} WON</b>`;
+        }
+
+        return html`<b>TIE</b>`;
     }
 }
 

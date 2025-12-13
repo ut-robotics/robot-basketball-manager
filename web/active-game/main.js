@@ -1,6 +1,6 @@
 import WebsocketManager from "../js/util/websocket-manager.js";
 import getRoundRuntime from "../js/util/get-round-runtime.js";
-import getValidScoreCounts from "../js/util/get-valid-score-counts.js";
+import getValidScoreOrFoulCounts from "../js/util/get-valid-score-counts.js";
 
 let socketManager = new WebsocketManager(onSocketMessage);
 
@@ -67,12 +67,13 @@ function renderState(state) {
         leftFoulsElement.innerText = '';
         rightFoulsElement.innerText = '';
     } else {
-        const validScoreCounts = getValidScoreCounts(lastRound.scores);
+        const validScoreCounts = getValidScoreOrFoulCounts(lastRound.scores);
+        const validFoulCounts = getValidScoreOrFoulCounts(lastRound.fouls);
         leftScoreElement.innerText = validScoreCounts[0];
         rightScoreElement.innerText = validScoreCounts[1];
 
         for (const [index, element] of [leftFoulsElement, rightFoulsElement].entries()) {
-            const foulCount = lastRound.fouls[index].length;
+            const foulCount = validFoulCounts[index];
 
             element.innerText = foulCount > 0 ? `Fouls: ${foulCount}` : '';
         }
@@ -93,7 +94,7 @@ function renderState(state) {
             element.classList.add('active');
 
             if (rounds[i] !== lastRound || state.freeThrows) {
-                const validScoreCounts = getValidScoreCounts(rounds[i].scores);
+                const validScoreCounts = getValidScoreOrFoulCounts(rounds[i].scores);
                 element.innerText = `${validScoreCounts[0]}-${validScoreCounts[1]}`;
             } else {
                 element.innerText = `${i + 1}.`;

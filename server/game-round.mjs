@@ -7,6 +7,7 @@ export const GameRoundEventName = {
     stopped: 'stopped',
     ended: 'ended',
     scoreValidityChanged: 'scoreValidityChanged',
+    foulValidityChanged: 'foulValidityChanged',
 };
 
 export default class GameRound extends EventEmitter {
@@ -134,7 +135,7 @@ export default class GameRound extends EventEmitter {
 
     incrementFouls(robotIndex) {
         if (robotIndex === 0 || robotIndex === 1) {
-            this.#fouls[robotIndex].push({time: Date.now()});
+            this.#fouls[robotIndex].push({time: Date.now(), isValid: true});
         }
     }
 
@@ -156,6 +157,20 @@ export default class GameRound extends EventEmitter {
 
             if (oldValue !== isValid) {
                 this.emit(GameRoundEventName.scoreValidityChanged);
+            }
+        }
+    }
+
+    setFoulValidity(sideIndex, foulIndex, isValid) {
+        const sideFouls = this.#fouls[sideIndex];
+        const foul = sideFouls[foulIndex];
+
+        if (foul) {
+            const oldValue = foul.isValid;
+            foul.isValid = isValid;
+
+            if (oldValue !== isValid) {
+                this.emit(GameRoundEventName.foulValidityChanged);
             }
         }
     }

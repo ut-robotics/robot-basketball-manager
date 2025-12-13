@@ -13,7 +13,7 @@ class FreeThrows extends LitElement {
         // language=CSS
         return css`
             :host {
-                display: block;
+                display: table-row;
             }
             
             :host * {
@@ -26,7 +26,7 @@ class FreeThrows extends LitElement {
             }
             
             .round {
-                padding: 5px 10px;
+                padding: 5px 0;
             }
             
             .attempt {
@@ -35,6 +35,10 @@ class FreeThrows extends LitElement {
                 padding: 5px;
                 margin-right: 10px;
                 background-color: #EEEEEE;
+            }
+
+            runtime-counter {
+                font-size: 30px;
             }
         `;
     }
@@ -116,18 +120,17 @@ class FreeThrows extends LitElement {
             return null;
         }
 
-        return html`${this.renderHeader()}
-            ${this.renderRounds()}`;
-    }
-
-    renderHeader() {
-        const {scores, rounds} = this.state;
-
-        return html`<header>
-            <span>Free throws | Round ${this.getRoundNumber()} | Scores: [${scores[0]} - ${scores[1]}]</span>
-            <span>${this.renderControls()}</span>
-            <span>${this.renderRuntime()}</span>
-            </header>`;
+        return html`<td>Free throws</td>
+            <td>
+                <div>
+                    <div>Round ${this.getRoundNumber()}</div>
+                    ${this.renderControls()}                    
+                </div>
+                <div>${this.renderRuntime()}</div>
+            </td>
+            <td>${this.renderRounds(0)}</td>
+            <td>${this.renderRounds(1)}</td>
+            <td>${scores[0]} - ${scores[1]}</td>`;
     }
 
     renderControls() {
@@ -170,15 +173,19 @@ class FreeThrows extends LitElement {
         return html`<runtime-counter ?running=${running} laststarttime=${lastStartTime} timelimit=${this.state.timeLimit}></runtime-counter>`;
     }
 
-    renderRounds() {
-        return html`<div>${this.state.rounds.map(round => this.renderRound(round))}</div>`;
+    renderRounds(sideIndex) {
+        return html`<div>${this.state.rounds.map(round => this.renderRound(round, sideIndex))}</div>`;
     }
 
-    renderRound(round) {
-        return html`<div class="round">${round.map(attempt => this.renderAttempt(attempt))}</div>`;
+    renderRound(round, sideIndex) {
+        return html`<div class="round">${this.renderAttempt(round[sideIndex])}</div>`;
     }
 
     renderAttempt(attempt) {
+        if (!attempt) {
+            return null;
+        }
+
         const duration = !!attempt.endTime ? ((attempt.endTime - attempt.startTime) / 1000).toFixed(1) : '';
 
         return html`<div class="attempt">${attempt.didScore ? duration : '-'}</div>`;

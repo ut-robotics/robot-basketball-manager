@@ -1,6 +1,6 @@
 import {classMap, html, LitElement, unsafeHTML} from "../../competition-results/lib/lit.mjs";
 import zip from "../../js/util/zip.js";
-import getValidScoreCounts from "../../js/util/get-valid-score-counts.js";
+import getValidScoreOrFoulCounts from "../../js/util/get-valid-score-counts.js";
 
 import '../game-info-box-counter/game-info-box-counter.js';
 
@@ -31,7 +31,7 @@ class GameInfoBox extends LitElement {
             return null;
         }
 
-        const foulCounts = (freeThrows || hasEnded) ? [0, 0] : lastRound.fouls.map(f => f.length);
+        const foulCounts = (freeThrows || hasEnded) ? [0, 0] : getValidScoreOrFoulCounts(lastRound.fouls);
         const gameStatuses = [null, null];
 
         if (status.result !== 'unknown') {
@@ -129,7 +129,7 @@ class GameInfoBox extends LitElement {
     }
 
     renderMainRound(round, isLastRound) {
-        const validScoreCounts = getValidScoreCounts(round.scores);
+        const validScoreCounts = getValidScoreOrFoulCounts(round.scores);
         const shouldShowBasketColors = isLastRound && !round.isConfirmed;
 
         const robot1Classes = {

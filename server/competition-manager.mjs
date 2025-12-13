@@ -337,8 +337,10 @@ export default class CompetitionManager extends EventEmitter {
                 game.confirm();
                 break;
             case 'set_score_validity':
-                const {sideIndex, scoreIndex, isValid} = message.params;
-                game.setScoreValidity(sideIndex, scoreIndex, isValid);
+                game.setScoreValidity(message.params.sideIndex, message.params.scoreIndex, message.params.isValid);
+                break;
+            case 'set_foul_validity':
+                game.setFoulValidity(message.params.sideIndex, message.params.foulIndex, message.params.isValid);
                 break;
         }
     }

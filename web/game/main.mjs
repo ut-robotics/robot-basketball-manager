@@ -4,7 +4,7 @@ import {stringify} from '../lib/json-stringify-compact.js';
 import serverApi from "../js/server-api.js";
 import AudioPlayer from "../js/audio-player.js";
 import ServerWebsocketApi from "../js/server-websocket-api.js";
-import getValidScoreCounts from "../js/util/get-valid-score-counts.js";
+import getValidScoreOrFoulCounts from "../js/util/get-valid-score-counts.js";
 
 class GameView extends LitElement {
     static get properties() {
@@ -193,7 +193,7 @@ class GameView extends LitElement {
             this.announce(`Free throws`);
         } else if (type === 'scoreChanged') {
             const lastRound = this.gameInfo.rounds[this.gameInfo.rounds.length - 1];
-            const scoreCounts = getValidScoreCounts(lastRound.scores);
+            const scoreCounts = getValidScoreOrFoulCounts(lastRound.scores);
 
             this.announce(`${scoreCounts[0]} ${scoreCounts[1]}`);
         }

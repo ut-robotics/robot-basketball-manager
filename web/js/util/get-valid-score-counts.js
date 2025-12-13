@@ -1,17 +1,17 @@
-export default function getValidScoreCounts(roundScores) {
-    const validScoreCounts = [];
+export default function getValidScoreOrFoulCounts(roundScoresOrFouls) {
+    const validCounts = [];
 
-    for (const robotScores of roundScores) {
+    for (const robotScoresOrFouls of roundScoresOrFouls) {
         let validCount = 0;
 
-        for (const score of robotScores) {
-            if (score.isValid) {
+        for (const scoreOrFoul of robotScoresOrFouls) {
+            if (scoreOrFoul.isValid) {
                 validCount++;
             }
         }
 
-        validScoreCounts.push(validCount);
+        validCounts.push(validCount);
     }
 
-    return validScoreCounts;
+    return validCounts;
 }

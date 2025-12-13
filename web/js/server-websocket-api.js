@@ -85,4 +85,11 @@ export default class ServerWebsocketApi {
             params: {sideIndex, scoreIndex, isValid, gameID: this.gameID}
         });
     }
+
+    setFoulValidity(sideIndex, foulIndex, isValid) {
+        this.socketManager.send({
+            method: 'set_foul_validity',
+            params: {sideIndex, foulIndex, isValid, gameID: this.gameID}
+        });
+    }
 }
