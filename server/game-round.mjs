@@ -170,7 +170,7 @@ export default class GameRound extends EventEmitter {
             foul.isValid = isValid;
 
             if (oldValue !== isValid) {
-                this.emit(GameRoundEventName.foulValidityChanged);
+                this.emit(GameRoundEventName.foulValidityChanged, {sideIndex});
             }
         }
     }

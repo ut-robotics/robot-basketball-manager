@@ -153,7 +153,7 @@ export default class Game extends EventEmitter {
 
         if (lastRound) {
             lastRound.incrementFouls(robotIndex);
-            this.emit(GameEventName.changed, GameEventChangeType.foulsChanged);
+            this.emit(GameEventName.changed, GameEventChangeType.foulsChanged, {sideIndex: robotIndex});
         }
     }
 
@@ -239,8 +239,8 @@ export default class Game extends EventEmitter {
             this.emit(GameEventName.changed, GameEventChangeType.roundScoreValidityChanged);
         });
 
-        round.on(GameRoundEventName.foulValidityChanged, () => {
-            this.emit(GameEventName.changed, GameEventChangeType.roundFoulValidityChanged);
+        round.on(GameRoundEventName.foulValidityChanged, (params) => {
+            this.emit(GameEventName.changed, GameEventChangeType.roundFoulValidityChanged, params);
         });
     };
 

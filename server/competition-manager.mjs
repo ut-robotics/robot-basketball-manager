@@ -208,7 +208,7 @@ export default class CompetitionManager extends EventEmitter {
 
             this.#competition.on(CompetitionEventName.changed, () => this.#handleCompetitionChanged());
 
-            this.#competition.on(CompetitionEventName.gameChanged, (changeType, game) => this.#handleGameChanged(changeType, game));
+            this.#competition.on(CompetitionEventName.gameChanged, (changeType, game, params) => this.#handleGameChanged(changeType, game, params));
 
             this.#competition.on(CompetitionEventName.gameSetActive, (game) => this.#handleGameSetActive(game));
 
@@ -222,10 +222,10 @@ export default class CompetitionManager extends EventEmitter {
         this.emit(CompetitionManagerEventName.competitionChanged);
     }
 
-    async #handleGameChanged(changeType, game) {
+    async #handleGameChanged(changeType, game, params) {
         // log('handleGameChanged');
         this.#broadcastGameState(game);
-        this.#handleGameChangeType(changeType, game);
+        this.#handleGameChangeType(changeType, game, params);
         await saveGame(game, this.#competitionDirectory);
         await this.saveCompetitionSummary(this.#competition, this.#competitionDirectory);
         this.emit(CompetitionManagerEventName.gameChanged, changeType, game);
@@ -236,7 +236,7 @@ export default class CompetitionManager extends EventEmitter {
         this.#wsServerBroadcast(this.#wss, JSON.stringify({event: 'game_set_active', params: {id: game.id, robots: game.robots}}));
     }
 
-    #handleGameChangeType(changeType, game) {
+    #handleGameChangeType(changeType, game, params) {
         log('handleChangeType', changeType);
 
         if (changeType === 'roundStarted' || changeType === 'freeThrowAttemptStarted') {
@@ -253,7 +253,10 @@ export default class CompetitionManager extends EventEmitter {
             playAudio('audio/basketball_buzzer.mp3');
         }*/
 
-        this.#wsServerBroadcast(this.#wss, JSON.stringify({event: 'game_state_change', params: {type: changeType, id: game.id}}));
+        this.#wsServerBroadcast(this.#wss, JSON.stringify({
+            event: 'game_state_change',
+            params: Object.assign({type: changeType, id: game.id}, params)
+        }));
     }
 
     #wsServerBroadcast(wss, data) {

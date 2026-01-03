@@ -1,0 +1,27 @@
+html {
+    box-sizing: border-box;
+    font-family: sans-serif;
+}
+
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+announcer-view > * {
+    margin: 5px;
+}
+
+.raw-state {
+    font-family: monospace;
+    white-space: pre;
+}
+
+textarea {
+    min-height: 50px;
+    min-width: 500px;
+}

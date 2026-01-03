@@ -224,9 +224,9 @@ export default class Competition extends EventEmitter {
         if (game) {
             this.#activeGame = game;
 
-            game.on(GameEventName.changed, (changeType) => {
-                console.log('changed', changeType, this);
-                this.emit(CompetitionEventName.gameChanged, changeType, game);
+            game.on(GameEventName.changed, (changeType, params) => {
+                console.log('changed', changeType, params);
+                this.emit(CompetitionEventName.gameChanged, changeType, game, params);
             });
 
             this.emit(CompetitionEventName.gameSetActive, game);

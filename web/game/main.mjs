@@ -25,20 +25,6 @@ class GameView extends LitElement {
 
         this.audioPlayer = new AudioPlayer();
 
-        this.isAnnouncerEnabled = true;
-
-        this.voices = speechSynthesis.getVoices();
-
-        if (this.voices.length === 0) {
-            speechSynthesis.addEventListener('voiceschanged', () => {
-                this.voices = speechSynthesis.getVoices();
-                console.log('voiceschanged', this.voices);
-
-                this.voiceUK = this.voices.find(v => v.voiceURI === 'Google UK English Female');
-                this.voiceFr = this.voices.find(v => v.lang === 'fr-FR');
-            });
-        }
-
         document.addEventListener('keydown', this.handleKeyDown.bind(this));
         document.addEventListener('keyup', this.handleKeyUp.bind(this));
 
@@ -133,14 +119,6 @@ class GameView extends LitElement {
         return !!(lastRun && !lastRun.endTime);
     }
 
-    announce(text) {
-        if (this.isAnnouncerEnabled) {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.voice = this.voiceUK;
-            speechSynthesis.speak(utterance);
-        }
-    }
-
     onSocketMessage(message) {
         try {
             const info = JSON.parse(message);
@@ -159,11 +137,6 @@ class GameView extends LitElement {
                     break;
                 case 'game_state_change':
                     this.handleGameStateChange(info.params.type);
-                    break;
-                case 'game_set_active':
-                    const robot1 = info.params.robots[0].name;
-                    const robot2 = info.params.robots[1].name;
-                    this.announce(`New game. ${robot1} versus ${robot2}`);
                     break;
             }
         } catch (error) {
@@ -186,16 +159,6 @@ class GameView extends LitElement {
                 this.audioPlayer.stopAll();
                 this.audioPlayer.buzzer();
             }
-        } else if (type === 'roundAdded') {
-            const roundNumber = this.gameInfo.rounds.length;
-            this.announce(`Round ${roundNumber}`);
-        } else if (type === 'freeThrowsAdded') {
-            this.announce(`Free throws`);
-        } else if (type === 'scoreChanged') {
-            const lastRound = this.gameInfo.rounds[this.gameInfo.rounds.length - 1];
-            const scoreCounts = getValidScoreOrFoulCounts(lastRound.scores);
-
-            this.announce(`${scoreCounts[0]} ${scoreCounts[1]}`);
         }
     }
 
