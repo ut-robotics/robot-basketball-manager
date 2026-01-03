@@ -88,6 +88,10 @@ game-info-box.extended .robot-name {
     font-size: 5vh;
 }
 
+game-info-box .robot-fouls {
+    border: 2px solid #303030;
+}
+
 game-info-box.extended .robot-fouls {
     min-width: 2vh;
     height: 2vh;
