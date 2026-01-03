@@ -25,7 +25,11 @@ class RuntimeCounter extends LitElement {
         this.laststarttime = Date.now();
         this.timelimit = 0;
 
+        this.secondsRemaining = 0;
+
         this.timerAnimationFrameRequest = null;
+
+        this.audioContext = new AudioContext();
     }
 
     disconnectedCallback() {
@@ -35,6 +39,8 @@ class RuntimeCounter extends LitElement {
     }
 
     willUpdate(changedProperties) {
+        this.calcSecondsRemaining();
+
         if (changedProperties.has('running')) {
             if (this.running) {
                 this.startTimer();
@@ -44,8 +50,47 @@ class RuntimeCounter extends LitElement {
         }
     }
 
+    playBeep(delay, pitch, duration) {
+        console.log('playBeep', delay, pitch, duration);
+
+        const startTime = this.audioContext.currentTime + delay;
+        const endTime = startTime + duration;
+
+        const envelope = this.audioContext.createGain();
+        envelope.connect(this.audioContext.destination);
+        envelope.gain.value = 0;
+        envelope.gain.setTargetAtTime(0.5, startTime, 0.1);
+        envelope.gain.setTargetAtTime(0, endTime, 0.2);
+
+        const oscillator = this.audioContext.createOscillator();
+        oscillator.connect(envelope);
+
+        oscillator.type = 'sine';
+        oscillator.detune.value = pitch * 100;
+
+        oscillator.start(startTime);
+        oscillator.stop(endTime + 1);
+    }
+
     calcRuntime() {        
         return this.elapsed + (this.running ? Date.now() - this.laststarttime : 0);
+    }
+
+    calcSecondsRemaining() {
+        const runtime = this.calcRuntime();
+        const timeLimit = this.timelimit;
+        const prevSecondsRemainingRounded = Math.floor(this.secondsRemaining);
+        this.secondsRemaining = Math.max(0, timeLimit - runtime) / 1000;
+        const secondsRemainingRounded = Math.floor(this.secondsRemaining);
+
+        if (secondsRemainingRounded < 10 && secondsRemainingRounded < prevSecondsRemainingRounded) {
+            if (secondsRemainingRounded === 9) {
+                this.playBeep(0, 0 ,0.05);
+                this.playBeep(0.3, 5 ,0.05);
+            } else if (secondsRemainingRounded < 5) {
+                this.playBeep(0, 0 ,0.05);
+            }
+        }
     }
 
     startTimer() {
@@ -61,17 +106,13 @@ class RuntimeCounter extends LitElement {
     updateTime() {
         this.timerAnimationFrameRequest = requestAnimationFrame(() => {
             this.requestUpdate();
+            this.calcSecondsRemaining();
             this.updateTime();
         });
     }
 
     render() {
-        const runtime = this.calcRuntime();
-        const timeLimit = this.timelimit;
-        //const upCount = (Math.min(runtime, timeLimit) / 1000).toFixed(1);
-        const downCount = (Math.max(0, timeLimit - runtime) / 1000).toFixed(1);
-
-        return html`<b>&darr; ${downCount}</b>`;
+        return html`<b>&darr; ${this.secondsRemaining.toFixed(1)}</b>`;
     }
 }
 
