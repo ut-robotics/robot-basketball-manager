@@ -298,7 +298,7 @@ class MainRound extends LitElement {
             <span>${runtimeSeconds.toFixed(1)}</span>
             <input type="checkbox" 
                 ?disabled=${isConfirmed} 
-                ?checked=${item.isValid} 
+                .checked=${item.isValid} 
                 @change=${isValidChangeHandler}
                 />
             </div>`;

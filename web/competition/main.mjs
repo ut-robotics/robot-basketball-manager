@@ -173,7 +173,7 @@ class CompetitionView extends LitElement {
 
         return html`<form @submit=${this.handleStartTournament}>
             <div><label>
-                <input type="checkbox" name="swissEnabled" ?checked=${isSwissNeeded}>
+                <input type="checkbox" name="swissEnabled" .checked=${isSwissNeeded}>
                 Swiss
             </label></div>
             <div><label>

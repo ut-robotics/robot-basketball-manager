@@ -147,7 +147,7 @@ class ManualCommander extends LitElement {
         });
 
         return html`<div class="timer-controls">
-            <input type="checkbox" ?checked=${this.isTimerEnabled} @change=${this.handleTimerEnable}>
+            <input type="checkbox" .checked=${this.isTimerEnabled} @change=${this.handleTimerEnable}>
             <input type="text" class=${inputClassMap} .value=${this.timerInputValue} @keyup=${this.handleTimerStartChange}>
             <span>${this.timerValue.toFixed(1)}</span>
             </div>`;

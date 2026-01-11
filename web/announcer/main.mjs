@@ -152,7 +152,7 @@ class AnnouncerView extends LitElement {
     }
 
     renderEnable() {
-        return html`<div><label><input type="checkbox" ?checked=${this.isAnnouncerEnabled} @change=${this.handleEnableChanged}>Enable</label></div>`
+        return html`<div><label><input type="checkbox" .checked=${this.isAnnouncerEnabled} @change=${this.handleEnableChanged}>Enable</label></div>`
     }
 
     renderVoices() {
