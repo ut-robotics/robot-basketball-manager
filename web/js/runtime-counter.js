@@ -1,4 +1,5 @@
 import {css, html, LitElement} from "../lib/lit.mjs";
+import AudioPlayer from "../js/audio-player.js";
 
 class RuntimeCounter extends LitElement {
     static get properties() {
@@ -29,7 +30,7 @@ class RuntimeCounter extends LitElement {
 
         this.timerAnimationFrameRequest = null;
 
-        this.audioContext = new AudioContext();
+        this.audioPlayer = new AudioPlayer();
     }
 
     disconnectedCallback() {
@@ -50,28 +51,6 @@ class RuntimeCounter extends LitElement {
         }
     }
 
-    playBeep(delay, pitch, duration) {
-        console.log('playBeep', delay, pitch, duration);
-
-        const startTime = this.audioContext.currentTime + delay;
-        const endTime = startTime + duration;
-
-        const envelope = this.audioContext.createGain();
-        envelope.connect(this.audioContext.destination);
-        envelope.gain.value = 0;
-        envelope.gain.setTargetAtTime(0.5, startTime, 0.1);
-        envelope.gain.setTargetAtTime(0, endTime, 0.2);
-
-        const oscillator = this.audioContext.createOscillator();
-        oscillator.connect(envelope);
-
-        oscillator.type = 'sine';
-        oscillator.detune.value = pitch * 100;
-
-        oscillator.start(startTime);
-        oscillator.stop(endTime + 1);
-    }
-
     calcRuntime() {        
         return this.elapsed + (this.running ? Date.now() - this.laststarttime : 0);
     }
@@ -85,10 +64,9 @@ class RuntimeCounter extends LitElement {
 
         if (secondsRemainingRounded < 10 && secondsRemainingRounded < prevSecondsRemainingRounded) {
             if (secondsRemainingRounded === 9) {
-                this.playBeep(0, 0 ,0.05);
-                this.playBeep(0.3, 5 ,0.05);
+                this.audioPlayer.beepDouble()
             } else if (secondsRemainingRounded < 5) {
-                this.playBeep(0, 0 ,0.05);
+                this.audioPlayer.beepSimple();
             }
         }
     }
