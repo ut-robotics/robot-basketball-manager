@@ -116,6 +116,13 @@ class AnnouncerView extends LitElement {
             } else if (result === 'won') {
                 this.announce(`${winner.name} won`);
             }
+        } else if (type === 'readyChanged') {
+            const sideIndex = params.sideIndex;
+            const lastRound = this.gameInfo.rounds[this.gameInfo.rounds.length - 1];
+            const isReady = lastRound.readyStates[sideIndex];
+            const robotName = this.gameInfo.robots[sideIndex].name;
+
+            this.announce(`${robotName} ${isReady ? 'Ready' : 'Not ready'}`);
         }
     }
 

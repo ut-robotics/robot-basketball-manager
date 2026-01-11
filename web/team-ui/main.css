@@ -1,0 +1,64 @@
+html {
+    box-sizing: border-box;
+    font-family: sans-serif;
+}
+
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+.raw-state {
+    font-family: monospace;
+    white-space: pre;
+}
+
+team-view .container {
+    font-size: 140px;
+    height: 100vh;
+    width: 100vw;
+}
+
+ input[type="checkbox"] {
+    height: 94px;
+    width: 94px;
+}
+.robot-name {
+    color: white;
+    width: 100vw;
+    height: 50vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.robot-name.blue {
+    background-color: rgb(0, 100, 200);
+}
+
+.robot-name.magenta {
+    background-color: rgb(200, 0, 200);
+}
+
+.ready-container {
+    width: 100vw;
+    height: 50vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    background-color: orange;
+}
+
+.ready-container.ready {
+    background-color: limegreen;
+}
+
+.ready-container label {
+    padding: 20px 60px;
+    border: 2px solid rgba(80, 80, 80, 0.5);
+    background-color: rgba(200, 200, 200, 0.5);
+}

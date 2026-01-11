@@ -136,7 +136,7 @@ class GameView extends LitElement {
                     this.gameInfo = info.params;
                     break;
                 case 'game_state_change':
-                    this.handleGameStateChange(info.params.type);
+                    this.handleGameStateChange(info.params);
                     break;
             }
         } catch (error) {
@@ -144,8 +144,10 @@ class GameView extends LitElement {
         }
     }
 
-    handleGameStateChange(type) {
-        console.log(Date.now(), 'handleGameStateChange', type);
+    handleGameStateChange(params) {
+        console.log(Date.now(), 'handleGameStateChange', params);
+
+        const type = params.type;
 
         if (type === 'roundStarted' || type === 'freeThrowAttemptStarted') {
             this.audioPlayer.whistleShort();

@@ -1,4 +1,4 @@
-import {css, html, LitElement} from "../lib/lit.mjs";
+import {classMap, css, html, LitElement} from "../lib/lit.mjs";
 import './main-round.js';
 import './free-throws.js';
 
@@ -30,6 +30,14 @@ class BasketballGame extends LitElement {
             :host main-round {
                 padding: 5px 10px;
             }
+
+            :host .robot-name {
+                background-color: orange;
+            }
+
+            :host .robot-name.ready {
+                background-color: lightgreen;
+            }
         `;
     }
 
@@ -48,13 +56,24 @@ class BasketballGame extends LitElement {
         }
 
         const {robots} = this.state;
+        const lastRound = this.state.rounds[this.state.rounds.length - 1]
+
+        const robot1ClassMap = classMap({
+            'robot-name': true,
+            ready: lastRound.readyStates[0],
+        });
+
+        const robot2ClassMap = classMap({
+            'robot-name': true,
+            ready: lastRound.readyStates[1],
+        });
 
         return html`<table><thead>
             <tr>
                 <th></th>
                 <th>${this.renderSetActiveButton()}</th>
-                <th>${robots[0].name}</th>
-                <th>${robots[1].name}</th>
+                <th class=${robot1ClassMap}>${robots[0].name}</th>
+                <th class=${robot2ClassMap}>${robots[1].name}</th>
                 <th>${this.renderWinner()}</th>
             </tr>
             </thead>

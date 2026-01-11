@@ -92,4 +92,11 @@ export default class ServerWebsocketApi {
             params: {sideIndex, foulIndex, isValid, gameID: this.gameID}
         });
     }
+
+    setReady(sideIndex, isReady) {
+        this.socketManager.send({
+            method: 'set_ready',
+            params: {sideIndex, isReady}
+        });
+    }
 }

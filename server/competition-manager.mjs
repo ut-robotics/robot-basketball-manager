@@ -280,6 +280,12 @@ export default class CompetitionManager extends EventEmitter {
         log('handleWsMessage', message);
 
         const activeGame = this.#competition.getActiveGame();
+
+        if (activeGame && message.method === 'set_ready') {
+            activeGame.setReady(message.params.sideIndex, message.params.isReady);
+            return;
+        }
+
         const gameID = message.params.gameID;
         const game = this.#competition.getGame(gameID);
 

@@ -19,6 +19,7 @@ export default class GameRound extends EventEmitter {
     #baskets;
     #scores = [[], []];
     #fouls = [[], []];
+    #readyStates = [false, false];
 
     get isConfirmed() {
         return this.#isConfirmed;
@@ -139,6 +140,12 @@ export default class GameRound extends EventEmitter {
         }
     }
 
+    setReady(robotIndex, isReady) {
+        if (robotIndex === 0 || robotIndex === 1) {
+            this.#readyStates[robotIndex] = isReady;
+        }
+    }
+
     confirm() {
         this.isConfirmed = true;
     }
@@ -234,6 +241,7 @@ export default class GameRound extends EventEmitter {
         return {
             scores: this.#scores,
             fouls: this.#fouls,
+            readyStates: this.#readyStates,
             baskets: this.#baskets,
             hasEnded: this.#hasEnded,
             isConfirmed: this.#isConfirmed,
@@ -248,6 +256,7 @@ export default class GameRound extends EventEmitter {
         return {
             scores: this.#scores,
             fouls: this.#fouls,
+            readyStates: this.#readyStates,
             baskets: this.#baskets,
             hasEnded: this.#hasEnded,
             isConfirmed: this.#isConfirmed,
@@ -259,6 +268,7 @@ export default class GameRound extends EventEmitter {
     setState(state) {
         this.#scores = state.scores;
         this.#fouls = state.fouls;
+        this.#readyStates = state.readyStates ?? this.#readyStates;
         this.#baskets = state.baskets;
         this.#hasEnded = state.hasEnded || false;
         this.#isConfirmed = state.isConfirmed || false;

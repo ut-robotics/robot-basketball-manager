@@ -33,6 +33,7 @@ export const GameEventChangeType = {
     freeThrowsEnded: 'freeThrowsEnded',
     freeThrowsStarted: 'freeThrowsStarted',
     freeThrowAttemptIsConfirmedChanged: 'freeThrowAttemptIsConfirmedChanged',
+    readyChanged: 'readyChanged',
 };
 
 export default class Game extends EventEmitter {
@@ -154,6 +155,19 @@ export default class Game extends EventEmitter {
         if (lastRound) {
             lastRound.incrementFouls(robotIndex);
             this.emit(GameEventName.changed, GameEventChangeType.foulsChanged, {sideIndex: robotIndex});
+        }
+    }
+
+    setReady(robotIndex, isReady) {
+        if (this.#freeThrows) {
+            return;
+        }
+
+        const lastRound = this.#getLastRound();
+
+        if (lastRound) {
+            lastRound.setReady(robotIndex, isReady);
+            this.emit(GameEventName.changed, GameEventChangeType.readyChanged, {sideIndex: robotIndex});
         }
     }
 
