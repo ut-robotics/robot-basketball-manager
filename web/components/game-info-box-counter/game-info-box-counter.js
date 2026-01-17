@@ -8,6 +8,7 @@ class GameInfoBoxCounter extends LitElement {
             elapsed: {type: Number},
             laststarttime: {type: Number},
             timelimit: {type: Number},
+            showminutes: {type: Boolean},
         };
     }
 
@@ -25,6 +26,7 @@ class GameInfoBoxCounter extends LitElement {
         this.elapsed = 0;
         this.laststarttime = Date.now();
         this.timelimit = 0;
+        this.showminutes = false;
 
         this.timerAnimationFrameRequest = null;
     }
@@ -70,8 +72,26 @@ class GameInfoBoxCounter extends LitElement {
         const runtime = this.calcRuntime();
         const timeLimit = this.timelimit;
         //const upCount = (Math.min(runtime, timeLimit) / 1000).toFixed(1);
-        let downCount = (Math.max(0, timeLimit - runtime) / 1000).toFixed(1);
+        let secondsLeft = (Math.max(0, timeLimit - runtime) / 1000);
 
+        if (this.showminutes) {
+            if (secondsLeft <= 0) {
+                return null;
+            }
+
+            const minutes = Math.floor(secondsLeft / 60);
+            const seconds = secondsLeft > 60
+                ? Math.floor(secondsLeft % 60).toString().padStart(2, '0')
+                : Math.floor(secondsLeft);
+
+            if (minutes < 1) {
+                return html`<span>${seconds}</span>`;
+            }
+
+            return html`<span>${minutes}:${seconds}</span>`;
+        }
+
+        let downCount = (Math.max(0, timeLimit - runtime) / 1000).toFixed(1);
         downCount = downCount.length > 3 ? downCount.slice(0, -2) : downCount;
 
         return html`<span>${downCount}</span>`;

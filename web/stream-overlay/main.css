@@ -30,3 +30,24 @@ game-info-box {
     bottom: 8vh;
     left: 8vh;
 }
+
+.break-info {
+    position: absolute;
+    bottom: 8vh;
+    left: 8vh;
+    background-color: rgba(0, 0, 0, 0.3);
+    height: 5vh;
+    /*width: 15vw;*/
+    font-size: 4vh;
+    line-height: 5vh;
+    display: flex;
+    justify-content: space-between;
+}
+
+.break-info .break-text {
+    padding: 0 10px;
+}
+
+.break-info game-info-box-counter {
+    padding: 0 10px;
+}

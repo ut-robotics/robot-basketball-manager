@@ -3,6 +3,7 @@ import WebsocketManager from "../js/util/websocket-manager.js";
 import serverApi from "../js/server-api.js";
 
 import '../components/game-info-box/game-info-box.js';
+import '../components/game-info-box-counter/game-info-box-counter.js';
 
 function getValidScoreCounts(roundScores) {
     const validScoreCounts = [];
@@ -84,6 +85,7 @@ class CompetitionResults extends LitElement {
         }
 
         return html`<div class="top-content">
+                ${this.renderBreak()}
                 ${this.renderActiveGame()}
             </div>
             <div class="bottom-content">
@@ -100,8 +102,42 @@ class CompetitionResults extends LitElement {
         return html`<h1>${`${this.competitionInfo.name}`}</h1>`
     }
 
+    renderBreak() {
+        const isEnabled = this.competitionInfo.breakInfo.isEnabled;
+
+        if (!isEnabled) {
+            return null;
+        }
+
+        return html`<div class="break-info">
+            <div class="break-text">Break</div>
+            ${this.renderBreakCounter()}
+        </div>`;
+    }
+
+    renderBreakCounter() {
+        const endTime = this.competitionInfo.breakInfo.endTime;
+        const nowTime = Date.now();
+
+        if (endTime <= nowTime) {
+            return null;
+        }
+
+        const elapsed = 0;
+        const lastStartTime = nowTime;
+        const timeLimit = endTime - nowTime;
+
+        return html`<game-info-box-counter 
+                ?running=${true} 
+                .elapsed=${elapsed}
+                .laststarttime=${lastStartTime}
+                .timelimit=${timeLimit}
+                ?showminutes=${true}
+        ></game-info-box-counter>`;
+    }
+
     renderActiveGame() {
-        const activeGame = this.activeGameState || this.competitionInfo.activeGame;
+        const activeGame = this.competitionInfo.activeGame;
 
         if (!activeGame) {
             return null;

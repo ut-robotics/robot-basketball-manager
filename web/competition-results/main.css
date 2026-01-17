@@ -54,6 +54,24 @@ table.scoreboard tr > td:first-child {
     font-size: 1.5em;
 }
 
+.break-info {
+    background-color: rgba(0, 89, 175);
+    height: 10vh;
+    font-size: 8vh;
+    line-height: 10vh;
+    display: flex;
+    justify-content: space-between;
+}
+
+.break-info .break-text {
+    padding: 0 10px;
+
+}
+
+.break-info game-info-box-counter {
+    padding: 0 10px;
+}
+
 game-info-box {
     background-color: #D24E0E;
     padding: 10px;

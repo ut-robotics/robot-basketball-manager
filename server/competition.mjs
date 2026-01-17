@@ -8,6 +8,8 @@ export const CompetitionEventName = {
     changed: 'changed',
     gameChanged: 'gameChanged',
     gameSetActive: 'gameSetActive',
+    activeGameCleared: 'activeGameCleared',
+    breakChanged: 'breakChanged',
 };
 
 export default class Competition extends EventEmitter {
@@ -25,6 +27,8 @@ export default class Competition extends EventEmitter {
     #doubleEliminationTournament;
     /** @type {?Game} */
     #activeGame;
+    /** @type {?{isEnabled : boolean, endTime: number}}*/
+    #breakInfo;
 
     get id() {
         return this.#id;
@@ -237,6 +241,27 @@ export default class Competition extends EventEmitter {
         }
     }
 
+    clearActiveGame() {
+        log(`clearActiveGame`);
+
+        if (this.#activeGame) {
+            log(`Active game cleared`);
+
+            this.#activeGame = null;
+
+            this.emit(CompetitionEventName.activeGameCleared);
+        }
+    }
+
+    setBreak(isEnabled, endTime) {
+        this.#breakInfo = {
+            isEnabled,
+            endTime,
+        }
+
+        this.emit(CompetitionEventName.breakChanged, this.#breakInfo);
+    }
+
     getInfo() {
         return {
             id: this.#id,
@@ -246,6 +271,7 @@ export default class Competition extends EventEmitter {
             swissSystemTournament: this.#swissSystemTournament?.getInfo(),
             doubleEliminationTournament: this.#doubleEliminationTournament?.getInfo(),
             activeGame: this.getActiveGame()?.getInfo(),
+            breakInfo: this.#breakInfo,
         };
     }
 
@@ -257,6 +283,7 @@ export default class Competition extends EventEmitter {
             tournament: this.#tournament,
             swissSystemTournament: this.#swissSystemTournament?.getState(),
             doubleEliminationTournament: this.#doubleEliminationTournament?.getState(),
+            breakInfo: this.#breakInfo,
         };
     }
 
@@ -265,6 +292,7 @@ export default class Competition extends EventEmitter {
         this.#name = state.name;
         this.#robots = state.robots;
         this.#tournament = state.tournament;
+        this.#breakInfo = state.breakInfo;
 
         if (state.swissSystemTournament) {
             if (this.#swissSystemTournament) {

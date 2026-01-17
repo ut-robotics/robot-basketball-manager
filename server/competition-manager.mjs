@@ -12,6 +12,8 @@ export const CompetitionManagerEventName = {
     gameChanged: 'gameChanged',
     competitionCreated: 'competitionCreated',
     gameSetActive: 'gameSetActive',
+    activeGameCleared: 'activeGameCleared',
+    breakChanged: 'breakChanged',
 };
 
 export default class CompetitionManager extends EventEmitter {
@@ -212,6 +214,10 @@ export default class CompetitionManager extends EventEmitter {
 
             this.#competition.on(CompetitionEventName.gameSetActive, (game) => this.#handleGameSetActive(game));
 
+            this.#competition.on(CompetitionEventName.activeGameCleared, () => this.#handleActiveGameCleared());
+
+            this.#competition.on(CompetitionEventName.breakChanged, (breakInfo) => this.#handleBreakChanged(breakInfo));
+
             this.#competition.proceed();
         }
     }
@@ -232,8 +238,20 @@ export default class CompetitionManager extends EventEmitter {
     }
 
     async #handleGameSetActive(game) {
+        await this.saveCompetitionSummary();
         this.emit(CompetitionManagerEventName.gameSetActive, game);
         this.#wsServerBroadcast(this.#wss, JSON.stringify({event: 'game_set_active', params: {id: game.id, robots: game.robots}}));
+    }
+
+    async #handleActiveGameCleared() {
+        await this.saveCompetitionSummary();
+        this.emit(CompetitionManagerEventName.activeGameCleared);
+    }
+
+    async #handleBreakChanged(breakInfo) {
+        console.log('#handleBreakChanged', breakInfo);
+        await this.saveCompetition();
+        this.emit(CompetitionManagerEventName.breakChanged);
     }
 
     #handleGameChangeType(changeType, game, params) {
@@ -279,11 +297,21 @@ export default class CompetitionManager extends EventEmitter {
     #handleWsMessage(message) {
         log('handleWsMessage', message);
 
+        if (message.method === 'set_break') {
+            this.#competition.setBreak(message.params.isEnabled, message.params.endTime);
+            return;
+        }
+
         const activeGame = this.#competition.getActiveGame();
 
-        if (activeGame && message.method === 'set_ready') {
-            activeGame.setReady(message.params.sideIndex, message.params.isReady);
-            return;
+        if (activeGame) {
+            if (message.method === 'set_ready') {
+                activeGame.setReady(message.params.sideIndex, message.params.isReady);
+                return;
+            } else if (message.method === 'clear_active_game') {
+                this.#competition.clearActiveGame();
+                return;
+            }
         }
 
         const gameID = message.params.gameID;

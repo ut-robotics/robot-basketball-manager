@@ -88,6 +88,14 @@ class ServerApi {
     async getRandomBalls() {
         return get(`/api/random-balls`);
     }
+
+    async clearActiveGame() {
+        return get(`/api/clear-active-game`);
+    }
+
+    async setBreak(params) {
+        return post(`/api/break`, params);
+    }
 }
 
 const serverApi = new ServerApi();

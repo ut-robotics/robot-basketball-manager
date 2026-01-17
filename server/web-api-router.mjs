@@ -111,6 +111,38 @@ router.get('/random-balls', async (req, res) => {
     res.send(generateBallPlacement());
 });
 
+router.get('/clear-active-game', async (req, res) => {
+    try {
+        competitionManager.competition.clearActiveGame();
+    } catch (error) {
+        logError(error);
+
+        res.sendStatus(400);
+
+        return;
+    }
+
+    res.sendStatus(200);
+});
+
+router.post('/break', async (req, res) => {
+    log(req.body);
+
+    try {
+        const {isEnabled, endTime} = req.body;
+
+        competitionManager.competition.setBreak(isEnabled, endTime);
+    } catch (error) {
+        logError(error);
+
+        res.sendStatus(400);
+
+        return;
+    }
+
+    res.sendStatus(200);
+});
+
 /*
 async function getCompetitions() {
     try {

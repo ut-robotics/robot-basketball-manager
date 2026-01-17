@@ -4,8 +4,15 @@ import serverApi from "../js/server-api.js";
 class CompetitionView extends LitElement {
     static get properties() {
         return {
-            competitionInfo: {type: Object}
+            competitionInfo: {type: Object},
+            breakDuration: {type: Number},
         };
+    }
+
+    constructor() {
+        super();
+
+        this.breakDuration = 600;
     }
 
     createRenderRoot() {
@@ -99,6 +106,36 @@ class CompetitionView extends LitElement {
         }
     }
 
+    async handleSetBreak(event) {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        const isEnabled = data.get('enabled') === 'on';
+        const duration = parseInt(data.get('duration').toString(), 10);
+
+        console.log(isEnabled, duration);
+
+        try {
+            await serverApi.setBreak({
+                isEnabled,
+                endTime: Date.now() + duration * 1000,
+            });
+
+            await this.fetchCompetitionInfo();
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async handleClearActiveGame() {
+        try {
+            await serverApi.clearActiveGame();
+
+            await this.fetchCompetitionInfo();
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     render() {
         if (!this.competitionInfo) {
             this.fetchCompetitionInfo();
@@ -114,6 +151,8 @@ class CompetitionView extends LitElement {
             ${this.renderRobots(this.competitionInfo.robots)}
             ${this.competitionInfo.tournament ? null : this.renderNewRobotForm()}
             ${this.renderTournament()}
+            ${this.renderSetBreak()}
+            ${this.renderClearActiveGame()}
             ${this.renderSwissGamesList()}
             ${this.renderSwissScoreboard()}
             ${this.renderDoubleElimination()}`;
@@ -274,6 +313,24 @@ class CompetitionView extends LitElement {
             <ol>${deInfo.oneLossQueue.map(r => this.renderRobot(r))}</ol>
             <h2>Eliminated</h2>
             <ol>${deInfo.eliminatedRobots.map(r => this.renderRobot(r))}</ol>`
+    }
+
+    renderSetBreak() {
+        console.log(this.competitionInfo.breakInfo);
+
+        const isEnabled = this.competitionInfo.breakInfo?.isEnabled ?? false;
+
+        return html`<h2>Break</h2>
+            <form @submit=${this.handleSetBreak}>
+            <label><input name="enabled" type="checkbox" .checked=${isEnabled}>Enabled</label>
+            <input name="duration" type="number" .value=${this.breakDuration}>
+            <button type="submit">Set break</button>
+        </form>`;
+    }
+
+    renderClearActiveGame() {
+        return html`<h2>Clear active game</h2>
+            <div><button @click=${this.handleClearActiveGame}>Clear active game</button></div>`
     }
 }
 
