@@ -234,14 +234,25 @@ class CompetitionView extends LitElement {
             return null;
         }
 
+        const gameGroups = [];
+        const roundCount = swissInfo.roundCount;
+        const gamesInRoundCount = Math.floor(swissInfo.robots.length / 2);
+
+        for (let i = 0; i < swissInfo.games.length; i += gamesInRoundCount) {
+            gameGroups.push(swissInfo.games.slice(i, i + gamesInRoundCount))
+        }
+
         return html`<h2>Swiss games</h2>
-            <ul>${swissInfo.games.map(g => this.renderGamesListItem(g))}</ul>`
+            <ul>
+                ${gameGroups.map((games, index) => 
+                        html`<li>Round ${index + 1} / ${roundCount}<ul>${games.map(g => this.renderGamesListItem(g))}</ul></li>`)}
+            </ul>`
     }
 
     renderGamesListItem(game, gameType) {
         const activeGame = this.competitionInfo.activeGame;
         const link = `/game/?id=${game.id}`;
-        let text = `${game.id} ${game.robots[0].name} vs ${game.robots[1].name}`;
+        let text = `${game.id}`;
 
         if (gameType) {
             text += ` (${gameType})`
@@ -252,8 +263,10 @@ class CompetitionView extends LitElement {
         }
 
         if (activeGame && activeGame.id === game.id) {
-            text += ' (active)'
+            text += ' (ACTIVE)'
         }
+
+        text += ` ${game.robots[0].name} vs ${game.robots[1].name}`
 
         return html`<li><a href=${link}>${text}</a></li>`;
     }
