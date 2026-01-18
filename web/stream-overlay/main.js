@@ -53,7 +53,7 @@ class StreamOverlay extends LitElement {
     }
 
     render() {
-        const breakEnabled = this.competitionInfo.breakInfo.isEnabled;
+        const breakEnabled = this.competitionInfo?.breakInfo?.isEnabled ?? false;
 
         if (breakEnabled) {
             return this.renderBreak();
@@ -67,7 +67,7 @@ class StreamOverlay extends LitElement {
     }
 
     renderBreak() {
-        const isEnabled = this.competitionInfo.breakInfo.isEnabled;
+        const isEnabled = this.competitionInfo?.breakInfo?.isEnabled ?? false;
 
         if (!isEnabled) {
             return null;

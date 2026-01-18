@@ -103,7 +103,7 @@ class CompetitionResults extends LitElement {
     }
 
     renderBreak() {
-        const isEnabled = this.competitionInfo.breakInfo.isEnabled;
+        const isEnabled = this.competitionInfo?.breakInfo?.isEnabled ?? false;
 
         if (!isEnabled) {
             return null;
