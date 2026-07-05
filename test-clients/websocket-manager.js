@@ -33,8 +33,8 @@ class WebsocketManager extends EventEmitter{
             this.onSocketClosed();
         });
 
-        socket.on('error', () => {
-            console.log('socket error');
+        socket.on('error', (error) => {
+            console.log('socket error', error);
         });
 
         socket.on('open', () => {

@@ -1,7 +1,7 @@
 import EventEmitter from "events";
 import Competition, {CompetitionEventName} from "./competition.mjs";
 import {loadCompetition, log, logError, saveCompetition, saveCompetitionSummary, saveGame} from "./util.mjs";
-import RobotsApi from "./robots-api.mjs";
+import RobotsApi, {RobotsApiEventName} from "./robots-api.mjs";
 import WebSocket, {WebSocketServer} from "ws";
 import {Basket} from "./constants.mjs";
 
@@ -26,6 +26,8 @@ export default class CompetitionManager extends EventEmitter {
     /** @type {RobotsApi} */
     #robotsApi;
     /** @type {number} */
+    #manualCommandPort;
+    /** @type {number} */
     #robotsPort;
     /** @type {number} */
     #basketsPort;
@@ -33,6 +35,8 @@ export default class CompetitionManager extends EventEmitter {
     #refereePort;
     /** @type {WebSocketServer} */
     #wss;
+    /** @type {WebSocketServer} */
+    #wssManualCommand;
     /** @type {WebSocketServer} */
     #wssBaskets;
     /** @type {WebSocketServer} */
@@ -42,10 +46,11 @@ export default class CompetitionManager extends EventEmitter {
         return this.#competition;
     }
 
-    constructor(competitionDirectory, uiServer, robotsPort, basketsPort, refereePort) {
+    constructor(competitionDirectory, uiServer, manualCommandPort, robotsPort, basketsPort, refereePort) {
         super();
         this.#competitionDirectory = competitionDirectory;
         this.#server = uiServer;
+        this.#manualCommandPort = manualCommandPort;
         this.#robotsPort = robotsPort;
         this.#basketsPort = basketsPort;
         this.#refereePort = refereePort;
@@ -80,6 +85,14 @@ export default class CompetitionManager extends EventEmitter {
             .then(competition => this.#setCompetition(competition))
             .catch(error => logError(error));
 
+        this.#setupRobotsApi();
+        this.#setupUIWebSocket();
+        this.#setupManualCommandWebsocket();
+        this.#setupBasketsWebSocket();
+        this.#setupRefereeWebSocket();
+    }
+
+    #setupRobotsApi() {
         this.#robotsApi = new RobotsApi(this.#robotsPort, (method, params) => {
             if (method === 'get_active_game_state') {
                 const activeGame = this.#competition?.getActiveGame();
@@ -98,9 +111,19 @@ export default class CompetitionManager extends EventEmitter {
             }
         });
 
-        this.#setupUIWebSocket();
-        this.#setupBasketsWebSocket();
-        this.#setupRefereeWebSocket();
+        this.#robotsApi.on(RobotsApiEventName.connectionsChange, () => {
+            // log('RobotsApi connectionsChange');
+            const info = this.#robotsApi.getClientsInfo();
+            // log(info);
+            this.#wsManualCommandServerBroadcastClientsInfo(info);
+        });
+
+        this.#robotsApi.on(RobotsApiEventName.sentMessagesChange, () => {
+            // log('RobotsApi sentMessagesChange');
+            const info = this.#robotsApi.getSentMessagesInfo();
+            // log(info);
+            this.#wsManualCommandServerBroadcastSentMessagesInfo(info);
+        });
     }
 
     #setupUIWebSocket() {
@@ -127,6 +150,47 @@ export default class CompetitionManager extends EventEmitter {
                 ws.send(this.#getGameStateEventJSON(activeGame));
             }
         });
+    }
+
+    #setupManualCommandWebsocket() {
+        this.#wssManualCommand = new WebSocketServer({port: this.#manualCommandPort});
+
+        this.#wssManualCommand.on('connection', (ws, req) => {
+            log('manual command websocket connection', req.connection.remoteAddress, req.connection.remotePort);
+
+            ws.on('message', (data, isBinary) => {
+                const message = isBinary ? data : data.toString();
+
+                log('manual command received:', message);
+
+                try {
+                    this.#handleManualCommandWsMessage(JSON.parse(message));
+                } catch (error) {
+                    logError(error);
+                }
+            });
+        });
+    }
+
+    #handleManualCommandWsMessage(message) {
+        log('handleManualCommandWsMessage', message);
+
+        switch (message.method) {
+            case 'signal':
+                this.#robotsApi.sendSignal(message.signal, message.targets, message.connectionIds, message.baskets);
+                break
+            case 'get_clients_info':
+                this.#wsManualCommandServerBroadcastClientsInfo(this.#robotsApi.getClientsInfo());
+                break;
+        }
+    }
+
+    #wsManualCommandServerBroadcastClientsInfo(data) {
+        this.#wsServerBroadcast(this.#wssManualCommand, JSON.stringify({event: 'clients', params: data}));
+    }
+
+    #wsManualCommandServerBroadcastSentMessagesInfo(data) {
+        this.#wsServerBroadcast(this.#wssManualCommand, JSON.stringify({event: 'sentMessages', params: data}));
     }
 
     #setupBasketsWebSocket() {

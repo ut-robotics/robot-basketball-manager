@@ -1,24 +1,30 @@
 import BackOffDelay from "./backoff-delay.js";
 
 export default class WebsocketManager {
-    constructor(onMessage) {
+    constructor(onMessage, onOpened, port) {
         this.onMessage = onMessage;
+        this.onOpened = onOpened;
         this.socketReconnectDelay = new BackOffDelay();
-        this.socket = this.createWebsocket(this.onMessage, this.onSocketOpened, this.onSocketClosed);
+        this.port = port;
+        this.socket = this.createWebsocket();
     }
 
     onSocketOpened() {
         this.socketReconnectDelay.reset();
+        this.onOpened?.();
     }
 
     onSocketClosed() {
         setTimeout(() => {
-            this.socket = this.createWebsocket(this.onMessage, this.onSocketOpened, this.onSocketClosed);
+            this.socket = this.createWebsocket();
         }, this.socketReconnectDelay.get());
     }
 
     createWebsocket() {
-        const socket = new WebSocket('ws://' + location.host);
+        const url = !!this.port
+            ? 'ws://' + location.hostname + ':' + this.port
+            : 'ws://' + location.host
+        const socket = new WebSocket(url);
 
         socket.addEventListener('message', (event) => {
             this.onMessage(event.data);

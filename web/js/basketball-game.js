@@ -1,12 +1,14 @@
 import {classMap, css, html, LitElement} from "../lib/lit.mjs";
 import './main-round.js';
 import './free-throws.js';
+import WebsocketManager from "../js/util/websocket-manager.js";
 
 class BasketballGame extends LitElement {
     static get properties() {
         return {
             state: {type: Object},
             serverWebsocketApi: {attribute: false},
+            clients: {type: Array},
         };
     }
 
@@ -31,11 +33,13 @@ class BasketballGame extends LitElement {
                 padding: 5px 10px;
             }
 
-            :host .robot-name {
+            :host .robot-name,
+            :host .robot-id {
                 background-color: orange;
             }
 
-            :host .robot-name.ready {
+            :host .robot-name.ready,
+            :host .robot-id.connected {
                 background-color: lightgreen;
             }
         `;
@@ -44,6 +48,42 @@ class BasketballGame extends LitElement {
     constructor() {
         super();
         this.state = {};
+        this.isConnectedByRobotId = {};
+
+        this.manualCommandSocketManager = new WebsocketManager(
+            this.onManualCommandSocketMessage.bind(this),
+            this.onManualCommandSocketOpen.bind(this),
+            8115
+        );
+    }
+
+    onManualCommandSocketOpen() {
+        this.manualCommandSocketManager.send({method: 'get_clients_info', params: {gameID: this.gameID}});
+    }
+
+    onManualCommandSocketMessage(message) {
+        try {
+            const info = JSON.parse(message);
+
+            console.log(info);
+
+            if (info.event === 'clients') {
+                const clients = info.params;
+
+                const isConnectedByRobotId = {};
+
+                for (const client of clients) {
+                    if (client.robotId) {
+                        isConnectedByRobotId[client.robotId] = true;
+                    }
+                }
+
+                this.isConnectedByRobotId = isConnectedByRobotId;
+                this.clients = clients;
+            }
+        } catch (error) {
+            console.info(error);
+        }
     }
 
     handleSetActive() {
@@ -68,12 +108,28 @@ class BasketballGame extends LitElement {
             ready: lastRound.readyStates[1],
         });
 
+        const robotId1ClassMap = classMap({
+            'robot-id': true,
+            connected: this.isConnectedByRobotId[robots[0].id],
+        });
+
+        const robotId2ClassMap = classMap({
+            'robot-id': true,
+            connected: this.isConnectedByRobotId[robots[1].id],
+        });
+
         return html`<table><thead>
             <tr>
                 <th></th>
                 <th>${this.renderSetActiveButton()}</th>
-                <th class=${robot1ClassMap}>${robots[0].name}</th>
-                <th class=${robot2ClassMap}>${robots[1].name}</th>
+                <th>
+                    <div class=${robot1ClassMap}>${robots[0].name}</div>
+                    <div class=${robotId1ClassMap}>${robots[0].id}</div>
+                </th>
+                <th>
+                    <div class=${robot2ClassMap}>${robots[1].name}</div>
+                    <div class=${robotId2ClassMap}>${robots[1].id}</div>
+                </th>
                 <th>${this.renderWinner()}</th>
             </tr>
             </thead>

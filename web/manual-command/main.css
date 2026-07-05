@@ -52,6 +52,49 @@ input {
     width: 50px;
 }
 
-.timer-controls > input[type="checkbox"] {
+input[type="checkbox"] {
     width: 30px;
+}
+
+.json {
+    font-family: monospace;
+    white-space: pre;
+}
+
+.sent-message {
+    margin-right: 5px;
+    margin-bottom: 2px;
+    padding: 0 2px;
+    background-color: orange;
+    display: inline-block;
+}
+
+.sent-message.acked {
+    background-color: lightgreen;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+th {
+    text-align: left;
+    border-bottom: 1px solid gray;
+    padding: 2px 5px;
+}
+
+th:nth-child(odd) {
+    border-bottom-style: dashed;
+}
+
+th:first-child {
+    border-bottom: none;
+}
+
+td {
+    padding: 2px 5px;
+}
+
+td:nth-child(even) {
+    background-color: #EEE;
 }

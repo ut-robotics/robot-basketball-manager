@@ -19,13 +19,14 @@ const uiPort = 8110;
 const robotsPort = 8111;
 const basketsPort = 8112;
 const refereePort = 8114;
+const manualCommandPort = 8115;
 
 const competitionRootDirectory = process.argv[2];
 const gitRemote = process.argv[3];
 
 const competitionResultsDirectory = path.join(competitionRootDirectory, 'competition-state');
 
-initCompetitionManager(competitionResultsDirectory, server, robotsPort, basketsPort, refereePort);
+initCompetitionManager(competitionResultsDirectory, server, manualCommandPort, robotsPort, basketsPort, refereePort);
 
 if (gitRemote) {
     const gitResultsUpdater = new GitResultsUpdater(competitionRootDirectory, gitRemote);

@@ -25,6 +25,10 @@ class ManualCommander extends LitElement {
         return fetch(`/stop/${targets}`);
     }
 
+    sendPing(targets) {
+        return fetch(`/ping/${targets}`);
+    }
+
     handleStart() {
         const targets = this.robots.map(t => t.id);
         const baskets = this.robots.map(t => t.basket);
@@ -36,6 +40,12 @@ class ManualCommander extends LitElement {
         const targets = this.robots.map(t => t.id);
 
         this.sendStop(targets);
+    }
+
+    handlePing() {
+        const targets = this.robots.map(t => t.id);
+
+        this.sendPing(targets);
     }
 
     handleRobotKeyup(event) {
@@ -58,6 +68,7 @@ class ManualCommander extends LitElement {
         return html`<div>
             <button class="signal-button" @click=${this.handleStart}>Start</button>
             <button class="signal-button" @click=${this.handleStop}>Stop</button>
+            <button class="signal-button" @click=${this.handlePing}>Ping</button>
             ${this.robots.map((robot, index) => this.renderRobot(robot, index))}          
             </div>`;
     }

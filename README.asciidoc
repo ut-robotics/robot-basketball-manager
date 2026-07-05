@@ -5,13 +5,14 @@ https://github.com/ut-robotics/robot-basketball-rules[Competition rules]
 
 == Referee's signals
 
-Robots can connect to basketball manager software over WiFi using WebSocket protocol.
+Robots can connect to basketball manager software over Wi-Fi using WebSocket protocol.
 Messages use JSON format.
 
 === Start
 
 |===
 |*Parameter* |*Type* |*Description*
+|messageId |Integer |Unique ID for each message sent by server. Used by server to check ACK messages.
 |signal |String constant |`start` for start signal.
 |targets |String array |List of Robot IDs.
 |baskets |String array |List of basket colors.
@@ -21,43 +22,89 @@ Second item is the basket for the second robot and so on.
 
 *Examples*
 
-Start signal. First robot (`Io`) should throw into `magenta` basket and second robot (`001TRT`) into `blue` basket.
+Start signal.
+First robot (`io`) should throw into `magenta` basket and second robot (`001trt`) into `blue` basket.
 [source,json]
 ----
 {
+  "messageId": 1,
   "signal": "start",
-  "targets":  ["Io", "001TRT"],
+  "targets":  ["io", "001trt"],
   "baskets": ["magenta", "blue"]
 }
 ----
 
-=== Stop
+=== Stop and ping
 
 |===
 |*Parameter* |*Type* |*Description*
-|signal |String constant |`stop` for stop signal.
+|messageId |Integer |Unique ID for each message sent by server. Used by server to check ACK messages.
+|signal |String constant |`stop` for stop signal. `ping` for ping signal.
 |targets |String array |List of Robot IDs.
 |===
 
 *Examples*
 
-Stop signal for robots with IDs of `Io` and `001TRT`.
+Stop signal for robots with IDs of `io` and `001trt`.
 [source,json]
 ----
 {
+  "messageId": 1,
   "signal": "stop",
-  "targets":  ["Io", "001TRT"]
+  "targets": ["io", "001trt"]
+}
+----
+
+=== ACK responses
+
+Robot must send ACK (acknowledgement) to server
+when `targets` array contains the robot's ID or `*` (asterisk, U+002A).
+
+|===
+|*Parameter* |*Type* |*Description*
+|type |String constant |`ack` for all ACK messages.
+|data |String |Unmodified received message.
+|===
+
+*Examples*
+
+. Server sends stop signal for robots with IDs of `io` and `001trt`.
++
+[source,json]
+----
+{"messageId":1,"signal":"stop","targets":["io", "001trt"]}
+----
++
+Robots with IDs of `io` and `001trt` send ACK to server.
++
+[source,json]
+----
+{
+  "type": "ack",
+  "data": {"messageId":1,"signal":"stop","targets":["io","001trt"]}
+}
+----
+
+. Server sends ping signal to all robots.
++
+[source,json]
+----
+{"messageId":2,"signal":"ping","targets":["*"]}
+----
++
+Robots send ACK to server.
++
+[source,json]
+----
+{
+  "type": "ack",
+  "data": {"messageId":2,"signal":"ping","targets":["*"]}
 }
 ----
 
 == Setup
 
 . Install https://nodejs.org/en/[node.js]
-+
-Version 14+ should work. Newer versions (18+) are recommended.
-+
-Newer versions for Ubuntu:
-https://github.com/nodesource/distributions/blob/master/README.md#rpminstall
 
 . Install dependencies
 +
@@ -70,7 +117,12 @@ In `server` directory run `npm i`.
 . In `server` directory run `node manual-command-server.mjs`.
 
 . In robot's code create WebSocket client that connects to
-** `localhost:8222`, if the server and robot's code is on the same computer;
-** `<server computer IP address>:8222`, if the server and robot's code are on different computers.
+** `localhost:8111`, if the server and robot's code is on the same computer;
+** `<server computer IP address>:8111`, if the server and robot's code are on different computers.
 Make sure that server and robot are in the same network.
-. Open `localhost:8220` or `<server computer IP address>:8220` in the web browser to send start and stop commands.
+** Basic authentication must be used with robot's ID and empty password when connecting to server.
+*** URL format: `ws://<robot's ID>:@<server computer IP address>:8111`
+*** Examples:
+**** `ws://io:@localhost:8111`
+**** `ws://001trt:@192.168.0.1:8111`
+. Open `localhost:8220` or `<server computer IP address>:8220` in the web browser to send signals.
