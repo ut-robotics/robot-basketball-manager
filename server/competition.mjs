@@ -86,8 +86,21 @@ export default class Competition extends EventEmitter {
                         }
                     }
 
+                    const reorderedRobots = [];
+
+                    // Match best with worst
+                    // 4 robots - 1-4, 2-3
+                    // 5 robots - 1-5, 2-4, 3
+                    for (const [index, robot] of bestRobots.entries()) {
+                        if (index < bestRobots.length / 2) {
+                            reorderedRobots[index * 2] = robot;
+                        } else {
+                            reorderedRobots[2 * (bestRobots.length - index) - 1] = robot;
+                        }
+                    }
+
                     const doubleEliminationTournament = new DoubleEliminationTournament(
-                        shuffledArray(bestRobots),
+                        reorderedRobots,
                         cloneObject(this.#swissSystemTournament.robotStartingBaskets)
                     );
 
