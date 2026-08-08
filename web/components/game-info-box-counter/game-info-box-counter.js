@@ -1,5 +1,4 @@
-import {html, LitElement} from "../../competition-results/lib/lit.mjs";
-import {css} from "../../lib/lit.mjs";
+import {html, LitElement, css} from "../../lib/lit.mjs";
 
 class GameInfoBoxCounter extends LitElement {
     static get properties() {

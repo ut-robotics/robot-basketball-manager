@@ -1,4 +1,4 @@
-import {html, classMap, LitElement} from "./lib/lit.mjs";
+import {html, classMap, LitElement} from "../lib/lit.mjs";
 import WebsocketManager from "../js/util/websocket-manager.js";
 import serverApi from "../js/server-api.js";
 

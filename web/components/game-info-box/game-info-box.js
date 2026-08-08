@@ -1,4 +1,4 @@
-import {classMap, html, LitElement, unsafeHTML} from "../../competition-results/lib/lit.mjs";
+import {classMap, html, LitElement, unsafeHTML} from "../../lib/lit.mjs";
 import zip from "../../js/util/zip.js";
 import getValidScoreOrFoulCounts from "../../js/util/get-valid-score-counts.js";
 

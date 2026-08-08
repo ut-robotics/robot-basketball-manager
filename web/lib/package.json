@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "build": "npm run build-lit-element && npm run build-luxon",
-    "build-lit-element": "rollup -c rollup.lit-element.js",
+    "build-lit": "rollup -c rollup.lit.js",
     "build-luxon": "rollup -c rollup.luxon.js"
   },
   "author": "",

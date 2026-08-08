@@ -1,4 +1,4 @@
-import {html, LitElement} from "./lib/lit-element.mjs";
+import {html, LitElement} from "./lib/lit.mjs";
 
 class ApiError {
     constructor(status, statusText) {

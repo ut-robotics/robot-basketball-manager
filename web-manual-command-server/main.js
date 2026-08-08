@@ -1,4 +1,4 @@
-import {classMap, html, LitElement} from "./lib/lit-element.mjs";
+import {classMap, html, LitElement} from "./lib/lit.mjs";
 
 class ManualCommander extends LitElement {
     static get properties() {
