@@ -198,7 +198,7 @@ class CompetitionResults extends LitElement {
             return null;
         }
 
-        return html`<li>Bye: ${robot.name} | bye = 1 point</li>`;
+        return html`<li>Bye: ${robot.name}</li>`;
     }
 
     renderGamesListItem(game, gameType) {
@@ -244,17 +244,17 @@ class CompetitionResults extends LitElement {
             pointsText += ' (';
 
             if (result === 'tied') {
-                pointsText += '0.5 points';
+                pointsText += '5 points';
             } else {
                 if (roundCount === 2) {
-                    pointsText += '1 point';
+                    pointsText += '10 point';
                 } else {
                     if (status.roundWinCount === 2 && status.roundTieCount === 1) {
-                        pointsText += '0.9 points';
+                        pointsText += '9 points';
                     } else if (status.roundWinCount === 2 && status.roundLossCount === 1) {
-                        pointsText += '0.8 points';
+                        pointsText += '8 points';
                     } else if (status.roundWinCount === 1 && status.roundTieCount === 2) {
-                        pointsText += '0.7 points';
+                        pointsText += '7 points';
                     }
                 }
             }

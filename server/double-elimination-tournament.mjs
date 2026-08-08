@@ -1,5 +1,5 @@
 import EventEmitter from "events";
-import Game, {GameEventChangeType, GameEventName} from "./game.mjs";
+import {Game, GameEventChangeType, GameEventName} from "./game.mjs";
 import {doubleEliminationGameIdOffset, DoubleEliminationGameType} from "./constants.mjs";
 import {decideBasketsForRobots, log} from "./util.mjs";
 

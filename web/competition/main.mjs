@@ -1,5 +1,6 @@
 import {html, LitElement} from "../lib/lit.mjs";
 import serverApi from "../js/server-api.js";
+import {renderSwissScoreboard} from "../templates/swiss-scoreboard.js";
 
 class CompetitionView extends LitElement {
     static get properties() {
@@ -154,7 +155,7 @@ class CompetitionView extends LitElement {
             ${this.renderSetBreak()}
             ${this.renderClearActiveGame()}
             ${this.renderSwissGamesList()}
-            ${this.renderSwissScoreboard()}
+            ${renderSwissScoreboard(this.competitionInfo.swissSystemTournament)}
             ${this.renderDoubleElimination()}`;
     }
 
@@ -269,38 +270,6 @@ class CompetitionView extends LitElement {
         text += ` ${game.robots[0].name} vs ${game.robots[1].name}`
 
         return html`<li><a href=${link}>${text}</a></li>`;
-    }
-
-    renderSwissScoreboard() {
-        const swissInfo = this.competitionInfo.swissSystemTournament;
-
-        if (!swissInfo) {
-            return null;
-        }
-
-        const orderedScores = swissInfo.robotScores.slice();
-
-        orderedScores.sort((a, b) => {
-            if (a.score === b.score) {
-                return b.tieBreakScore - a.tieBreakScore;
-            }
-
-            return b.score - a.score;
-        });
-
-        return html`<h2>Swiss scoreboard</h2>
-            <table>
-                <thead><tr><th>Name</th><th>Score</th><th>Tiebreak score</th></tr></thead>
-                <tbody>${orderedScores.map(s => this.renderSwissScoreboardRow(s))}</tbody>
-            </table>`
-    }
-
-    renderSwissScoreboardRow(robotScore) {
-        return html`<tr>
-            <td>${robotScore.robot.name}</td>
-            <td>${robotScore.score}</td>
-            <td>${robotScore.tieBreakScore}</td>
-        </tr>`;
     }
 
     renderDoubleElimination() {

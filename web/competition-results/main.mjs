@@ -4,6 +4,7 @@ import serverApi from "../js/server-api.js";
 
 import '../components/game-info-box/game-info-box.js';
 import '../components/game-info-box-counter/game-info-box-counter.js';
+import {renderSwissScoreboard} from "../templates/swiss-scoreboard.js";
 
 function getValidScoreCounts(roundScores) {
     const validScoreCounts = [];
@@ -21,10 +22,6 @@ function getValidScoreCounts(roundScores) {
     }
 
     return validScoreCounts;
-}
-
-function roundToTwoDecimalPlaces(number) {
-    return Math.round((number + Number.EPSILON) * 100) / 100;
 }
 
 class CompetitionResults extends LitElement {
@@ -202,7 +199,7 @@ class CompetitionResults extends LitElement {
             <h2>Swiss-system tournament</h2>
             <div class="columns">
                 <div class="column">
-                    ${this.renderSwissScoreboard()}
+                    ${renderSwissScoreboard(swissInfo)}
                     ${this.renderSwissGamePointExplanation()}
                 </div>
                 <div class="column">
@@ -257,7 +254,7 @@ class CompetitionResults extends LitElement {
             return null;
         }
 
-        return html`<li>Bye: ${robot.name} | bye = 1 point</li>`;
+        return html`<li>Bye: ${robot.name}</li>`;
     }
 
     renderGamesListItem(game, gameType) {
@@ -329,17 +326,17 @@ class CompetitionResults extends LitElement {
             pointsText += ' (';
 
             if (result === 'tied') {
-                pointsText += '0.5 points';
+                pointsText += '5 points';
             } else {
                 if (roundCount === 2) {
-                    pointsText += '1 point';
+                    pointsText += '10 point';
                 } else {
                     if (status.roundWinCount === 2 && status.roundTieCount === 1) {
-                        pointsText += '0.9 points';
+                        pointsText += '9 points';
                     } else if (status.roundWinCount === 2 && status.roundLossCount === 1) {
-                        pointsText += '0.8 points';
+                        pointsText += '8 points';
                     } else if (status.roundWinCount === 1 && status.roundTieCount === 2) {
-                        pointsText += '0.7 points';
+                        pointsText += '7 points';
                     }
                 }
             }
@@ -355,64 +352,13 @@ class CompetitionResults extends LitElement {
             <table>
                 <thead><th>Round results</th><th>Winner points</th><th>Loser points</th></thead>
                 <tbody>
-                <tr><td>2 out of 2 wins</td><td>1</td><td>0</td></tr>
-                <tr><td>2 wins and 1 tie</td><td>0.9</td><td>0.1</td></tr>
-                <tr><td>2 wins and 1 loss</td><td>0.8</td><td>0.2</td></tr>
-                <tr><td>1 win and 2 ties</td><td>0.7</td><td>0.3</td></tr>
-                <tr><td>Tie</td><td>0.5</td><td>0.5</td></tr>
+                <tr><td>2 out of 2 wins</td><td>10</td><td>0</td></tr>
+                <tr><td>2 wins and 1 tie</td><td>9</td><td>1</td></tr>
+                <tr><td>2 wins and 1 loss</td><td>8</td><td>2</td></tr>
+                <tr><td>1 win and 2 ties</td><td>7</td><td>3</td></tr>
+                <tr><td>Tie</td><td>5</td><td>5</td></tr>
                 </tbody>
             </table>`;
-    }
-
-    renderSwissScoreboard() {
-        const swissInfo = this.competitionInfo.swissSystemTournament;
-
-        if (!swissInfo) {
-            return null;
-        }
-
-        const orderedScores = swissInfo.robotScores.slice();
-
-        orderedScores.sort((a, b) => {
-            if (a.score === b.score) {
-                return b.tieBreakScore - a.tieBreakScore;
-            }
-
-            return b.score - a.score;
-        });
-
-        const fourthPlaceScore = orderedScores[3];
-
-        function isInFinals(robotScore) {
-            if (robotScore.score > fourthPlaceScore.score) {
-                return true;
-            }
-
-            if (robotScore.score === fourthPlaceScore.score && robotScore.tieBreakScore >= fourthPlaceScore.tieBreakScore) {
-                return true;
-            }
-
-            return false;
-        }
-
-        return html`<h3>Scoreboard</h3>
-            <table class="scoreboard">
-                <thead><tr><th></th><th>Name</th><th>Score</th><th>Tiebreak score</th></tr></thead>
-                <tbody>${orderedScores.map((s, i) => this.renderSwissScoreboardRow(s, i, isInFinals(s)))}</tbody>
-            </table>`
-    }
-
-    renderSwissScoreboardRow(robotScore, index, isFinalist) {
-        const classes = {
-            'is-finalist': isFinalist,
-        }
-
-        return html`<tr class=${classMap(classes)}>
-            <td>${index + 1}</td>
-            <td>${robotScore.robot.name}</td>
-            <td>${roundToTwoDecimalPlaces(robotScore.score)}</td>
-            <td>${roundToTwoDecimalPlaces(robotScore.tieBreakScore)}</td>
-        </tr>`;
     }
 
     renderDoubleElimination() {
@@ -424,11 +370,6 @@ class CompetitionResults extends LitElement {
 
         return html`<h2>Double elimination tournament</h2>
             ${this.renderDoubleEliminationQueues(deInfo)}`;
-    }
-
-    renderDoubleEliminationGames(deInfo) {
-        return html`<h2>Double elimination games</h2>
-            <ul>${deInfo.games.map(g => this.renderGamesListItem(g, deInfo.gameTypes[g.id]))}</ul>`
     }
 
     renderDoubleEliminationQueues(deInfo) {

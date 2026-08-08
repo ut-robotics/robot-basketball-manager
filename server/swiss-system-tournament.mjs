@@ -6,7 +6,7 @@ import {
     log,
     selectRandom
 } from './util.mjs';
-import Game, {GameEventChangeType, GameEventName} from "./game.mjs";
+import {Game, GameEventChangeType, GameEventName} from "./game.mjs";
 import EventEmitter from "events";
 import {GameResult} from "./constants.mjs";
 import {opt as maximumCardinalityMatching} from "./maximum-matching/src/cardinality/index.js";
@@ -435,9 +435,9 @@ export default class SwissSystemTournament extends EventEmitter {
         const robotScores = robots.map(r => {
             return {
                 robot: r,
-                score: this.calculateScore(r),
                 tieBreakScore: this.calculateTieBreakScore(r),
-                rank: -1
+                rank: -1,
+                ...this.calculateScore(r),
             };
         });
 
@@ -456,55 +456,81 @@ export default class SwissSystemTournament extends EventEmitter {
         return robotScores;
     }
 
-    calculateScore(robot) {
-        let score = 0;
+    /**
+     *
+     * @param {Robot} robot
+     * @param {Game} game
+     * @returns {number|{min: number, max: number}}
+     */
+    calculateGameScore(robot, game) {
+        const status = game.getStatus();
+        const indexCounts = status.indexCounts;
+        const completedRoundCount = status.completedRoundCount;
+        const robotIndex = game.robots[0].id === robot.id ? 0 : 1;
+        let gameScore = 0;
 
-        if (this.hasBye(robot.id)) {
-            score += 1;
+        const winLossTieCountToScoreMap = {
+            '200': 10,
+            '201': 9,
+            '210': 8,
+            '102': 7,
+            '111': 5,
+            '003': 5,
+            '012': 3,
+            '120': 2,
+            '021': 1,
+            '020': 0,
+        };
+
+        const winLossTieCounts = [indexCounts[robotIndex], indexCounts[1 - robotIndex], indexCounts['-1']];
+
+        if (status.result === GameResult.unknown) {
+            const winLossTieCountsBest = winLossTieCounts.slice();
+            const winLossTieCountsWorst = winLossTieCounts.slice();
+
+            winLossTieCountsBest[0] = Math.min(winLossTieCountsBest[0] + (3 - completedRoundCount), 2);
+            winLossTieCountsWorst[1] = Math.min(winLossTieCountsWorst[1] + (3 - completedRoundCount), 2);
+
+            const maxScore = winLossTieCountToScoreMap[winLossTieCountsBest.join('')];
+            const minScore = winLossTieCountToScoreMap[winLossTieCountsWorst.join('')];
+
+            return {min: minScore, max: maxScore, completedRoundCount};
         }
+
+        const winLossTieCountMapKey = winLossTieCounts.join('');
+        gameScore = winLossTieCountToScoreMap[winLossTieCountMapKey];
+
+        return gameScore;
+    }
+
+    calculateScore(robot) {
+        let gameScores = [];
 
         const games = this.getRobotGames(robot);
+        let finishedGamesCount = 0;
+        let totalScore = 0;
 
         for (const game of games) {
-            const status = game.getStatus();
+            const gameScore = this.calculateGameScore(robot, game);
+            gameScores.push(this.calculateGameScore(robot, game));
 
-            if (status.result === GameResult.unknown) {
-                continue;
-            }
-
-            if (status.result === GameResult.tied) {
-                score += 0.5;
-            } else {
-                const winnerId = status.winner.id;
-
-                let winnerScore = 0;
-
-                if (game.getRoundCount() === 2) {
-                    winnerScore = 1; // 2 out of 2 rounds won
-                } else {
-                    if (status.roundWinCount === 2 && status.roundTieCount === 1) {
-                        winnerScore = 0.9; // 2 out of 3 rounds won and 1 round tied
-                    } else if (status.roundWinCount === 2 && status.roundLossCount === 1) {
-                        winnerScore = 0.8; // 2 out of 3 rounds won and 1 round lost
-                    } else if (status.roundWinCount === 1 && status.roundTieCount === 2) {
-                        winnerScore = 0.7; // 1 out of 3 rounds won and 2 rounds tied
-                    }
-                }
-
-                if (winnerId === robot.id) {
-                    score += winnerScore; // Winner gets winnerScore amount of points
-                } else {
-                    score += 1 - winnerScore; // Loser gets rest of the points
-                }
+            if (Number.isFinite(gameScore)) {
+                finishedGamesCount++;
+                totalScore += gameScore;
             }
         }
 
-        return score;
+        return {
+            score: finishedGamesCount > 0 ? totalScore / finishedGamesCount : 0,
+            gameScores,
+            totalScore,
+            finishedGamesCount,
+        }
     }
 
     calculateTieBreakScore(robot) {
         const opponents = this.getOpponents(robot, false);
-        const opponentScores = opponents.map(o => this.calculateScore(o));
+        const opponentScores = opponents.map(o => this.calculateScore(o).score);
 
         return opponentScores.reduce((total, value) => total + value, 0);
     }

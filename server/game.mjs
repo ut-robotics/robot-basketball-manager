@@ -36,7 +36,7 @@ export const GameEventChangeType = {
     readyChanged: 'readyChanged',
 };
 
-export default class Game extends EventEmitter {
+export class Game extends EventEmitter {
     #id;
     #robots;
     #startingBaskets;
@@ -261,7 +261,7 @@ export default class Game extends EventEmitter {
     #addNewFreeThrows = () => {
         const basket = Math.random() < 0.5 ? Basket.blue : Basket.magenta;
 
-        this.#addFreeThrows(new FreeThrows(this.#robots, [basket, basket],3, freeThrowAttemptRoundLength));
+        this.#addFreeThrows(new FreeThrows(this.#robots, [basket, basket], 3, freeThrowAttemptRoundLength));
 
         this.emit(GameEventName.changed, GameEventChangeType.freeThrowsAdded);
     };
@@ -342,58 +342,60 @@ export default class Game extends EventEmitter {
         const completedRounds = this.#rounds.filter(round => round.hasEnded && round.isConfirmed);
         const roundCount = completedRounds.length;
 
-        if (roundCount < 2) {
-            return {result: GameResult.unknown};
+        const status = {
+            result: GameResult.unknown,
+            indexCounts: {'-1': 0, 0: 0, 1: 0},
+            completedRoundCount: roundCount,
         }
 
         const winnerIndices = completedRounds.map(round => round.getWinnerIndex());
-        const indexCounts = {'-1': 0, 0: 0, 1: 0};
 
         // Main rounds
         for (const index of winnerIndices.slice(0, 3)) {
-            indexCounts[index]++;
+            status.indexCounts[index]++;
 
-            if (indexCounts[index] === 2 && index >= 0) {
-                return {
-                    result: GameResult.won,
-                    winner: this.#robots[index],
-                    ...this.#composeStatusRoundInfo(indexCounts, index)
-                };
+            if (status.indexCounts[index] === 2 && index >= 0) {
+                status.result = GameResult.won;
+                status.winner = this.#robots[index];
+                Object.assign(status, this.#composeStatusRoundInfo(status.indexCounts, index));
+
+                return status;
             }
         }
 
         if (roundCount <= 2) {
-            return {result: GameResult.unknown};
+            return status;
         }
 
-        if (indexCounts[0] > indexCounts[1]) {
-            return {
-                result: GameResult.won,
-                winner: this.#robots[0],
-                ...this.#composeStatusRoundInfo(indexCounts, 0)
-            };
+        if (status.indexCounts[0] > status.indexCounts[1]) {
+            status.result = GameResult.won;
+            status.winner = this.#robots[0];
+            Object.assign(status, this.#composeStatusRoundInfo(status.indexCounts, 0));
+
+            return status;
         }
 
-        if (indexCounts[0] < indexCounts[1]) {
-            return {
-                result: GameResult.won,
-                winner: this.#robots[1],
-                ...this.#composeStatusRoundInfo(indexCounts, 1)
-            };
+        if (status.indexCounts[0] < status.indexCounts[1]) {
+            status.result = GameResult.won;
+            status.winner = this.#robots[1];
+            Object.assign(status, this.#composeStatusRoundInfo(status.indexCounts, 1));
+
+            return status;
         }
 
         if (this.#isTieAllowed) {
-            return {result: GameResult.tied};
+            status.result = GameResult.tied;
+            return status;
         }
 
         // Extra rounds
         for (const index of winnerIndices.slice(3, 6)) {
             if (index !== -1) {
-                return {
-                    result: GameResult.won,
-                    winner: this.#robots[index],
-                    ...this.#composeStatusRoundInfo(indexCounts, index)
-                };
+                status.result = GameResult.won;
+                status.winner = this.#robots[index];
+                Object.assign(status, this.#composeStatusRoundInfo(status.indexCounts, index));
+
+                return status;
             }
         }
 
@@ -402,15 +404,15 @@ export default class Game extends EventEmitter {
             const freeThrowStatus = this.#freeThrows.getStatus();
 
             if (freeThrowStatus.result === FreeThrowsResult.won) {
-                return {
-                    result: GameResult.won,
-                    winner: this.#robots[freeThrowStatus.winner],
-                    ...this.#composeStatusRoundInfo(indexCounts, freeThrowStatus.winner)
-                };
+                status.result = GameResult.won;
+                status.winner = this.#robots[freeThrowStatus.winner];
+                Object.assign(status, this.#composeStatusRoundInfo(status.indexCounts, freeThrowStatus.winner));
+
+                return status;
             }
         }
 
-        return {result: GameResult.unknown};
+        return status;
     }
 
     getInfo() {

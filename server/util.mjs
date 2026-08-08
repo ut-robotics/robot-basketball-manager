@@ -1,7 +1,7 @@
 import {promises as fs} from 'fs';
 import path from "path";
 import {competitionInfoFileName, competitionSummaryFileName} from "./constants.mjs";
-import Game from "./game.mjs";
+import {Game} from "./game.mjs";
 import Competition from "./competition.mjs";
 import jsonStringifyCompact from "json-stringify-pretty-compact";
 
