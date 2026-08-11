@@ -102,6 +102,45 @@ Robots send ACK to server.
 }
 ----
 
+== Swiss-system tournament
+
+=== Game point system
+
+|===
+|Round results |Winner points |Loser points
+
+|2 out of 2 wins |10 |0
+|2 wins and 1 tie |9 |1
+|2 wins and 1 loss |8 |2
+|1 win and 2 ties |7 |3
+|3 ties or 1 win, 1 loss, 1 tie |5 |5
+|===
+
+=== Byes
+
+With odd number of robots, a robot is chosen randomly that skips a round of Swiss-system tournament games.
+Robot is not chosen more than once.
+No points are rewarded for that robot.
+
+=== Scoreboard
+
+Robots are ranked by average game score.
+Robot with the highest average score ranks the highest.
+
+If the average scores are equal, the tiebreak scores are used.
+Robot's tiebreak score is calculated by summing the average scores
+of all the opponent robots that the robot has played against.
+Robot with higher tiebreak score ranks higher.
+Higher tiebreak scores indicates that the robot has played against stronger opponents.
+
+== Double elimination tournament
+
+Four (or more if there are ties) Swiss-system tournament robots are matched based on the ranking
+so that the best robot matches with the worst robot.
+In case of four robots the matching is 1-4, 2-3.
+I case of five robots it is 1-5, 2-4.
+3rd place will be matched with the winner of the match between 1st and 5th place robots.
+
 == Setup
 
 . Install https://nodejs.org/en/[node.js]
